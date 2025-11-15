@@ -50,7 +50,7 @@ The app has a **marketing site**, **management dashboard**, and a **control-plan
 
 * **TanStack Start v1 RC**
 * **React**
-* **TanStack Router**
+* **TanStack Router** (file-based routing)
 * **TanStack Query**
 * **TailwindCSS**
 * **Radix UI** for unstyled accessible components
@@ -60,10 +60,17 @@ The app has a **marketing site**, **management dashboard**, and a **control-plan
 * **Cloudflare Workers** for app + control plane
 * **Cloudflare KV** for tenant-config distribution (fast edge reads)
 * **Cloudflare R2** for static site storage
-* **Cloudflare D1** (SQLite) as system-of-record database
+* **Cloudflare D1** (SQLite) as system-of-record database (SQLite for development)
 * **Cloudflare Pages or Worker deploy** for the Start app
-* **WorkOS** for authentication + SSO
+* **WorkOS AuthKit** for authentication + SSO
 * **A separate Edge Worker** (not Start) to serve static tenant sites from R2
+
+### **Authentication & Security**
+
+* **@workos-inc/node** - Official WorkOS Node.js SDK
+* **jose** - JWT verification and JWKS support
+* **TanStack Start Server Functions** - Type-safe server-side functions
+* **HTTP-only cookies** - Secure session storage with encryption
 
 ---
 
@@ -217,34 +224,41 @@ Bucket is **private**; only Worker can read from R2.
 ### Public routes
 
 ```
-/
- /pricing
- /docs
- /login
- /auth/callback
+/                             (marketing/landing page)
+/pricing                      (to be implemented)
+/docs                         (to be implemented)
+/logout                       ✅ IMPLEMENTED - Handles logout and WorkOS redirect
+/api/auth/callback           ✅ IMPLEMENTED - OAuth callback handler
 ```
 
-### App routes (protected)
+Note: `/login` is handled via WorkOS AuthKit redirect (not a dedicated route)
+
+### Protected routes (under `/_authenticated` layout)
+
+✅ **`/_authenticated` layout** - Checks auth via `beforeLoad`, redirects to WorkOS if not authenticated
 
 ```
-/app
-    /app/tenants
-    /app/tenants/:tenantId
-        /app/tenants/:tenantId
-        /app/tenants/:tenantId/domains
-        /app/tenants/:tenantId/auth
-        /app/tenants/:tenantId/content
-        /app/tenants/:tenantId/deploys
-        /app/tenants/:tenantId/members
-    /app/account
+/_authenticated/dashboard     ✅ IMPLEMENTED - Example protected page showing user info
+/_authenticated/tenants       (to be implemented)
+/_authenticated/tenants/:tenantId
+    /_authenticated/tenants/:tenantId/          (overview)
+    /_authenticated/tenants/:tenantId/domains
+    /_authenticated/tenants/:tenantId/auth
+    /_authenticated/tenants/:tenantId/content
+    /_authenticated/tenants/:tenantId/deploys
+    /_authenticated/tenants/:tenantId/members
+/_authenticated/account       (to be implemented)
 ```
+
+**Pattern**: All protected pages are children of `/_authenticated` route, which handles authentication check in `beforeLoad` hook.
 
 ### API routes
 
 ```
-/api/me
-/api/tenants                  (GET, POST)
-/api/tenants/:tenantId        (GET, PATCH, DELETE)
+/api/auth/callback           ✅ IMPLEMENTED - WorkOS OAuth callback
+/api/me                       (to be implemented)
+/api/tenants                  (GET, POST) - to be implemented
+/api/tenants/:tenantId        (GET, PATCH, DELETE) - to be implemented
 /api/tenants/:tenantId/publish
 /api/tenants/:tenantId/domains
 /api/tenants/:tenantId/memberships
@@ -283,19 +297,90 @@ Edge worker reads this instantly on next request.
 
 # 11. **Session + Auth Implementation**
 
-* Use secure, HTTP-only cookie for session.
-* Store:
+✅ **IMPLEMENTED** - Phase 2 Complete
 
-  ```
-  user_id
-  email
-  memberships? (optional optimization)
-  ```
-* For CP API calls: decode cookie → determine user.
-* For edge worker:
+### Architecture ([src/authkit/](src/authkit/))
 
-  * either decode JWT locally
-  * or call `/api/auth/authorize-site?tenantId=X` (fast path)
+**Session Management:**
+* Secure, HTTP-only cookies with 400-day expiration
+* Encrypted session data using base64 encoding (can be enhanced with AES)
+* Cookie name: `wos-session`
+* Stores encrypted JSON containing:
+  ```json
+  {
+    "accessToken": "...",
+    "refreshToken": "...",
+    "user": { WorkOS User object },
+    "impersonator": { optional }
+  }
+  ```
+
+**Directory Structure:**
+```
+src/authkit/
+├── ssr/
+│   ├── config.ts          - Configuration with env vars
+│   ├── interfaces.ts      - TypeScript types
+│   ├── session.ts         - Session encryption, JWT verification, token refresh
+│   ├── utils.ts           - Helper utilities
+│   └── workos.ts          - WorkOS client instance
+└── serverFunctions.ts     - TanStack Start server functions
+```
+
+**Server Functions** (src/authkit/serverFunctions.ts):
+* `getAuth()` - Get current user, upsert to database
+* `getSignInUrl()` - Generate WorkOS sign-in URL with return path
+* `getSignUpUrl()` - Generate WorkOS sign-up URL
+* `signOut()` - Terminate session, get logout URL
+
+**Session Operations** (src/authkit/ssr/session.ts):
+* `encryptSession()` / `decryptSession()` - Session encryption
+* `saveSession()` - Save to HTTP-only cookie
+* `getSessionFromCookie()` - Retrieve and decrypt
+* `deleteSessionCookie()` - Clear session
+* `verifyAccessToken()` - Verify JWT against WorkOS JWKS using `jose`
+* `updateSession()` - Check validity, auto-refresh if expired
+* `withAuth()` - Get authenticated user with token refresh
+* `getAuthorizationUrl()` - Generate WorkOS auth URLs
+* `terminateSession()` - Logout flow
+
+**Authentication Flow:**
+1. User clicks "Sign In" → redirect to WorkOS AuthKit UI
+2. User authenticates (email/password, SSO, etc.)
+3. WorkOS redirects to `/api/auth/callback?code=...&state=...`
+4. Callback exchanges code for `{ user, accessToken, refreshToken }`
+5. Session encrypted and saved to cookie
+6. User record upserted to database via `upsertUserByWorkOsId()`
+7. Redirect to original path or home
+
+**Protected Routes Pattern:**
+* `/_authenticated` layout checks auth in `beforeLoad` hook
+* Calls `getAuth()` server function
+* Redirects to WorkOS if not authenticated
+* Passes user context to child routes
+
+**For CP API calls:**
+* Server functions call `withAuth()` to get current user
+* Automatic token refresh if access token expired
+* User data includes database record + WorkOS user object
+
+**For edge worker** (to be implemented):
+* Either decode JWT locally using `jose`
+* Or call `/api/auth/authorize-site?tenantId=X` (fast path)
+
+**Environment Variables Required:**
+```bash
+WORKOS_CLIENT_ID          # WorkOS client identifier
+WORKOS_API_KEY            # WorkOS API key for server calls
+WORKOS_COOKIE_PASSWORD    # 32+ char password for cookie encryption
+WORKOS_REDIRECT_URI       # OAuth callback URL
+```
+
+**Cookie Password Generation:**
+```bash
+openssl rand -base64 24
+```
+Reference: [next-authkit-example](https://github.com/workos/next-authkit-example)
 
 ---
 
@@ -316,17 +401,24 @@ The LLM should generate or outline:
 
 ### **App Worker (Start)**:
 
-* Routing structure
-* Loaders / actions
+* Routing structure (TanStack Router file-based)
+* Loaders / actions (using `beforeLoad` and server functions)
 * Server-only helpers for D1/R2/KV
-* WorkOS login + callback flow
-* Session management
-* Tenant CRUD
-* Membership CRUD
-* Domain CRUD
-* Content upload + GitHub sync
-* Publish-to-KV utility
-* `/api/tenants/by-host` implementation
+* ✅ **WorkOS login + callback flow** - IMPLEMENTED
+  * Server functions: `getSignInUrl()`, `getSignUpUrl()`, `signOut()`
+  * OAuth callback: `/api/auth/callback`
+  * Protected routes: `/_authenticated` layout
+* ✅ **Session management** - IMPLEMENTED
+  * HTTP-only encrypted cookies
+  * Automatic token refresh
+  * JWT verification with JWKS
+  * User upsert to database
+* Tenant CRUD (Phase 3+)
+* Membership CRUD (Phase 3+)
+* Domain CRUD (Phase 7)
+* Content upload + GitHub sync (Phase 5)
+* Publish-to-KV utility (Phase 4)
+* `/api/tenants/by-host` implementation (Phase 4)
 
 ### **Edge Worker**:
 
@@ -339,8 +431,15 @@ The LLM should generate or outline:
 
 ### **Database layer**:
 
-* D1 migrations
-* Query helpers (getTenant, getMembership, etc.)
+* ✅ **D1 migrations** - IMPLEMENTED (Phase 1)
+  * Migration: `drizzle/0001_cloudy_chat.sql`
+  * Tables: users, tenants, tenant_domains, tenant_memberships
+* ✅ **Query helpers** - IMPLEMENTED (Phase 1)
+  * User queries: `getUser()`, `getUserByWorkOsId()`, `createUser()`, `upsertUserByWorkOsId()`
+  * Tenant queries: `getTenant()`, `getTenantBySlug()`, `getTenantByDomain()`, `createTenant()`, `updateTenant()`
+  * Domain queries: `getTenantDomains()`, `addTenantDomain()`, `removeTenantDomain()`
+  * Membership queries: `getTenantMemberships()`, `getUserRoleInTenant()`, `addTenantMembership()`
+  * Authorization helpers: `userCanAccessTenant()`, `userIsAdminOfTenant()`
 
 ### **Front-end**:
 
@@ -370,7 +469,120 @@ The LLM should generate or outline:
 
 ---
 
-# 14. **Final Instruction to the LLM**
+# 14. **Development Environment Setup**
+
+### Required Environment Variables
+
+Create a `.env.local` file with:
+
+```bash
+# WorkOS Authentication
+WORKOS_CLIENT_ID=client_...              # From WorkOS dashboard
+WORKOS_API_KEY=sk_test_...               # From WorkOS dashboard API keys
+WORKOS_COOKIE_PASSWORD=...               # Generate with: openssl rand -base64 24
+WORKOS_REDIRECT_URI=http://localhost:3000/api/auth/callback
+
+# Legacy (for client-side WorkOS provider - may be removed)
+VITE_WORKOS_CLIENT_ID=client_...
+VITE_WORKOS_API_HOSTNAME=api.workos.com
+
+# Database
+DATABASE_URL="dev.db"                    # SQLite for development
+
+# Sentry (optional)
+VITE_SENTRY_DSN=...
+VITE_SENTRY_ORG=...
+VITE_SENTRY_PROJECT=...
+SENTRY_AUTH_TOKEN=...
+```
+
+### WorkOS Dashboard Configuration
+
+1. **Sign up** at [WorkOS Dashboard](https://dashboard.workos.com/)
+2. **Create a new project** or select existing
+3. **Navigate to AuthKit** section
+4. **Add Redirect URI**: `http://localhost:3000/api/auth/callback`
+5. **Set App Homepage URL**: `http://localhost:3000`
+6. **Copy credentials**:
+   - Client ID from AuthKit settings
+   - API Key from API Keys tab
+7. **Complete AuthKit setup wizard**
+
+### Cookie Password Generation
+
+The `WORKOS_COOKIE_PASSWORD` must be **32+ characters** for secure session encryption:
+
+```bash
+openssl rand -base64 24
+```
+
+This password encrypts the session cookie containing the refresh token and user data.
+
+**Reference**: [WorkOS Next.js AuthKit Example](https://github.com/workos/next-authkit-example)
+
+### Installation & Running
+
+```bash
+# Install dependencies
+pnpm install
+
+# Generate database types
+pnpm db:generate
+
+# Run migrations
+pnpm db:migrate
+
+# Start development server
+pnpm dev
+
+# Open Drizzle Studio (database GUI)
+pnpm db:studio
+```
+
+### Development Database
+
+- **Development**: SQLite (`dev.db`)
+- **Production**: Cloudflare D1
+- Drizzle ORM handles both environments seamlessly
+
+---
+
+# 15. **Implementation Progress**
+
+See [development_log.md](development_log.md) for detailed implementation notes.
+
+### ✅ Phase 1: Database Foundation (Nov 14, 2024)
+- Multi-tenant database schema created
+- Drizzle migrations generated and applied
+- Query helpers for all entities
+- Authorization helpers implemented
+
+### ✅ Phase 2: Authentication Flow (Nov 15, 2024)
+- WorkOS AuthKit server-side integration
+- Session management with encrypted cookies
+- OAuth callback handler
+- Protected route middleware (`/_authenticated`)
+- Sign-in/sign-out functionality
+- Database user persistence
+- Server functions: `getAuth()`, `getSignInUrl()`, `signOut()`
+
+### 🔄 Phase 3: Dashboard Routes (In Progress)
+- Tenant selection/switching UI
+- Tenant dashboard
+- Tenant creation workflow
+- Tenant settings page
+
+### ⏳ Phase 4: Control Plane API (Not Started)
+### ⏳ Phase 5: Content Management (Not Started)
+### ⏳ Phase 6: Edge Worker (Not Started)
+### ⏳ Phase 7: Domain Management (Not Started)
+### ⏳ Phase 8: Production Cloudflare Setup (Not Started)
+
+---
+
+# 16. **Final Instruction to the LLM**
 
 Using the full specification above, build the entire application (or complete it step-by-step if requested).
 Follow all architectural decisions exactly as stated: **Cloudflare Workers + D1 + R2 + KV + TanStack Start + WorkOS + React + Tailwind + Radix UI**. Use the multi-tenant model and APIs exactly as described.
+
+**For implemented features (marked with ✅)**: Refer to the actual implementation in the codebase and build upon those patterns. The [development_log.md](development_log.md) contains detailed notes about implementation decisions and architecture choices.
