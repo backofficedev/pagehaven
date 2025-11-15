@@ -1,0 +1,26 @@
+{
+  "projectName": "pagehaven",
+  "mode": "file-router",
+  "typescript": true,
+  "tailwind": true,
+  "packageManager": "pnpm",
+  "addOnOptions": {
+    "drizzle": {
+      "database": "sqlite"
+    }
+  },
+  "git": true,
+  "version": 1,
+  "framework": "react-cra",
+  "chosenAddOns": [
+    "biome",
+    "cloudflare",
+    "start",
+    "workos",
+    "compiler",
+    "tanstack-query",
+    "shadcn",
+    "sentry",
+    "drizzle"
+  ]
+}
