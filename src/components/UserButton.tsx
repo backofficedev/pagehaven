@@ -45,7 +45,7 @@ export function UserButton({ user, signInUrl }: UserButtonProps) {
 				<DropdownMenu.Trigger asChild>
 					<button
 						type="button"
-						className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+						className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:ring-2 hover:ring-blue-400 hover:ring-offset-2 transition-shadow"
 						aria-label="User menu"
 					>
 						<Avatar.Root className="inline-flex h-9 w-9 select-none items-center justify-center overflow-hidden rounded-full bg-blue-600 align-middle">
