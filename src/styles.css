@@ -136,3 +136,33 @@ code {
     @apply bg-background text-foreground;
   }
 }
+
+/* Ensure WorkOS widget modals appear above the parent UserProfileModal */
+/* WorkOS widgets use Radix UI Dialog internally, so we target nested dialogs */
+/* Use a very aggressive selector to catch all Radix dialogs except our modal */
+/* This ensures WorkOS widget modals always appear on top */
+
+/* Target all Radix dialog overlays that are NOT our UserProfileModal */
+[data-radix-dialog-overlay]:not(.user-profile-modal-overlay) {
+  z-index: 200 !important;
+}
+
+/* Target all Radix dialog contents that are NOT our UserProfileModal */
+[data-radix-dialog-content]:not(.user-profile-modal-content) {
+  z-index: 210 !important;
+}
+
+/* More specific: when UserProfileModal is open, ensure any other dialogs are above it */
+.user-profile-modal-overlay[data-state="open"] ~ [data-radix-dialog-overlay],
+.user-profile-modal-content[data-state="open"] ~ [data-radix-dialog-content] {
+  z-index: 200 !important;
+}
+
+/* Target dialogs that appear after our modal in the DOM */
+body > [data-radix-dialog-overlay]:not(.user-profile-modal-overlay) {
+  z-index: 200 !important;
+}
+
+body > [data-radix-dialog-content]:not(.user-profile-modal-content) {
+  z-index: 210 !important;
+}
