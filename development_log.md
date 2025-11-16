@@ -271,6 +271,102 @@ Ready for Phase 3: Dashboard Routes
 
 ---
 
+## Phase 2.5: WorkOS Widgets Integration
+
+**Status**: ✅ Completed (Nov 15, 2024)
+
+### Goals
+- [x] Migrate from simple SignInButton to WorkOS Widgets
+- [x] Create a Clerk-like user button with avatar and dropdown menu
+- [x] Integrate WorkOS UserProfile widget
+- [x] Improve overall UX with better UI components
+
+### Changes Made
+
+#### 1. Dependencies Installed
+```bash
+pnpm add @workos-inc/widgets @radix-ui/themes @radix-ui/react-dropdown-menu @radix-ui/react-avatar @radix-ui/react-dialog
+```
+
+**New packages:**
+- `@workos-inc/widgets@1.5.0` - WorkOS widget components (UserProfile, etc.)
+- `@radix-ui/themes@3.2.1` - Required peer dependency for widgets
+- `@radix-ui/react-dropdown-menu@2.1.16` - Dropdown menu primitives
+- `@radix-ui/react-avatar@1.1.11` - Avatar component
+- `@radix-ui/react-dialog@1.1.15` - Dialog/modal primitives
+
+#### 2. Created New Components
+
+**UserButton Component** ([src/components/UserButton.tsx](src/components/UserButton.tsx)):
+- Displays user avatar with initials in top-right corner (similar to Clerk's `<UserButton />`)
+- Radix UI DropdownMenu that opens on click
+- Menu contains:
+  - User name/email header
+  - "Manage Profile" option (opens UserProfile widget modal)
+  - "Sign Out" link
+- Shows "Sign In" button when user is not authenticated
+- Replaces previous SignInButton component
+
+**UserProfileModal Component** ([src/components/UserProfileModal.tsx](src/components/UserProfileModal.tsx)):
+- Radix Dialog containing WorkOS `<UserProfile />` widget
+- Modal displays when user clicks "Manage Profile" in UserButton dropdown
+- Wrapped in `<WorkOsWidgets>` provider with access token from `useAuth()`
+- Allows users to view and edit their display name
+
+#### 3. Updated Root Layout ([src/routes/__root.tsx](src/routes/__root.tsx))
+
+**Imports added:**
+- `import { Theme } from '@radix-ui/themes'` - Radix Theme provider
+- `import '@radix-ui/themes/styles.css'` - Radix Themes base styles
+- `import '@workos-inc/widgets/base.css'` - WorkOS Widgets base styles
+- Replaced `SignInButton` import with `UserButton`
+
+**Layout changes:**
+- Wrapped app in `<Theme>` component for Radix Themes support
+- Replaced `<SignInButton />` with `<UserButton />` in header
+- Theme provider sits inside WorkOSProvider
+
+#### 4. CSS Import Resolution
+- Initially struggled with CSS import path
+- Solution: Used package.json exports mapping - `@workos-inc/widgets/base.css` resolves to `dist/css/base.css`
+- Package defines `./*.css` export that maps to `./dist/css/*.css`
+
+### Architecture Decisions
+
+**Hybrid Approach:**
+- Server-side auth remains unchanged (WorkOS SDK + session management)
+- Client-side UI uses WorkOS widgets for profile management
+- Best of both worlds: secure server auth + rich client UI
+
+**Component Structure:**
+- UserButton acts as trigger (avatar + dropdown)
+- UserProfileModal contains the actual widget
+- Separation allows modal to be opened from multiple places if needed
+
+**Why Not Full AuthKit React?**
+- Keeping existing server-side auth flow (already working)
+- Adding widgets only for UI enhancement
+- Allows gradual migration to more widgets later (OrganizationSwitcher, etc.)
+
+### Testing Performed
+- [x] Dev server starts successfully
+- [x] Site loads at http://localhost:3000/
+- [x] User button displays correctly with avatar initials
+- [x] Dropdown menu opens/closes properly
+- [x] Sign out flow works
+- [x] CORS configured in WorkOS dashboard for http://localhost:3000
+
+### Known Issues / Notes
+- Node.js version warning (20.18.0 vs 20.19+ required) - Not blocking
+- UserProfile widget ready to test (CORS now configured)
+
+### Next Actions
+1. ~~Add `http://localhost:3000` to WorkOS dashboard CORS settings~~ ✅ Completed
+2. Test UserProfile widget functionality in browser
+3. Consider adding OrganizationSwitcher widget for tenant switching later
+
+---
+
 ## Phase 3: Dashboard Routes
 
 **Status**: ⏳ Not Started
