@@ -49,6 +49,11 @@ export function UserButton({ user, signInUrl }: UserButtonProps) {
 						aria-label="User menu"
 					>
 						<Avatar.Root className="inline-flex h-9 w-9 select-none items-center justify-center overflow-hidden rounded-full bg-blue-600 align-middle">
+							<Avatar.Image
+								src={user.workosUser?.profilePictureUrl ?? undefined}
+								alt={user.name || user.email}
+								className="h-full w-full object-cover"
+							/>
 							<Avatar.Fallback className="text-sm font-medium text-white leading-none flex items-center justify-center w-full h-full">
 								{initials}
 							</Avatar.Fallback>
