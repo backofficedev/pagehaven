@@ -10,6 +10,7 @@ export const getSignInUrl = createServerFn({ method: "GET" }).handler(
 		return getAuthorizationUrl({
 			returnPathname: data?.returnPathname,
 			screenHint: "sign-in",
+			forceAccountSelection: true,
 		});
 	},
 );

@@ -212,6 +212,7 @@ export function getAuthorizationUrl(options?: {
 	returnPathname?: string;
 	screenHint?: "sign-in" | "sign-up";
 	redirectUri?: string;
+	forceAccountSelection?: boolean;
 }): string {
 	const workos = getWorkOS();
 	const clientId = getConfig<string>("clientId");
@@ -231,13 +232,24 @@ export function getAuthorizationUrl(options?: {
 			).toString("base64")
 		: undefined;
 
-	const authorizationUrl = workos.userManagement.getAuthorizationUrl({
-		provider: "authkit",
+	const params: Record<string, unknown> = {
+		provider: "authkit" as const,
 		clientId,
 		redirectUri,
 		state,
 		screenHint: options?.screenHint,
-	});
+	};
+
+	// Pass prompt=select_account to the OAuth provider (Google, etc) via provider_query_params
+	if (options?.forceAccountSelection) {
+		params.provider_query_params = {
+			prompt: "select_account",
+		};
+	}
+
+	log("Authorization URL params:", params);
+
+	const authorizationUrl = workos.userManagement.getAuthorizationUrl(params);
 
 	log("Generated authorization URL:", authorizationUrl);
 	return authorizationUrl;
