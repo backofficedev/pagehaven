@@ -1,6 +1,6 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { UserProfile, WorkOsWidgets } from "@workos-inc/widgets";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { getAccessToken } from "../authkit/serverFunctions";
 
 interface UserProfileModalProps {
@@ -12,6 +12,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
 	const [accessToken, setAccessToken] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const observerRef = useRef<MutationObserver | null>(null);
+	const descriptionId = useId();
 
 	useEffect(() => {
 		if (isOpen) {
@@ -45,34 +46,34 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
 		const fixWorkOSModalZIndex = () => {
 			// Find all Radix dialog overlays that are NOT our UserProfileModal
 			const radixOverlays = document.querySelectorAll<HTMLElement>(
-				'[data-radix-dialog-overlay]:not(.user-profile-modal-overlay)'
+				"[data-radix-dialog-overlay]:not(.user-profile-modal-overlay)",
 			);
 			const radixContents = document.querySelectorAll<HTMLElement>(
-				'[data-radix-dialog-content]:not(.user-profile-modal-content)'
+				"[data-radix-dialog-content]:not(.user-profile-modal-content)",
 			);
 
 			// Also find any fixed positioned elements that might be modals
 			// (WorkOS might use different modal structure)
-			const allFixedElements = Array.from(document.querySelectorAll<HTMLElement>('*')).filter(
-				(el) => {
-					const style = window.getComputedStyle(el);
-					return (
-						style.position === 'fixed' &&
-						!el.classList.contains('user-profile-modal-overlay') &&
-						!el.classList.contains('user-profile-modal-content') &&
-						el !== document.body &&
-						!el.closest('.user-profile-modal-content')
-					);
-				}
-			);
+			const allFixedElements = Array.from(
+				document.querySelectorAll<HTMLElement>("*"),
+			).filter((el) => {
+				const style = window.getComputedStyle(el);
+				return (
+					style.position === "fixed" &&
+					!el.classList.contains("user-profile-modal-overlay") &&
+					!el.classList.contains("user-profile-modal-content") &&
+					el !== document.body &&
+					!el.closest(".user-profile-modal-content")
+				);
+			});
 
 			// Fix Radix dialog overlays and contents
 			radixOverlays.forEach((overlay) => {
-				overlay.style.zIndex = '200';
+				overlay.style.zIndex = "200";
 			});
 
 			radixContents.forEach((content) => {
-				content.style.zIndex = '210';
+				content.style.zIndex = "210";
 			});
 
 			// For other fixed positioned elements, check if they look like modals
@@ -81,9 +82,10 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
 				const rect = el.getBoundingClientRect();
 				// If it covers a significant portion of the screen, it might be a modal
 				if (rect.width > 200 && rect.height > 200) {
-					const currentZ = parseInt(window.getComputedStyle(el).zIndex) || 0;
+					const currentZ =
+						parseInt(window.getComputedStyle(el).zIndex, 10) || 0;
 					if (currentZ < 200) {
-						el.style.zIndex = '200';
+						el.style.zIndex = "200";
 					}
 				}
 			});
@@ -99,7 +101,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
 			childList: true,
 			subtree: true,
 			attributes: true,
-			attributeFilter: ['data-state', 'class'],
+			attributeFilter: ["data-state", "class"],
 		});
 
 		// Initial fix
@@ -123,12 +125,12 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
 				<Dialog.Overlay className="user-profile-modal-overlay bg-black/50 data-[state=open]:animate-overlayShow fixed inset-0 z-[100]" />
 				<Dialog.Content
 					className="user-profile-modal-content data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[600px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg focus:outline-none z-[110] overflow-y-auto"
-					aria-describedby="profile-description"
+					aria-describedby={descriptionId}
 				>
 					<Dialog.Title className="text-xl font-semibold text-gray-900 mb-4">
 						Profile Settings
 					</Dialog.Title>
-					<Dialog.Description id="profile-description" className="sr-only">
+					<Dialog.Description id={descriptionId} className="sr-only">
 						Manage your profile settings and account information
 					</Dialog.Description>
 

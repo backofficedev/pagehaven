@@ -17,8 +17,11 @@ export const Route = createFileRoute("/logout")({
 				const eqPos = cookie.indexOf("=");
 				const name = eqPos > -1 ? cookie.slice(0, eqPos).trim() : cookie.trim();
 				// Delete cookie for all possible paths and domains
+				// biome-ignore lint/suspicious/noDocumentCookie: Required for logout flow to clear all cookies
 				document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+				// biome-ignore lint/suspicious/noDocumentCookie: Required for logout flow to clear all cookies
 				document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
+				// biome-ignore lint/suspicious/noDocumentCookie: Required for logout flow to clear all cookies
 				document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`;
 			}
 		}
