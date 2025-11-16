@@ -1,7 +1,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { useAuth } from "@workos-inc/authkit-react";
 import { UserProfile, WorkOsWidgets } from "@workos-inc/widgets";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { getAccessToken } from "../authkit/serverFunctions";
 
 interface UserProfileModalProps {
 	isOpen: boolean;
@@ -9,39 +9,55 @@ interface UserProfileModalProps {
 }
 
 export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
-	const { getAccessToken } = useAuth();
 	const [accessToken, setAccessToken] = useState<string | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
-		// Only try to get access token on the client side
-		if (typeof window !== "undefined" && isOpen) {
-			try {
-				const token = getAccessToken();
-				if (token) {
-					setAccessToken(token);
-				}
-			} catch (error) {
-				console.error("Failed to get access token:", error);
-			}
+		if (isOpen) {
+			setIsLoading(true);
+			getAccessToken()
+				.then((result) => {
+					if (result.accessToken) {
+						setAccessToken(result.accessToken);
+					}
+				})
+				.catch((error) => {
+					console.error("Failed to get access token:", error);
+				})
+				.finally(() => {
+					setIsLoading(false);
+				});
 		}
-	}, [isOpen, getAccessToken]);
+	}, [isOpen]);
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={onClose}>
 			<Dialog.Portal>
 				<Dialog.Overlay className="bg-black/50 data-[state=open]:animate-overlayShow fixed inset-0 z-40" />
-				<Dialog.Content className="data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[600px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg focus:outline-none z-50 overflow-y-auto">
+				<Dialog.Content
+					className="data-[state=open]:animate-contentShow fixed top-[50%] left-[50%] max-h-[85vh] w-[90vw] max-w-[600px] translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg focus:outline-none z-50 overflow-y-auto"
+					aria-describedby="profile-description"
+				>
 					<Dialog.Title className="text-xl font-semibold text-gray-900 mb-4">
 						Profile Settings
 					</Dialog.Title>
+					<Dialog.Description id="profile-description" className="sr-only">
+						Manage your profile settings and account information
+					</Dialog.Description>
 
-					{accessToken ? (
+					{isLoading ? (
+						<div className="flex items-center justify-center py-8">
+							<p className="text-gray-500">Loading profile...</p>
+						</div>
+					) : accessToken ? (
 						<WorkOsWidgets>
-							<UserProfile authToken={accessToken} />
+							<UserProfile authToken={() => Promise.resolve(accessToken)} />
 						</WorkOsWidgets>
 					) : (
 						<div className="flex items-center justify-center py-8">
-							<p className="text-gray-500">Loading profile...</p>
+							<p className="text-red-500">
+								Failed to load profile. Please try again.
+							</p>
 						</div>
 					)}
 

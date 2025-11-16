@@ -66,3 +66,20 @@ export const getAuth = createServerFn({ method: "GET" }).handler(async () => {
 });
 
 export type AuthUser = Awaited<ReturnType<typeof getAuth>>["user"];
+
+/**
+ * Gets the access token for the current session
+ */
+export const getAccessToken = createServerFn({ method: "GET" }).handler(
+	async () => {
+		const authResult = await withAuth();
+
+		if (!authResult) {
+			return { accessToken: null };
+		}
+
+		return {
+			accessToken: authResult.accessToken,
+		};
+	},
+);
