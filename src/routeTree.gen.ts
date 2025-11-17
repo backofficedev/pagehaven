@@ -16,16 +16,22 @@ import { Route as DemoWorkosRouteImport } from './routes/demo/workos'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
 import { Route as DemoDrizzleRouteImport } from './routes/demo/drizzle'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedTenantsIndexRouteImport } from './routes/_authenticated/tenants/index'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.server-funcs'
 import { Route as DemoStartApiRequestRouteImport } from './routes/demo/start.api-request'
 import { Route as DemoSentryTestingRouteImport } from './routes/demo/sentry.testing'
 import { Route as DemoApiTqTodosRouteImport } from './routes/demo/api.tq-todos'
 import { Route as DemoApiNamesRouteImport } from './routes/demo/api.names'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
+import { Route as AuthenticatedTenantsTenantIdRouteImport } from './routes/_authenticated/tenants/$tenantId'
 import { Route as DemoStartSsrIndexRouteImport } from './routes/demo/start.ssr.index'
+import { Route as AuthenticatedTenantsTenantIdIndexRouteImport } from './routes/_authenticated/tenants/$tenantId/index'
 import { Route as DemoStartSsrSpaModeRouteImport } from './routes/demo/start.ssr.spa-mode'
 import { Route as DemoStartSsrFullSsrRouteImport } from './routes/demo/start.ssr.full-ssr'
 import { Route as DemoStartSsrDataOnlyRouteImport } from './routes/demo/start.ssr.data-only'
+import { Route as AuthenticatedTenantsTenantIdSettingsRouteImport } from './routes/_authenticated/tenants/$tenantId/settings'
+import { Route as AuthenticatedTenantsTenantIdMembersRouteImport } from './routes/_authenticated/tenants/$tenantId/members'
+import { Route as AuthenticatedTenantsTenantIdDomainsRouteImport } from './routes/_authenticated/tenants/$tenantId/domains'
 
 const LogoutRoute = LogoutRouteImport.update({
   id: '/logout',
@@ -61,6 +67,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedTenantsIndexRoute =
+  AuthenticatedTenantsIndexRouteImport.update({
+    id: '/tenants/',
+    path: '/tenants/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const DemoStartServerFuncsRoute = DemoStartServerFuncsRouteImport.update({
   id: '/demo/start/server-funcs',
   path: '/demo/start/server-funcs',
@@ -91,11 +103,23 @@ const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
   path: '/api/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedTenantsTenantIdRoute =
+  AuthenticatedTenantsTenantIdRouteImport.update({
+    id: '/tenants/$tenantId',
+    path: '/tenants/$tenantId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const DemoStartSsrIndexRoute = DemoStartSsrIndexRouteImport.update({
   id: '/demo/start/ssr/',
   path: '/demo/start/ssr/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedTenantsTenantIdIndexRoute =
+  AuthenticatedTenantsTenantIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedTenantsTenantIdRoute,
+  } as any)
 const DemoStartSsrSpaModeRoute = DemoStartSsrSpaModeRouteImport.update({
   id: '/demo/start/ssr/spa-mode',
   path: '/demo/start/ssr/spa-mode',
@@ -111,6 +135,24 @@ const DemoStartSsrDataOnlyRoute = DemoStartSsrDataOnlyRouteImport.update({
   path: '/demo/start/ssr/data-only',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedTenantsTenantIdSettingsRoute =
+  AuthenticatedTenantsTenantIdSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedTenantsTenantIdRoute,
+  } as any)
+const AuthenticatedTenantsTenantIdMembersRoute =
+  AuthenticatedTenantsTenantIdMembersRouteImport.update({
+    id: '/members',
+    path: '/members',
+    getParentRoute: () => AuthenticatedTenantsTenantIdRoute,
+  } as any)
+const AuthenticatedTenantsTenantIdDomainsRoute =
+  AuthenticatedTenantsTenantIdDomainsRouteImport.update({
+    id: '/domains',
+    path: '/domains',
+    getParentRoute: () => AuthenticatedTenantsTenantIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -119,15 +161,21 @@ export interface FileRoutesByFullPath {
   '/demo/drizzle': typeof DemoDrizzleRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/workos': typeof DemoWorkosRoute
+  '/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRouteWithChildren
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
   '/demo/sentry/testing': typeof DemoSentryTestingRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/tenants': typeof AuthenticatedTenantsIndexRoute
+  '/tenants/$tenantId/domains': typeof AuthenticatedTenantsTenantIdDomainsRoute
+  '/tenants/$tenantId/members': typeof AuthenticatedTenantsTenantIdMembersRoute
+  '/tenants/$tenantId/settings': typeof AuthenticatedTenantsTenantIdSettingsRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
+  '/tenants/$tenantId/': typeof AuthenticatedTenantsTenantIdIndexRoute
   '/demo/start/ssr': typeof DemoStartSsrIndexRoute
 }
 export interface FileRoutesByTo {
@@ -143,9 +191,14 @@ export interface FileRoutesByTo {
   '/demo/sentry/testing': typeof DemoSentryTestingRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/tenants': typeof AuthenticatedTenantsIndexRoute
+  '/tenants/$tenantId/domains': typeof AuthenticatedTenantsTenantIdDomainsRoute
+  '/tenants/$tenantId/members': typeof AuthenticatedTenantsTenantIdMembersRoute
+  '/tenants/$tenantId/settings': typeof AuthenticatedTenantsTenantIdSettingsRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
+  '/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdIndexRoute
   '/demo/start/ssr': typeof DemoStartSsrIndexRoute
 }
 export interface FileRoutesById {
@@ -157,15 +210,21 @@ export interface FileRoutesById {
   '/demo/drizzle': typeof DemoDrizzleRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/workos': typeof DemoWorkosRoute
+  '/_authenticated/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRouteWithChildren
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
   '/demo/sentry/testing': typeof DemoSentryTestingRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/_authenticated/tenants/': typeof AuthenticatedTenantsIndexRoute
+  '/_authenticated/tenants/$tenantId/domains': typeof AuthenticatedTenantsTenantIdDomainsRoute
+  '/_authenticated/tenants/$tenantId/members': typeof AuthenticatedTenantsTenantIdMembersRoute
+  '/_authenticated/tenants/$tenantId/settings': typeof AuthenticatedTenantsTenantIdSettingsRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
+  '/_authenticated/tenants/$tenantId/': typeof AuthenticatedTenantsTenantIdIndexRoute
   '/demo/start/ssr/': typeof DemoStartSsrIndexRoute
 }
 export interface FileRouteTypes {
@@ -177,15 +236,21 @@ export interface FileRouteTypes {
     | '/demo/drizzle'
     | '/demo/tanstack-query'
     | '/demo/workos'
+    | '/tenants/$tenantId'
     | '/api/auth/callback'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
     | '/demo/sentry/testing'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
+    | '/tenants'
+    | '/tenants/$tenantId/domains'
+    | '/tenants/$tenantId/members'
+    | '/tenants/$tenantId/settings'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
+    | '/tenants/$tenantId/'
     | '/demo/start/ssr'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -201,9 +266,14 @@ export interface FileRouteTypes {
     | '/demo/sentry/testing'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
+    | '/tenants'
+    | '/tenants/$tenantId/domains'
+    | '/tenants/$tenantId/members'
+    | '/tenants/$tenantId/settings'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
+    | '/tenants/$tenantId'
     | '/demo/start/ssr'
   id:
     | '__root__'
@@ -214,15 +284,21 @@ export interface FileRouteTypes {
     | '/demo/drizzle'
     | '/demo/tanstack-query'
     | '/demo/workos'
+    | '/_authenticated/tenants/$tenantId'
     | '/api/auth/callback'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
     | '/demo/sentry/testing'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
+    | '/_authenticated/tenants/'
+    | '/_authenticated/tenants/$tenantId/domains'
+    | '/_authenticated/tenants/$tenantId/members'
+    | '/_authenticated/tenants/$tenantId/settings'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
+    | '/_authenticated/tenants/$tenantId/'
     | '/demo/start/ssr/'
   fileRoutesById: FileRoutesById
 }
@@ -296,6 +372,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/tenants/': {
+      id: '/_authenticated/tenants/'
+      path: '/tenants'
+      fullPath: '/tenants'
+      preLoaderRoute: typeof AuthenticatedTenantsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/demo/start/server-funcs': {
       id: '/demo/start/server-funcs'
       path: '/demo/start/server-funcs'
@@ -338,12 +421,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/tenants/$tenantId': {
+      id: '/_authenticated/tenants/$tenantId'
+      path: '/tenants/$tenantId'
+      fullPath: '/tenants/$tenantId'
+      preLoaderRoute: typeof AuthenticatedTenantsTenantIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/demo/start/ssr/': {
       id: '/demo/start/ssr/'
       path: '/demo/start/ssr'
       fullPath: '/demo/start/ssr'
       preLoaderRoute: typeof DemoStartSsrIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/tenants/$tenantId/': {
+      id: '/_authenticated/tenants/$tenantId/'
+      path: '/'
+      fullPath: '/tenants/$tenantId/'
+      preLoaderRoute: typeof AuthenticatedTenantsTenantIdIndexRouteImport
+      parentRoute: typeof AuthenticatedTenantsTenantIdRoute
     }
     '/demo/start/ssr/spa-mode': {
       id: '/demo/start/ssr/spa-mode'
@@ -366,15 +463,65 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoStartSsrDataOnlyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/tenants/$tenantId/settings': {
+      id: '/_authenticated/tenants/$tenantId/settings'
+      path: '/settings'
+      fullPath: '/tenants/$tenantId/settings'
+      preLoaderRoute: typeof AuthenticatedTenantsTenantIdSettingsRouteImport
+      parentRoute: typeof AuthenticatedTenantsTenantIdRoute
+    }
+    '/_authenticated/tenants/$tenantId/members': {
+      id: '/_authenticated/tenants/$tenantId/members'
+      path: '/members'
+      fullPath: '/tenants/$tenantId/members'
+      preLoaderRoute: typeof AuthenticatedTenantsTenantIdMembersRouteImport
+      parentRoute: typeof AuthenticatedTenantsTenantIdRoute
+    }
+    '/_authenticated/tenants/$tenantId/domains': {
+      id: '/_authenticated/tenants/$tenantId/domains'
+      path: '/domains'
+      fullPath: '/tenants/$tenantId/domains'
+      preLoaderRoute: typeof AuthenticatedTenantsTenantIdDomainsRouteImport
+      parentRoute: typeof AuthenticatedTenantsTenantIdRoute
+    }
   }
 }
 
+interface AuthenticatedTenantsTenantIdRouteChildren {
+  AuthenticatedTenantsTenantIdDomainsRoute: typeof AuthenticatedTenantsTenantIdDomainsRoute
+  AuthenticatedTenantsTenantIdMembersRoute: typeof AuthenticatedTenantsTenantIdMembersRoute
+  AuthenticatedTenantsTenantIdSettingsRoute: typeof AuthenticatedTenantsTenantIdSettingsRoute
+  AuthenticatedTenantsTenantIdIndexRoute: typeof AuthenticatedTenantsTenantIdIndexRoute
+}
+
+const AuthenticatedTenantsTenantIdRouteChildren: AuthenticatedTenantsTenantIdRouteChildren =
+  {
+    AuthenticatedTenantsTenantIdDomainsRoute:
+      AuthenticatedTenantsTenantIdDomainsRoute,
+    AuthenticatedTenantsTenantIdMembersRoute:
+      AuthenticatedTenantsTenantIdMembersRoute,
+    AuthenticatedTenantsTenantIdSettingsRoute:
+      AuthenticatedTenantsTenantIdSettingsRoute,
+    AuthenticatedTenantsTenantIdIndexRoute:
+      AuthenticatedTenantsTenantIdIndexRoute,
+  }
+
+const AuthenticatedTenantsTenantIdRouteWithChildren =
+  AuthenticatedTenantsTenantIdRoute._addFileChildren(
+    AuthenticatedTenantsTenantIdRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedTenantsTenantIdRoute: typeof AuthenticatedTenantsTenantIdRouteWithChildren
+  AuthenticatedTenantsIndexRoute: typeof AuthenticatedTenantsIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedTenantsTenantIdRoute:
+    AuthenticatedTenantsTenantIdRouteWithChildren,
+  AuthenticatedTenantsIndexRoute: AuthenticatedTenantsIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

@@ -9,6 +9,18 @@ pnpm install
 pnpm start
 ```
 
+## Development
+
+```bash
+pnpm dev
+```
+
+If a server is running in the background, you can kill it with:
+
+```bash
+lsof -ti:3000 | xargs kill -9
+```
+
 # Building For Production
 
 To build this application for production:

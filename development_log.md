@@ -369,7 +369,197 @@ pnpm add @workos-inc/widgets @radix-ui/themes @radix-ui/react-dropdown-menu @rad
 
 ## Phase 3: Dashboard Routes
 
-**Status**: ⏳ Not Started
+**Status**: ✅ Completed (Nov 16, 2024)
+
+### Goals
+- [x] Create tenant management dashboard using WorkOS widgets
+- [x] Implement tenant list/selection page
+- [x] Create tenant creation workflow with WorkOS organization sync
+- [x] Build tenant detail pages with navigation
+- [x] Integrate WorkOS OrganizationSwitcher widget
+- [x] Integrate WorkOS UsersManagement widget for member management
+- [x] Implement role-based authorization (admin vs viewer)
+
+### Key Architectural Decision: WorkOS Widget-First Approach
+
+**Mapping PageHaven Tenants to WorkOS Organizations:**
+- Each PageHaven "tenant" maps to a WorkOS Organization
+- `tenants.workos_org_id` stores the WorkOS organization ID
+- Tenant memberships sync with WorkOS organization memberships
+- Leverage WorkOS widgets for all user/org management UI
+
+This approach provides:
+- Enterprise-grade UI components out of the box
+- Automatic sync between our system and WorkOS
+- Built-in features like invitations, role management, and sessions
+- SSO-ready for future enterprise customers
+
+### Changes Made
+
+#### 1. Server Functions ([src/lib/tenant-functions.ts](src/lib/tenant-functions.ts))
+
+Created comprehensive tenant CRUD operations with WorkOS integration:
+
+**Tenant Creation (`createTenantFn`):**
+- Validates slug format (lowercase, alphanumeric, hyphens only)
+- Creates WorkOS organization via API
+- Creates tenant record in database with `workos_org_id`
+- Generates R2 storage prefix (`tenants/<id>/`)
+- Adds default domain (`<slug>.myapp.com`)
+- Adds creator as admin member
+
+**Tenant Queries:**
+- `getUserTenantsFn` - Get all tenants user has access to
+- `getTenantFn` - Get specific tenant with authorization check
+- `updateTenantFn` - Update tenant settings (admin only, syncs name to WorkOS)
+- `getTenantWorkOsOrgFn` - Get WorkOS organization for widget integration
+
+#### 2. Components
+
+**TenantSwitcher ([src/components/TenantSwitcher.tsx](src/components/TenantSwitcher.tsx)):**
+- Uses WorkOS `<OrganizationSwitcher />` widget
+- Provides `getAccessToken` and `switchToOrganization` from `useAuth()`
+- Includes custom child button for "Create New Tenant"
+- Opens CreateTenantModal when clicked
+
+**CreateTenantModal ([src/components/CreateTenantModal.tsx](src/components/CreateTenantModal.tsx)):**
+- Radix Dialog with tenant creation form
+- Fields: name, slug (auto-generated from name), auth mode
+- Client-side validation for slug format
+- Calls `createTenantFn` server function
+- Navigates to new tenant dashboard on success
+
+#### 3. Routes Structure
+
+**Tenant List ([src/routes/_authenticated/tenants/index.tsx](src/routes/_authenticated/tenants/index.tsx)):**
+- Displays all tenants user has access to
+- Shows tenant name, slug, role badge, auth mode, version
+- Empty state with instructions to create first tenant
+- Grid layout with cards linking to tenant dashboards
+
+**Tenant Layout ([src/routes/_authenticated/tenants/$tenantId.tsx](src/routes/_authenticated/tenants/$tenantId.tsx)):**
+- Loader fetches tenant and checks if user is admin
+- Header shows tenant name, slug, auth mode badge, admin badge
+- Navigation tabs: Overview, Members, Domains, Settings
+- Tabs filtered by role (some admin-only)
+- Provides `tenant` and `isAdmin` context to child routes
+
+**Tenant Overview ([src/routes/_authenticated/tenants/$tenantId/index.tsx](src/routes/_authenticated/tenants/$tenantId/index.tsx)):**
+- Stats cards: current version, active domains, R2 storage path
+- Deployment status (placeholder for Phase 5)
+- Primary domain with "Visit Site" link
+- Recent activity section (placeholder)
+
+**Tenant Members ([src/routes/_authenticated/tenants/$tenantId/members.tsx](src/routes/_authenticated/tenants/$tenantId/members.tsx)):**
+- **Uses WorkOS `<UsersManagement />` widget** (no custom UI needed!)
+- Admin-only page with access control
+- Widget handles invitations, role changes, member removal
+- Info panel explaining admin vs viewer roles
+
+**Tenant Settings ([src/routes/_authenticated/tenants/$tenantId/settings.tsx](src/routes/_authenticated/tenants/$tenantId/settings.tsx)):**
+- Edit tenant name (syncs to WorkOS organization)
+- Change auth mode (public vs WorkOS/private)
+- Slug is read-only (cannot be changed after creation)
+- Tenant information panel (IDs, dates, storage path)
+- Danger zone with delete tenant button (placeholder)
+
+**Tenant Domains ([src/routes/_authenticated/tenants/$tenantId/domains.tsx](src/routes/_authenticated/tenants/$tenantId/domains.tsx)):**
+- Lists active domains for tenant
+- Shows primary subdomain (`<slug>.myapp.com`)
+- Add custom domain button (placeholder for Phase 7)
+- Info panel noting full features coming in Phase 7
+
+#### 4. Root Layout Updates ([src/routes/__root.tsx](src/routes/__root.tsx))
+
+**Header Changes:**
+- Added `<TenantSwitcher />` component next to UserButton
+- Only shows when user is authenticated
+- Uses flex layout with gap for proper spacing
+
+### WorkOS Widgets Integration
+
+**Widgets Used:**
+1. **`<OrganizationSwitcher />`** - Tenant switching in header
+   - Allows users to switch between organizations they have access to
+   - Handles SSO/MFA reauthorization automatically
+   - Custom child component for creating new tenants
+
+2. **`<UsersManagement />`** - Member management page
+   - Full member invitation and management
+   - Role assignment (admin/viewer)
+   - Requires `widgets:users-table:manage` permission (admin only)
+
+**Widget Setup:**
+- Widgets wrapped in `<WorkOsWidgets>` provider
+- Authentication via `getAccessToken()` from `useAuth()` hook
+- CORS already configured for `http://localhost:3000`
+
+### Authorization Implementation
+
+**Role-Based Access Control:**
+- Admin: Full access to all tenant features
+- Viewer: Read-only access to tenant information
+
+**Protection Patterns:**
+- Server functions check `userIsAdminOfTenant()` before writes
+- Route loaders verify access via `getTenantMemberships()`
+- UI shows/hides admin features based on `isAdmin` context
+- Admin-only pages render access denied message for viewers
+
+### Testing Performed
+- [x] Dev server starts successfully on http://localhost:3000/
+- [x] Site builds without TypeScript errors
+- [x] Formatting and linting issues resolved
+- [x] All routes created and properly structured
+- [ ] Manual testing of tenant creation (ready for testing)
+- [ ] Manual testing of OrganizationSwitcher widget (ready for testing)
+- [ ] Manual testing of UsersManagement widget (ready for testing)
+
+### Bug Fixes (Nov 16)
+- **Fixed**: SSR crash when rendering TenantSwitcher - WorkOS widgets require client-side rendering only and cannot be rendered during SSR. Solution:
+  - Created `<ClientOnly />` wrapper component ([src/components/ClientOnly.tsx](src/components/ClientOnly.tsx)) using `useState` + `useEffect` pattern
+  - Component returns `fallback` during SSR/initial render
+  - After mount (`useEffect`), sets `hasMounted` state to true and renders children
+  - This ensures WorkOS widgets only render on the client after hydration
+  - Note: `React.lazy()` alone doesn't prevent SSR in TanStack Start
+
+- **Fixed**: Client-side `better-sqlite3` import error - Database module (`better-sqlite3`) was being bundled into client JavaScript, causing crashes. Solution:
+  - Moved all `db/queries` and `workos` imports inside server function handlers using dynamic imports (`await import(...)`)
+  - Applied fix to:
+    - [src/lib/tenant-functions.ts](src/lib/tenant-functions.ts) - All server functions now use dynamic imports
+    - [src/routes/_authenticated/tenants/$tenantId.tsx](src/routes/_authenticated/tenants/$tenantId.tsx) - Route loader
+    - [src/routes/_authenticated/tenants/$tenantId/index.tsx](src/routes/_authenticated/tenants/$tenantId/index.tsx) - Route loader
+    - [src/routes/_authenticated/tenants/$tenantId/domains.tsx](src/routes/_authenticated/tenants/$tenantId/domains.tsx) - Route loader
+  - This prevents server-only modules from being included in client bundles
+  - **Critical pattern**: In TanStack Start, always use `await import()` for server-only code within server functions and route loaders
+
+### Known Issues / Notes
+- Node.js version warning (20.18.0 vs 20.19+ required) - Not blocking
+- Tenant deletion not yet implemented (planned for future)
+- Domain management is placeholder (Phase 7)
+- Content management is placeholder (Phase 5)
+
+### Architecture Decisions
+
+**Why WorkOS Widgets for Everything?**
+1. **Less custom code** - WorkOS handles complex UI flows
+2. **Enterprise-ready** - Professional, tested components
+3. **Automatic sync** - Changes reflect in WorkOS immediately
+4. **SSO support** - Organizations can configure SSO via Admin Portal
+5. **Future-proof** - More widgets coming (domain verification, etc.)
+
+**Tenant-Organization Mapping:**
+- Keeps our multi-tenant architecture aligned with WorkOS
+- Enables use of WorkOS Admin Portal for SSO configuration
+- Allows enterprise customers to manage their own organization
+- Simplifies permission model (WorkOS roles map to our roles)
+
+### Next Steps
+Ready for Phase 4: Control Plane API
+- Build API endpoints for tenant operations
+- Implement R2 upload functionality
+- Create deployment workflow
+- Add publish to KV functionality
 
 ---
 
