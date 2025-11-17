@@ -16,9 +16,9 @@ function TenantsListPage() {
 		<div className="min-h-screen bg-gray-50 py-8">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="mb-8">
-					<h1 className="text-3xl font-bold text-gray-900">Your Tenants</h1>
+					<h1 className="text-3xl font-bold text-gray-900">Your Sites</h1>
 					<p className="text-gray-600 mt-2">
-						Manage your static site hosting tenants
+						Manage your static site hosting
 					</p>
 				</div>
 
@@ -31,7 +31,7 @@ function TenantsListPage() {
 							stroke="currentColor"
 							aria-hidden="true"
 						>
-							<title>No Tenants</title>
+							<title>No Sites</title>
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -40,15 +40,15 @@ function TenantsListPage() {
 							/>
 						</svg>
 						<h3 className="mt-4 text-lg font-medium text-gray-900">
-							No tenants yet
+							No sites yet
 						</h3>
 						<p className="mt-2 text-sm text-gray-500">
-							Get started by creating your first tenant to host static sites
+							Get started by creating your first site to host static content
 						</p>
 						<div className="mt-6">
 							<p className="text-sm text-gray-600">
-								Click the organization switcher in the top right and select
-								"Create New Tenant"
+								Click the site switcher in the top right and select
+								"Create New Site"
 							</p>
 						</div>
 					</div>

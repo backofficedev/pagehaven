@@ -1,8 +1,10 @@
 # PageHaven Development Log
 
-This file tracks the implementation progress of the PageHaven multi-tenant static-site hosting platform.
+This file tracks the implementation progress of the PageHaven multi-site static-site hosting platform.
 
 **Reference**: See [plan.md](plan.md) for complete specification.
+
+**Terminology Note**: The application uses "Sites" as the user-facing term for static site hosting instances. Each Site maps to a WorkOS Organization for membership management. Database tables still use "tenant" naming for backward compatibility.
 
 ---
 
@@ -44,7 +46,7 @@ This file tracks the implementation progress of the PageHaven multi-tenant stati
 **Status**: ✅ Completed (Nov 14, 2024)
 
 ### Goals
-- [x] Create multi-tenant database schema
+- [x] Create multi-site database schema
 - [x] Generate and apply migrations
 - [x] Create database query helpers
 - [x] Verify app continues to work
@@ -52,19 +54,20 @@ This file tracks the implementation progress of the PageHaven multi-tenant stati
 ### Changes Made
 
 #### 1. Updated Database Schema ([src/db/schema.ts](src/db/schema.ts))
-Added four new tables for multi-tenant architecture:
+Added four new tables for multi-site architecture:
 
 - **users** - User accounts with WorkOS integration
   - id, workosUserId, email, name, createdAt
 
-- **tenants** - Tenant/organization records
+- **tenants** (conceptually "sites") - Site records, each maps to a WorkOS Organization
   - id, slug, name, r2Prefix, authMode, workosOrgId, version, createdAt, updatedAt
 
-- **tenant_domains** - Domain mappings for tenants
+- **tenant_domains** (conceptually "site_domains") - Domain mappings for sites
   - id, tenantId, domain (includes both slug.myapp.com and custom domains)
 
-- **tenant_memberships** - User membership in tenants
+- **tenant_memberships** (conceptually "site_memberships") - User membership in sites
   - id, tenantId, userId, role (admin/viewer), status, createdAt
+  - Note: Membership is managed via WorkOS Organizations, local DB tracks roles
 
 Kept existing `todos` table for demo compatibility.
 
@@ -80,18 +83,18 @@ Comprehensive database query functions organized by domain:
 - `getUser(id)`, `getUserByWorkOsId(workosUserId)`, `getUserByEmail(email)`
 - `createUser(data)`, `upsertUserByWorkOsId(data)`
 
-**Tenant Queries:**
+**Site Queries** (function names still use "tenant" for backward compatibility):
 - `getTenant(id)`, `getTenantBySlug(slug)`, `getTenantByDomain(domain)`
 - `createTenant(data)`, `updateTenant(id, data)`
 - `incrementTenantVersion(id)` - for publish tracking
 
-**Tenant Domain Queries:**
+**Site Domain Queries:**
 - `getTenantDomains(tenantId)`, `addTenantDomain(tenantId, domain)`
 - `removeTenantDomain(id)`
 
-**Tenant Membership Queries:**
-- `getTenantMemberships(userId)` - user's memberships with tenant details
-- `getTenantMembers(tenantId)` - tenant's members with user details
+**Site Membership Queries:**
+- `getTenantMemberships(userId)` - user's memberships with site details
+- `getTenantMembers(tenantId)` - site's members with user details
 - `getUserRoleInTenant(userId, tenantId)`
 - `addTenantMembership(data)`, `updateTenantMembership(id, data)`
 - `removeTenantMembership(id)` - soft delete
@@ -264,10 +267,10 @@ WORKOS_REDIRECT_URI=http://localhost:3000/api/auth/callback
 
 ### Next Steps
 Ready for Phase 3: Dashboard Routes
-- Create tenant selection/switching UI
-- Implement tenant dashboard
-- Add tenant creation workflow
-- Build tenant settings page
+- Create site selection/switching UI
+- Implement site dashboard
+- Add site creation workflow
+- Build site settings page
 
 ---
 
@@ -372,20 +375,20 @@ pnpm add @workos-inc/widgets @radix-ui/themes @radix-ui/react-dropdown-menu @rad
 **Status**: ✅ Completed (Nov 16, 2024)
 
 ### Goals
-- [x] Create tenant management dashboard using WorkOS widgets
-- [x] Implement tenant list/selection page
-- [x] Create tenant creation workflow with WorkOS organization sync
-- [x] Build tenant detail pages with navigation
+- [x] Create site management dashboard using WorkOS widgets
+- [x] Implement site list/selection page
+- [x] Create site creation workflow with WorkOS Organization sync
+- [x] Build site detail pages with navigation
 - [x] Integrate WorkOS OrganizationSwitcher widget
 - [x] Integrate WorkOS UsersManagement widget for member management
 - [x] Implement role-based authorization (admin vs viewer)
 
 ### Key Architectural Decision: WorkOS Widget-First Approach
 
-**Mapping PageHaven Tenants to WorkOS Organizations:**
-- Each PageHaven "tenant" maps to a WorkOS Organization
-- `tenants.workos_org_id` stores the WorkOS organization ID
-- Tenant memberships sync with WorkOS organization memberships
+**Mapping PageHaven Sites to WorkOS Organizations:**
+- Each PageHaven "site" maps to a WorkOS Organization
+- `tenants.workos_org_id` stores the WorkOS Organization ID
+- Site memberships sync with WorkOS Organization memberships
 - Leverage WorkOS widgets for all user/org management UI
 
 This approach provides:
@@ -398,73 +401,73 @@ This approach provides:
 
 #### 1. Server Functions ([src/lib/tenant-functions.ts](src/lib/tenant-functions.ts))
 
-Created comprehensive tenant CRUD operations with WorkOS integration:
+Created comprehensive site CRUD operations with WorkOS integration:
 
-**Tenant Creation (`createTenantFn`):**
+**Site Creation (`createTenantFn`):**
 - Validates slug format (lowercase, alphanumeric, hyphens only)
-- Creates WorkOS organization via API
-- Creates tenant record in database with `workos_org_id`
-- Generates R2 storage prefix (`tenants/<id>/`)
+- Creates WorkOS Organization via API
+- Creates site record in database with `workos_org_id`
+- Generates R2 storage prefix (`sites/<id>/`)
 - Adds default domain (`<slug>.myapp.com`)
 - Adds creator as admin member
 
-**Tenant Queries:**
-- `getUserTenantsFn` - Get all tenants user has access to
-- `getTenantFn` - Get specific tenant with authorization check
-- `updateTenantFn` - Update tenant settings (admin only, syncs name to WorkOS)
-- `getTenantWorkOsOrgFn` - Get WorkOS organization for widget integration
+**Site Queries:**
+- `getUserTenantsFn` - Get all sites user has access to
+- `getTenantFn` - Get specific site with authorization check
+- `updateTenantFn` - Update site settings (admin only, syncs name to WorkOS Organization)
+- `getTenantWorkOsOrgFn` - Get WorkOS Organization for widget integration
 
 #### 2. Components
 
-**TenantSwitcher ([src/components/TenantSwitcher.tsx](src/components/TenantSwitcher.tsx)):**
+**SiteSwitcher ([src/components/TenantSwitcher.tsx](src/components/TenantSwitcher.tsx)):**
 - Uses WorkOS `<OrganizationSwitcher />` widget
 - Provides `getAccessToken` and `switchToOrganization` from `useAuth()`
-- Includes custom child button for "Create New Tenant"
-- Opens CreateTenantModal when clicked
+- Includes custom child button for "Create New Site"
+- Opens CreateSiteModal when clicked
 
-**CreateTenantModal ([src/components/CreateTenantModal.tsx](src/components/CreateTenantModal.tsx)):**
-- Radix Dialog with tenant creation form
+**CreateSiteModal ([src/components/CreateTenantModal.tsx](src/components/CreateTenantModal.tsx)):**
+- Radix Dialog with site creation form
 - Fields: name, slug (auto-generated from name), auth mode
 - Client-side validation for slug format
 - Calls `createTenantFn` server function
-- Navigates to new tenant dashboard on success
+- Navigates to new site dashboard on success
 
 #### 3. Routes Structure
 
-**Tenant List ([src/routes/_authenticated/tenants/index.tsx](src/routes/_authenticated/tenants/index.tsx)):**
-- Displays all tenants user has access to
-- Shows tenant name, slug, role badge, auth mode, version
-- Empty state with instructions to create first tenant
-- Grid layout with cards linking to tenant dashboards
+**Site List ([src/routes/_authenticated/tenants/index.tsx](src/routes/_authenticated/tenants/index.tsx)):**
+- Displays all sites user has access to
+- Shows site name, slug, role badge, auth mode, version
+- Empty state with instructions to create first site
+- Grid layout with cards linking to site dashboards
 
-**Tenant Layout ([src/routes/_authenticated/tenants/$tenantId.tsx](src/routes/_authenticated/tenants/$tenantId.tsx)):**
-- Loader fetches tenant and checks if user is admin
-- Header shows tenant name, slug, auth mode badge, admin badge
+**Site Layout ([src/routes/_authenticated/tenants/$tenantId.tsx](src/routes/_authenticated/tenants/$tenantId.tsx)):**
+- Loader fetches site and checks if user is admin
+- Header shows site name, slug, auth mode badge, admin badge
 - Navigation tabs: Overview, Members, Domains, Settings
 - Tabs filtered by role (some admin-only)
-- Provides `tenant` and `isAdmin` context to child routes
+- Provides `tenant` (site) and `isAdmin` context to child routes
 
-**Tenant Overview ([src/routes/_authenticated/tenants/$tenantId/index.tsx](src/routes/_authenticated/tenants/$tenantId/index.tsx)):**
+**Site Overview ([src/routes/_authenticated/tenants/$tenantId/index.tsx](src/routes/_authenticated/tenants/$tenantId/index.tsx)):**
 - Stats cards: current version, active domains, R2 storage path
 - Deployment status (placeholder for Phase 5)
 - Primary domain with "Visit Site" link
 - Recent activity section (placeholder)
 
-**Tenant Members ([src/routes/_authenticated/tenants/$tenantId/members.tsx](src/routes/_authenticated/tenants/$tenantId/members.tsx)):**
+**Site Members ([src/routes/_authenticated/tenants/$tenantId/members.tsx](src/routes/_authenticated/tenants/$tenantId/members.tsx)):**
 - **Uses WorkOS `<UsersManagement />` widget** (no custom UI needed!)
 - Admin-only page with access control
 - Widget handles invitations, role changes, member removal
 - Info panel explaining admin vs viewer roles
 
-**Tenant Settings ([src/routes/_authenticated/tenants/$tenantId/settings.tsx](src/routes/_authenticated/tenants/$tenantId/settings.tsx)):**
-- Edit tenant name (syncs to WorkOS organization)
+**Site Settings ([src/routes/_authenticated/tenants/$tenantId/settings.tsx](src/routes/_authenticated/tenants/$tenantId/settings.tsx)):**
+- Edit site name (syncs to WorkOS Organization)
 - Change auth mode (public vs WorkOS/private)
 - Slug is read-only (cannot be changed after creation)
-- Tenant information panel (IDs, dates, storage path)
-- Danger zone with delete tenant button (placeholder)
+- Site information panel (IDs, dates, storage path)
+- Danger zone with delete site button (placeholder)
 
-**Tenant Domains ([src/routes/_authenticated/tenants/$tenantId/domains.tsx](src/routes/_authenticated/tenants/$tenantId/domains.tsx)):**
-- Lists active domains for tenant
+**Site Domains ([src/routes/_authenticated/tenants/$tenantId/domains.tsx](src/routes/_authenticated/tenants/$tenantId/domains.tsx)):**
+- Lists active domains for site
 - Shows primary subdomain (`<slug>.myapp.com`)
 - Add custom domain button (placeholder for Phase 7)
 - Info panel noting full features coming in Phase 7
@@ -472,17 +475,17 @@ Created comprehensive tenant CRUD operations with WorkOS integration:
 #### 4. Root Layout Updates ([src/routes/__root.tsx](src/routes/__root.tsx))
 
 **Header Changes:**
-- Added `<TenantSwitcher />` component next to UserButton
+- Added `<TenantSwitcher />` (SiteSwitcher) component next to UserButton
 - Only shows when user is authenticated
 - Uses flex layout with gap for proper spacing
 
 ### WorkOS Widgets Integration
 
 **Widgets Used:**
-1. **`<OrganizationSwitcher />`** - Tenant switching in header
-   - Allows users to switch between organizations they have access to
+1. **`<OrganizationSwitcher />`** - Site switching in header
+   - Allows users to switch between WorkOS Organizations (sites) they have access to
    - Handles SSO/MFA reauthorization automatically
-   - Custom child component for creating new tenants
+   - Custom child component for creating new sites
 
 2. **`<UsersManagement />`** - Member management page
    - Full member invitation and management
@@ -497,8 +500,8 @@ Created comprehensive tenant CRUD operations with WorkOS integration:
 ### Authorization Implementation
 
 **Role-Based Access Control:**
-- Admin: Full access to all tenant features
-- Viewer: Read-only access to tenant information
+- Admin: Full access to all site features
+- Viewer: Read-only access to site information
 
 **Protection Patterns:**
 - Server functions check `userIsAdminOfTenant()` before writes
@@ -511,12 +514,12 @@ Created comprehensive tenant CRUD operations with WorkOS integration:
 - [x] Site builds without TypeScript errors
 - [x] Formatting and linting issues resolved
 - [x] All routes created and properly structured
-- [ ] Manual testing of tenant creation (ready for testing)
+- [ ] Manual testing of site creation (ready for testing)
 - [ ] Manual testing of OrganizationSwitcher widget (ready for testing)
 - [ ] Manual testing of UsersManagement widget (ready for testing)
 
 ### Bug Fixes (Nov 16)
-- **Fixed**: SSR crash when rendering TenantSwitcher - WorkOS widgets require client-side rendering only and cannot be rendered during SSR. Solution:
+- **Fixed**: SSR crash when rendering SiteSwitcher - WorkOS widgets require client-side rendering only and cannot be rendered during SSR. Solution:
   - Created `<ClientOnly />` wrapper component ([src/components/ClientOnly.tsx](src/components/ClientOnly.tsx)) using `useState` + `useEffect` pattern
   - Component returns `fallback` during SSR/initial render
   - After mount (`useEffect`), sets `hasMounted` state to true and renders children
@@ -535,7 +538,7 @@ Created comprehensive tenant CRUD operations with WorkOS integration:
 
 ### Known Issues / Notes
 - Node.js version warning (20.18.0 vs 20.19+ required) - Not blocking
-- Tenant deletion not yet implemented (planned for future)
+- Site deletion not yet implemented (planned for future)
 - Domain management is placeholder (Phase 7)
 - Content management is placeholder (Phase 5)
 
@@ -548,35 +551,35 @@ Created comprehensive tenant CRUD operations with WorkOS integration:
 4. **SSO support** - Organizations can configure SSO via Admin Portal
 5. **Future-proof** - More widgets coming (domain verification, etc.)
 
-**Tenant-Organization Mapping:**
-- Keeps our multi-tenant architecture aligned with WorkOS
+**Site-to-Organization Mapping:**
+- Keeps our multi-site architecture aligned with WorkOS
 - Enables use of WorkOS Admin Portal for SSO configuration
-- Allows enterprise customers to manage their own organization
+- Allows enterprise customers to manage their own WorkOS Organization
 - Simplifies permission model (WorkOS roles map to our roles)
 
 ### Enhancement: Default Organization Auto-Provisioning (Nov 16, 2024)
 
 **Problem Solved:**
-The WorkOS `<OrganizationSwitcher />` widget requires users to have at least one organization membership to render properly. When users had zero organizations, the widget would render as 0px × 0px (invisible), breaking the UI.
+The WorkOS `<OrganizationSwitcher />` widget requires users to have at least one WorkOS Organization membership to render properly. When users had zero organizations, the widget would render as 0px × 0px (invisible), breaking the UI.
 
 **Solution Implemented:**
-Added a checkpoint pattern that ensures every user has a default organization before the widget renders.
+Added a checkpoint pattern that ensures every user has a default WorkOS Organization (and corresponding site) before the widget renders.
 
 #### Changes Made
 
 **1. New Helper Function** ([src/authkit/serverFunctions.ts:88-176](src/authkit/serverFunctions.ts#L88-176)):
 - `ensureUserHasDefaultOrganization(authResult)` - Checkpoint function
-  - Checks if user has any WorkOS organizations via `listOrganizationMemberships()`
+  - Checks if user has any WorkOS Organizations via `listOrganizationMemberships()`
   - If none exist, creates:
-    - WorkOS organization with name: `{firstName || email}'s Sites`
+    - WorkOS Organization with name: `{firstName || email}'s Sites`
       - Examples: "John's Sites", "alice@example.com's Sites"
-    - Local tenant record with:
+    - Local site record (in `tenants` table) with:
       - Slug: `${dbUser.id}-default` (e.g., "usr_1234567890_abc123def-default")
       - Name: Same as organization name
       - Auth mode: `workos` (private by default)
-      - WorkOS org ID stored in `workosOrgId` field
+      - WorkOS Organization ID stored in `workosOrgId` field
     - Default domain: `${slug}.myapp.com`
-    - User added as admin member (both WorkOS and local database)
+    - User added as admin member (both in WorkOS Organization and local database)
   - Refreshes user session with organization context
   - **Idempotent**: Safe to call multiple times, only creates if none exist
   - **Self-healing**: Recreates org if manually deleted
@@ -600,19 +603,19 @@ Added a checkpoint pattern that ensures every user has a default organization be
 - ✅ **Non-blocking**: Only runs when needed (widget load)
 
 **Naming Conventions:**
-- **Organization name**: `{User's Name}'s Sites` - Personalized, friendly
+- **WorkOS Organization name**: `{User's Name}'s Sites` - Personalized, friendly
   - Follows patterns from Vercel ("Personal Account"), Netlify ("Personal")
   - Uses first name if available, otherwise email prefix
-- **Slug**: `${userId}-default` - Predictable, unique, immutable
+- **Site slug**: `${userId}-default` - Predictable, unique, immutable
   - Avoids conflicts with user-chosen slugs
-  - Clearly identifies default workspace
+  - Clearly identifies default site
 
 #### Benefits
 
-1. **Seamless UX**: TenantSwitcher widget always renders correctly
-2. **Instant Access**: New users immediately have a workspace to use
+1. **Seamless UX**: SiteSwitcher widget always renders correctly
+2. **Instant Access**: New users immediately have a site to use
 3. **Familiar Pattern**: Matches Vercel/Netlify/GitHub (every user gets personal workspace)
-4. **Future-Proof**: User can rename, delete, or ignore default org
+4. **Future-Proof**: User can rename, delete, or ignore default site
 5. **Resilient**: Checkpoint pattern handles edge cases gracefully
 
 #### Testing Notes
@@ -620,18 +623,18 @@ Added a checkpoint pattern that ensures every user has a default organization be
 - [x] Lint and format checks pass
 - [x] Dev server runs successfully on http://localhost:3000/
 - [x] **Puppeteer End-to-End Testing (Nov 16, 2024)**:
-  - ✅ TenantSwitcher widget renders in header
-  - ✅ Default organization created: "JTest1's Organization"
+  - ✅ SiteSwitcher widget renders in header
+  - ✅ Default WorkOS Organization created: "JTest1's Sites"
   - ✅ Organization dropdown opens and displays correctly
   - ✅ Shows current organization with checkmark
   - ✅ "Create Organization" button present at bottom of dropdown
   - ✅ No 0px × 0px rendering bug - widget is fully functional
   - ✅ User can interact with the organization switcher
-- [x] Manual verification: Default organization appears in WorkOS dashboard
+- [x] Manual verification: Default WorkOS Organization appears in WorkOS dashboard
 
 ### Next Steps
 Ready for Phase 4: Control Plane API
-- Build API endpoints for tenant operations
+- Build API endpoints for site operations
 - Implement R2 upload functionality
 - Create deployment workflow
 - Add publish to KV functionality

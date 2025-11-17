@@ -20,12 +20,12 @@ const OrganizationSwitcherLazy = lazy(async () => {
 						<button
 							type="button"
 							onClick={() => {
-								// Redirect to tenant creation page
+								// Redirect to site creation page
 								window.location.href = "/tenants/create";
 							}}
 							className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
 						>
-							Create Organization
+							Create New Site
 						</button>
 					</widgets.OrganizationSwitcher>
 				</widgets.WorkOsWidgets>
@@ -35,8 +35,8 @@ const OrganizationSwitcherLazy = lazy(async () => {
 });
 
 /**
- * TenantSwitcher - Uses WorkOS OrganizationSwitcher widget
- * Maps PageHaven tenants to WorkOS organizations
+ * TenantSwitcher (SiteSwitcher) - Uses WorkOS OrganizationSwitcher widget
+ * Maps PageHaven sites to WorkOS Organizations
  * Note: Must be wrapped in ClientOnly since WorkOS widgets are client-only
  */
 export function TenantSwitcher({ widgetToken }: { widgetToken: string }) {

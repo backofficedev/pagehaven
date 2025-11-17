@@ -1,6 +1,6 @@
-# 📌 **MASTER PROMPT — Multi-Tenant Static-Site Hosting Platform (Cloudflare + TanStack Start)**
+# 📌 **MASTER PROMPT — Multi-Site Static-Site Hosting Platform (Cloudflare + TanStack Start)**
 
-You are building a complete, production-ready multi-tenant static-site hosting platform.
+You are building a complete, production-ready multi-site static-site hosting platform.
 This prompt contains the **full specification**. Follow it exactly.
 
 ---
@@ -10,20 +10,21 @@ This prompt contains the **full specification**. Follow it exactly.
 Build a SaaS platform where:
 
 1. **Users sign in via WorkOS**.
-2. **Users automatically get a default organization ("tenant")** upon first sign-in, named "{User's Name}'s Sites".
-3. **Users can create additional organizations ("tenants")**.
-4. Each tenant gets a **subdomain** like:
+2. **Users automatically get a default site** upon first sign-in, named "{User's Name}'s Sites".
+   - Each site maps to a WorkOS Organization (for user/access management)
+3. **Users can create additional sites**.
+4. Each site gets a **subdomain** like:
    `https://<slug>.myapp.com`
-5. Each tenant can:
+5. Each site can:
 
    * Upload a ZIP of static HTML/CSS/JS files
      **OR**
-   * Connect a private GitHub repo (you pull its static build)
-   * The static files are stored in **R2** under `tenants/<tenantId>/...`
-6. When a visitor goes to `https://<tenant>.myapp.com`:
+     * Connect a private GitHub repo (you pull its static build)
+     * The static files are stored in **R2** under `sites/<siteId>/...`
+6. When a visitor goes to `https://<site>.myapp.com`:
 
-   * An **edge worker** resolves the tenant from the hostname (via KV)
-   * Checks whether the tenant requires auth
+   * An **edge worker** resolves the site from the hostname (via KV)
+   * Checks whether the site requires auth
    * Optionally verifies WorkOS session (for private sites)
    * Fetches the requested static file from **R2**
    * Injects a small overlay UI (HTMLRewriter) for logged-in users
@@ -31,15 +32,15 @@ Build a SaaS platform where:
 7. Admin users can:
 
    * Manage domains
-   * Manage membership (invite/remove users)
+   * Manage membership (invite/remove users via WorkOS Organizations)
    * Configure auth mode (public vs WorkOS/SSO-only)
    * Upload/sync site content
    * Trigger redeploy (publish to KV)
 8. Viewer users:
 
-   * Can see the tenant in the dashboard
-   * Can see the static site if the tenant auth rules allow it
-   * Cannot modify tenant settings or content
+   * Can see the site in the dashboard
+   * Can see the static site if the site auth rules allow it
+   * Cannot modify site settings or content
 
 The app has a **marketing site**, **management dashboard**, and a **control-plane API**.
 
@@ -59,12 +60,12 @@ The app has a **marketing site**, **management dashboard**, and a **control-plan
 ### **Backend / Infra**
 
 * **Cloudflare Workers** for app + control plane
-* **Cloudflare KV** for tenant-config distribution (fast edge reads)
+* **Cloudflare KV** for site-config distribution (fast edge reads)
 * **Cloudflare R2** for static site storage
 * **Cloudflare D1** (SQLite) as system-of-record database (SQLite for development)
 * **Cloudflare Pages or Worker deploy** for the Start app
 * **WorkOS AuthKit** for authentication + SSO
-* **A separate Edge Worker** (not Start) to serve static tenant sites from R2
+* **A separate Edge Worker** (not Start) to serve static sites from R2
 
 ### **Authentication & Security**
 
@@ -87,33 +88,35 @@ name TEXT
 created_at TEXT NOT NULL
 ```
 
-### **tenants**
+### **sites** (formerly "tenants" in database schema)
 
 ```
 id TEXT PRIMARY KEY
 slug TEXT UNIQUE NOT NULL      -- forms <slug>.myapp.com
 name TEXT NOT NULL
-r2_prefix TEXT NOT NULL        -- "tenants/<id>/"
+r2_prefix TEXT NOT NULL        -- "sites/<id>/"
 auth_mode TEXT NOT NULL        -- "public" | "workos"
-workos_org_id TEXT             -- optional
+workos_org_id TEXT             -- Maps to WorkOS Organization
 version INTEGER NOT NULL DEFAULT 1
 created_at TEXT NOT NULL
 updated_at TEXT NOT NULL
 ```
 
-### **tenant_domains**
+**Note**: The database table is still named `tenants` for backward compatibility, but conceptually these are "sites" in the application.
+
+### **site_domains** (table: `tenant_domains`)
 
 ```
 id TEXT PRIMARY KEY
-tenant_id TEXT REFERENCES tenants(id)
+tenant_id TEXT REFERENCES tenants(id)  -- References sites table
 domain TEXT UNIQUE NOT NULL    -- includes slug.myapp.com and custom domains
 ```
 
-### **tenant_memberships**
+### **site_memberships** (table: `tenant_memberships`)
 
 ```
 id TEXT PRIMARY KEY
-tenant_id TEXT REFERENCES tenants(id)
+tenant_id TEXT REFERENCES tenants(id)  -- References sites table
 user_id TEXT REFERENCES users(id)
 role TEXT NOT NULL             -- "admin" | "viewer"
 status TEXT NOT NULL DEFAULT "active"
@@ -121,14 +124,16 @@ created_at TEXT NOT NULL
 UNIQUE (tenant_id, user_id)
 ```
 
+**Note**: Membership is managed via WorkOS Organizations. The local database tracks roles for authorization within the application.
+
 ---
 
-# 4. **Published Tenant Config (KV Records)**
+# 4. **Published Site Config (KV Records)**
 
 For fast lookup at the edge:
 
-* Key: `tenant:id:<id>`
-* Key: `tenant:host:<domain>`
+* Key: `site:id:<id>`
+* Key: `site:host:<domain>`
   Where `<domain>` is each of:
 
   * `<slug>.myapp.com`
@@ -138,10 +143,10 @@ Value (JSON):
 
 ```json
 {
-  "id": "t1",
+  "id": "s1",
   "slug": "acme",
   "domains": ["acme.myapp.com"],
-  "r2_prefix": "tenants/t1/",
+  "r2_prefix": "sites/s1/",
   "auth": {
     "mode": "workos",
     "workos_connection_id": "conn_123"
@@ -154,31 +159,34 @@ Value (JSON):
 
 ---
 
-# 5. **Multi-Tenant Authorization Model**
+# 5. **Multi-Site Authorization Model**
 
-* Users authenticate via WorkOS.
+* **Users** authenticate via WorkOS (WorkOS concept: User).
 * After WorkOS callback, backend:
 
   * upserts into `users`
   * sets session cookie / JWT
-* **Default Organization Auto-Provisioning**:
-  * Upon first widget token request, system checks if user has any WorkOS organizations
+* **Default Site Auto-Provisioning**:
+  * Upon first widget token request, system checks if user has any WorkOS Organizations
   * If none exist, automatically creates:
-    * WorkOS organization named "{User's Name}'s Sites" (e.g., "John's Sites")
-    * Local tenant record with slug `${userId}-default`
-    * User added as admin member
+    * WorkOS Organization named "{User's Name}'s Sites" (e.g., "John's Sites")
+    * Local site record with slug `${userId}-default`
+    * User added as admin member (both in WorkOS Organization and local database)
     * Session refreshed with organization context
   * This ensures WorkOS widgets (OrganizationSwitcher, etc.) always have data to render
   * Pattern is idempotent and self-healing (recreates if org deleted)
-* For every **tenant-specific CP API route**, check:
+* **Site-to-Organization Mapping**: Each PageHaven site maps 1:1 to a WorkOS Organization
+  * WorkOS Organizations handle user membership and access
+  * Local database tracks site-specific roles (admin/viewer) for authorization
+* For every **site-specific CP API route**, check:
 
-  * membership exists → allow read
-  * membership role = `admin` → allow writes
+  * membership exists (via WorkOS Organization) → allow read
+  * membership role = `admin` (from local database) → allow writes
 * For the **edge static site**:
 
-  * if tenant.auth_mode = public → no session required
-  * if tenant.auth_mode = workos → edge calls CP `/api/auth/authorize-site?tenantId=...`
-    OR decodes JWT to check membership quickly
+  * if site.auth_mode = public → no session required
+  * if site.auth_mode = workos → edge calls CP `/api/auth/authorize-site?siteId=...`
+    OR decodes JWT to check WorkOS Organization membership quickly
 
 ---
 
@@ -202,9 +210,9 @@ Handles:
 * Steps:
 
   1. Parse host
-  2. Lookup in KV (`tenant:host:<host>`)
-  3. If miss → call CP `/api/tenants/by-host?host=...`
-  4. Enforce tenant auth_mode
+  2. Lookup in KV (`site:host:<host>`)
+  3. If miss → call CP `/api/sites/by-host?host=...`
+  4. Enforce site auth_mode
   5. Fetch static file from R2 (`<r2_prefix>/<path>`)
   6. If HTML → inject overlay using HTMLRewriter
   7. Return file
@@ -217,9 +225,9 @@ Bucket is **private**; only Worker can read from R2.
 
 ### Upload flow:
 
-* Admin uploads ZIP to `/api/tenants/:id/content/upload`
-* Worker unpacks, writes to R2 under `tenants/<id>/...`
-* Optionally bumps tenant version & republishes to KV
+* Admin uploads ZIP to `/api/sites/:id/content/upload`
+* Worker unpacks, writes to R2 under `sites/<id>/...`
+* Optionally bumps site version & republishes to KV
 
 ### GitHub sync flow:
 
@@ -249,14 +257,14 @@ Note: `/login` is handled via WorkOS AuthKit redirect (not a dedicated route)
 
 ```
 /_authenticated/dashboard     ✅ IMPLEMENTED - Example protected page showing user info
-/_authenticated/tenants       (to be implemented)
-/_authenticated/tenants/:tenantId
-    /_authenticated/tenants/:tenantId/          (overview)
-    /_authenticated/tenants/:tenantId/domains
-    /_authenticated/tenants/:tenantId/auth
-    /_authenticated/tenants/:tenantId/content
-    /_authenticated/tenants/:tenantId/deploys
-    /_authenticated/tenants/:tenantId/members
+/_authenticated/sites         ✅ IMPLEMENTED - List of user's sites
+/_authenticated/sites/:siteId
+    /_authenticated/sites/:siteId/          (overview)
+    /_authenticated/sites/:siteId/domains
+    /_authenticated/sites/:siteId/auth
+    /_authenticated/sites/:siteId/content
+    /_authenticated/sites/:siteId/deploys
+    /_authenticated/sites/:siteId/members
 /_authenticated/account       (to be implemented)
 ```
 
@@ -267,12 +275,12 @@ Note: `/login` is handled via WorkOS AuthKit redirect (not a dedicated route)
 ```
 /api/auth/callback           ✅ IMPLEMENTED - WorkOS OAuth callback
 /api/me                       (to be implemented)
-/api/tenants                  (GET, POST) - to be implemented
-/api/tenants/:tenantId        (GET, PATCH, DELETE) - to be implemented
-/api/tenants/:tenantId/publish
-/api/tenants/:tenantId/domains
-/api/tenants/:tenantId/memberships
-/api/tenants/by-host          (edge fallback)
+/api/sites                    (GET, POST) - to be implemented
+/api/sites/:siteId            (GET, PATCH, DELETE) - to be implemented
+/api/sites/:siteId/publish
+/api/sites/:siteId/domains
+/api/sites/:siteId/memberships
+/api/sites/by-host            (edge fallback)
 ```
 
 ---
@@ -284,22 +292,22 @@ Note: `/login` is handled via WorkOS AuthKit redirect (not a dedicated route)
 * `/login` → server function: create WorkOS auth URL → redirect.
 * `/auth/callback` → server function: exchange code, create user, set session cookie, redirect.
 * `/app/_layout` loader:
-  loads current user + all memberships for the tenant switcher.
-* `/app/tenants/:tenantId/_layout` loader:
-  loads tenant + role; if viewer but trying admin action → 403.
+  loads current user + all site memberships for the site switcher.
+* `/app/sites/:siteId/_layout` loader:
+  loads site + role; if viewer but trying admin action → 403.
 
 ---
 
 # 10. **Control Plane Publish Logic**
 
-Whenever a tenant is updated:
+Whenever a site is updated:
 
-1. Query full tenant config + domains from D1.
+1. Query full site config + domains from D1.
 2. Build the compact JSON payload.
 3. Write to KV:
 
-   * `tenant:id:<id>`
-   * `tenant:host:<domain>` for every domain
+   * `site:id:<id>`
+   * `site:host:<domain>` for every domain
 
 Edge worker reads this instantly on next request.
 
@@ -376,7 +384,7 @@ src/authkit/
 
 **For edge worker** (to be implemented):
 * Either decode JWT locally using `jose`
-* Or call `/api/auth/authorize-site?tenantId=X` (fast path)
+* Or call `/api/auth/authorize-site?siteId=X` (fast path)
 
 **Environment Variables Required:**
 ```bash
@@ -423,12 +431,12 @@ The LLM should generate or outline:
   * Automatic token refresh
   * JWT verification with JWKS
   * User upsert to database
-* Tenant CRUD (Phase 3+)
-* Membership CRUD (Phase 3+)
+* Site CRUD (Phase 3+) ✅ IMPLEMENTED
+* Membership CRUD (Phase 3+) ✅ IMPLEMENTED (via WorkOS Organizations)
 * Domain CRUD (Phase 7)
 * Content upload + GitHub sync (Phase 5)
 * Publish-to-KV utility (Phase 4)
-* `/api/tenants/by-host` implementation (Phase 4)
+* `/api/sites/by-host` implementation (Phase 4)
 
 ### **Edge Worker**:
 
@@ -443,28 +451,30 @@ The LLM should generate or outline:
 
 * ✅ **D1 migrations** - IMPLEMENTED (Phase 1)
   * Migration: `drizzle/0001_cloudy_chat.sql`
-  * Tables: users, tenants, tenant_domains, tenant_memberships
+  * Tables: users, tenants (sites), tenant_domains (site_domains), tenant_memberships (site_memberships)
+  * **Note**: Database tables still use "tenant" naming for backward compatibility, but application refers to them as "sites"
 * ✅ **Query helpers** - IMPLEMENTED (Phase 1)
   * User queries: `getUser()`, `getUserByWorkOsId()`, `createUser()`, `upsertUserByWorkOsId()`
-  * Tenant queries: `getTenant()`, `getTenantBySlug()`, `getTenantByDomain()`, `createTenant()`, `updateTenant()`
+  * Site queries: `getTenant()`, `getTenantBySlug()`, `getTenantByDomain()`, `createTenant()`, `updateTenant()`
   * Domain queries: `getTenantDomains()`, `addTenantDomain()`, `removeTenantDomain()`
   * Membership queries: `getTenantMemberships()`, `getUserRoleInTenant()`, `addTenantMembership()`
   * Authorization helpers: `userCanAccessTenant()`, `userIsAdminOfTenant()`
+  * **Note**: Function names still use "tenant" for backward compatibility, but conceptually these are "sites"
 
 ### **Front-end**:
 
 * Marketing pages (SSR)
-* Dashboard layout with tenant switcher
-* Tenant detail pages:
+* Dashboard layout with site switcher (uses WorkOS OrganizationSwitcher widget)
+* Site detail pages:
 
   * overview
   * domains
   * auth config
   * content panel
   * deploy history UI
-  * membership management
+  * membership management (uses WorkOS UsersManagement widget)
 * Form components (using Radix)
-* API integration via Start’s built-in server functions
+* API integration via Start's built-in server functions
 
 ### **Configs**:
 
@@ -578,17 +588,17 @@ See [development_log.md](development_log.md) for detailed implementation notes.
 
 ### ✅ Phase 3: Dashboard Routes (Nov 16, 2024)
 - **WorkOS Widget-First Architecture**: Maximum use of WorkOS widgets for UI
-  - `<OrganizationSwitcher />` for tenant switching in header
+  - `<OrganizationSwitcher />` for site switching in header
   - `<UsersManagement />` for member management
   - `<UserProfile />` for user account settings
-- **Default Organization Auto-Provisioning**: Every user gets "{User's Name}'s Sites" on first widget load
+- **Default Site Auto-Provisioning**: Every user gets "{User's Name}'s Sites" on first widget load
   - Ensures OrganizationSwitcher always has data to render
   - Uses checkpoint pattern in `getWidgetToken()` for resilience
   - Slug convention: `${userId}-default`
-- **Tenant-to-Organization Mapping**: Each PageHaven tenant maps 1:1 to WorkOS organization
-- Tenant creation workflow with WorkOS org sync
-- Tenant dashboard with role-based access (admin/viewer)
-- Tenant settings, domains, and member management pages
+- **Site-to-Organization Mapping**: Each PageHaven site maps 1:1 to WorkOS Organization
+- Site creation workflow with WorkOS Organization sync
+- Site dashboard with role-based access (admin/viewer)
+- Site settings, domains, and member management pages
 
 ### ⏳ Phase 4: Control Plane API (Not Started)
 ### ⏳ Phase 5: Content Management (Not Started)
@@ -601,6 +611,12 @@ See [development_log.md](development_log.md) for detailed implementation notes.
 # 16. **Final Instruction to the LLM**
 
 Using the full specification above, build the entire application (or complete it step-by-step if requested).
-Follow all architectural decisions exactly as stated: **Cloudflare Workers + D1 + R2 + KV + TanStack Start + WorkOS + React + Tailwind + Radix UI**. Use the multi-tenant model and APIs exactly as described.
+Follow all architectural decisions exactly as stated: **Cloudflare Workers + D1 + R2 + KV + TanStack Start + WorkOS + React + Tailwind + Radix UI**. Use the multi-site model and APIs exactly as described.
+
+**Terminology Mapping**:
+- **Sites**: PageHaven's concept for static site hosting instances (user-facing term)
+- **WorkOS Organizations**: WorkOS's concept for grouping users and managing access (used internally for membership management)
+- **WorkOS Users**: WorkOS's concept for authenticated identities
+- **Database Tables**: Still use "tenant" naming for backward compatibility, but application refers to them as "sites"
 
 **For implemented features (marked with ✅)**: Refer to the actual implementation in the codebase and build upon those patterns. The [development_log.md](development_log.md) contains detailed notes about implementation decisions and architecture choices.

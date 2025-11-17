@@ -86,18 +86,18 @@ function TenantSettings() {
 						General Settings
 					</h3>
 					<p className="mt-1 text-sm text-gray-500">
-						Update your tenant's basic information
+						Update your site's basic information
 					</p>
 				</div>
 
 				<div className="px-6 py-5 space-y-6">
-					{/* Tenant Name */}
+					{/* Site Name */}
 					<div>
 						<label
 							htmlFor="tenant-name"
 							className="block text-sm font-medium text-gray-700 mb-1"
 						>
-							Tenant Name
+							Site Name
 						</label>
 						<input
 							id="tenant-name"
@@ -205,17 +205,17 @@ function TenantSettings() {
 				</div>
 			</form>
 
-			{/* Tenant Information */}
+			{/* Site Information */}
 			<div className="bg-white rounded-lg shadow">
 				<div className="px-6 py-5 border-b border-gray-200">
 					<h3 className="text-lg font-medium text-gray-900">
-						Tenant Information
+						Site Information
 					</h3>
 				</div>
 				<div className="px-6 py-5 space-y-4">
 					<div className="grid grid-cols-2 gap-4">
 						<div>
-							<p className="text-sm font-medium text-gray-500">Tenant ID</p>
+							<p className="text-sm font-medium text-gray-500">Site ID</p>
 							<p className="mt-1 text-sm font-mono text-gray-900">
 								{tenant.id}
 							</p>

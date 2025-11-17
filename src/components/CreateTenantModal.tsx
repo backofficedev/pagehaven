@@ -43,10 +43,10 @@ export function CreateTenantModal({ isOpen, onClose }: CreateTenantModalProps) {
 			setSlug("");
 			setAuthMode("public");
 
-			// Navigate to the new tenant's dashboard
+			// Navigate to the new site's dashboard
 			navigate({ to: `/tenants/${result.tenant.id}` });
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Failed to create tenant");
+			setError(err instanceof Error ? err.message : "Failed to create site");
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -58,21 +58,21 @@ export function CreateTenantModal({ isOpen, onClose }: CreateTenantModalProps) {
 				<Dialog.Overlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-fadeIn z-50" />
 				<Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl w-full max-w-md p-6 data-[state=open]:animate-fadeIn z-50">
 					<Dialog.Title className="text-lg font-semibold text-gray-900 mb-4">
-						Create New Tenant
+						Create New Site
 					</Dialog.Title>
 					<Dialog.Description className="text-sm text-gray-600 mb-6">
-						Create a new tenant to host static sites. Each tenant gets its own
+						Create a new site to host static content. Each site gets its own
 						subdomain and can have custom domains.
 					</Dialog.Description>
 
 					<form onSubmit={handleSubmit} className="space-y-4">
-						{/* Tenant Name */}
+						{/* Site Name */}
 						<div>
 							<label
 								htmlFor="tenant-name"
 								className="block text-sm font-medium text-gray-700 mb-1"
 							>
-								Tenant Name
+								Site Name
 							</label>
 							<input
 								id="tenant-name"
@@ -181,7 +181,7 @@ export function CreateTenantModal({ isOpen, onClose }: CreateTenantModalProps) {
 								disabled={isSubmitting}
 								className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
 							>
-								{isSubmitting ? "Creating..." : "Create Tenant"}
+								{isSubmitting ? "Creating..." : "Create Site"}
 							</button>
 						</div>
 					</form>
