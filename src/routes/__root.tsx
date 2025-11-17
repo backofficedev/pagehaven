@@ -3,6 +3,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import {
 	createRootRouteWithContext,
 	HeadContent,
+	Link,
 	Outlet,
 	Scripts,
 } from "@tanstack/react-router";
@@ -27,9 +28,17 @@ interface MyRouterContext {
 export const Route = createRootRouteWithContext<MyRouterContext>()({
 	beforeLoad: async () => {
 		try {
-			const { user } = await getAuth({});
-			const signInUrl = await getSignInUrl({});
-			const { widgetToken } = await getWidgetToken({}); return { user, signInUrl, widgetToken };
+			// Run all three calls in parallel for better performance
+			const [authResult, signInUrl, widgetTokenResult] = await Promise.all([
+				getAuth({}),
+				getSignInUrl({}),
+				getWidgetToken({}),
+			]);
+			return {
+				user: authResult.user,
+				signInUrl,
+				widgetToken: widgetTokenResult.widgetToken,
+			};
 		} catch (error) {
 			console.error("Error in beforeLoad:", error);
 			// Return default values if there's an error
@@ -70,7 +79,9 @@ function RootComponent() {
 		<div className="min-h-screen bg-gray-50">
 			<header className="bg-white shadow">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-					<h1 className="text-2xl font-bold text-gray-900">PageHaven</h1>
+					<Link to="/">
+						<h1 className="text-2xl font-bold text-gray-900">PageHaven</h1>
+					</Link>
 					<div className="flex items-center gap-4">
 						{user && widgetToken && <TenantSwitcher widgetToken={widgetToken} />}
 						<UserButton user={user} signInUrl={signInUrl} />
