@@ -2,7 +2,15 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { signOut } from "../authkit/serverFunctions";
 
 export const Route = createFileRoute("/logout")({
-	beforeLoad: async () => {
+	beforeLoad: async ({ context }) => {
+		// Invalidate auth cache - this ensures fresh data is fetched after logout
+		context.queryClient.setQueryData(["auth"], {
+			user: null,
+			signInUrl: "#",
+			widgetToken: null,
+		});
+		context.queryClient.invalidateQueries({ queryKey: ["auth"] });
+
 		// Clear all browser storage aggressively to force account selection on next login
 		if (typeof window !== "undefined") {
 			// Clear all localStorage

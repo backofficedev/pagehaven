@@ -200,3 +200,67 @@ export const getWidgetToken = createServerFn({ method: "GET" }).handler(
 	},
 );
 
+/**
+ * Optimized: Gets all auth-related data in a single call.
+ * This eliminates redundant withAuth() calls and database queries.
+ * Returns user, widgetToken, and signInUrl all at once.
+ */
+export const getAuthData = createServerFn({ method: "GET" }).handler(
+	async () => {
+		// Generate sign-in URL in parallel (doesn't need auth)
+		const signInUrlPromise = getAuthorizationUrl({
+			screenHint: "sign-in",
+			forceAccountSelection: true,
+		});
+
+		// Authenticate once
+		const authResult = await withAuth();
+
+		// If no auth, return early with sign-in URL
+		if (!authResult) {
+			const signInUrl = await signInUrlPromise;
+			return {
+				user: null,
+				signInUrl,
+				widgetToken: null,
+			};
+		}
+
+		// Get or create the user in our database
+		const dbUser = await upsertUserByWorkOsId({
+			workosUserId: authResult.user.id,
+			email: authResult.user.email,
+			name:
+				`${authResult.user.firstName ?? ""} ${authResult.user.lastName ?? ""}`.trim() ||
+				null,
+		});
+
+		const user = {
+			id: dbUser.id,
+			workosUserId: dbUser.workosUserId,
+			email: dbUser.email,
+			name: dbUser.name,
+			createdAt: dbUser.createdAt,
+			workosUser: authResult.user,
+		};
+
+		// Ensure user has at least one organization and get widget token
+		// This runs in parallel with getting the sign-in URL
+		const widgetTokenPromise = ensureUserHasDefaultOrganization(authResult).then(
+			() => authResult.accessToken,
+		);
+
+		// Wait for both to complete
+		const [signInUrl, widgetToken] = await Promise.all([
+			signInUrlPromise,
+			widgetTokenPromise,
+		]);
+
+		return {
+			user,
+			signInUrl,
+			widgetToken,
+		};
+	},
+);
+

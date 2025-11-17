@@ -54,6 +54,8 @@ export const Route = createFileRoute("/api/auth/callback")({
 					}
 
 					// Redirect to the return path
+					// Note: After redirect, __root.tsx beforeLoad will run and fetch fresh auth data
+					// The cache will be automatically updated with the new session
 					return new Response(null, {
 						status: 302,
 						headers: {

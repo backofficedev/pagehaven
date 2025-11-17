@@ -13,36 +13,46 @@ import { UserButton } from "../components/UserButton";
 import { TenantSwitcher } from "../components/TenantSwitcher";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import WorkOSProvider from "../integrations/workos/provider";
+import { useAuth } from "../hooks/useAuth";
 
 import appCss from "../styles.css?url";
 import "@radix-ui/themes/styles.css";
 import "@workos-inc/widgets/base.css";
 
 import type { QueryClient } from "@tanstack/react-query";
-import { getAuth, getSignInUrl, getWidgetToken } from "../authkit/serverFunctions";
+import { getAuthData } from "../authkit/serverFunctions";
 
 interface MyRouterContext {
 	queryClient: QueryClient;
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
-	beforeLoad: async () => {
+	beforeLoad: async ({ context }) => {
+		// Best practice: Check cache first, only fetch if missing
+		// This prevents server calls on every navigation
+		const cachedAuth = context.queryClient.getQueryData<{
+			user: unknown;
+			signInUrl: string;
+			widgetToken: string | null;
+		}>(["auth"]);
+
+		// If we have cached data, use it (no server call!)
+		if (cachedAuth) {
+			return cachedAuth;
+		}
+
+		// Only fetch on initial load or if cache was cleared
 		try {
-			// Run all three calls in parallel for better performance
-			const [authResult, signInUrl, widgetTokenResult] = await Promise.all([
-				getAuth({}),
-				getSignInUrl({}),
-				getWidgetToken({}),
-			]);
-			return {
-				user: authResult.user,
-				signInUrl,
-				widgetToken: widgetTokenResult.widgetToken,
-			};
+			const authData = await getAuthData({});
+			// Set in React Query cache for future navigations
+			context.queryClient.setQueryData(["auth"], authData);
+			return authData;
 		} catch (error) {
 			console.error("Error in beforeLoad:", error);
 			// Return default values if there's an error
-			return { user: null, signInUrl: "#", widgetToken: null };
+			const fallback = { user: null, signInUrl: "#", widgetToken: null };
+			context.queryClient.setQueryData(["auth"], fallback);
+			return fallback;
 		}
 	},
 
@@ -73,7 +83,9 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 });
 
 function RootComponent() {
-	const { user, signInUrl, widgetToken } = Route.useRouteContext();
+	// Use cached auth data - no server calls on navigation
+	// Cache is populated on initial load via beforeLoad
+	const { user, signInUrl, widgetToken } = useAuth();
 
 	return (
 		<div className="min-h-screen bg-gray-50">
