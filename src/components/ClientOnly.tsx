@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 
 interface ClientOnlyProps {
-	children: React.ReactNode;
-	fallback?: React.ReactNode;
+	children: ReactNode;
+	fallback?: ReactNode;
 }
 
 /**
- * ClientOnly - Renders children only on the client side, not during SSR
- * Useful for components that require browser APIs or client-side context
+ * ClientOnly - Prevents server-side rendering of children
+ * Only renders children after component mounts on client
  */
 export function ClientOnly({ children, fallback = null }: ClientOnlyProps) {
 	const [hasMounted, setHasMounted] = useState(false);

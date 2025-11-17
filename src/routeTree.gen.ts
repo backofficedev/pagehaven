@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LogoutRouteImport } from './routes/logout'
+import { Route as CallbackRouteImport } from './routes/callback'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoWorkosRouteImport } from './routes/demo/workos'
@@ -23,6 +24,7 @@ import { Route as DemoSentryTestingRouteImport } from './routes/demo/sentry.test
 import { Route as DemoApiTqTodosRouteImport } from './routes/demo/api.tq-todos'
 import { Route as DemoApiNamesRouteImport } from './routes/demo/api.names'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
+import { Route as AuthenticatedTenantsCreateRouteImport } from './routes/_authenticated/tenants/create'
 import { Route as AuthenticatedTenantsTenantIdRouteImport } from './routes/_authenticated/tenants/$tenantId'
 import { Route as DemoStartSsrIndexRouteImport } from './routes/demo/start.ssr.index'
 import { Route as AuthenticatedTenantsTenantIdIndexRouteImport } from './routes/_authenticated/tenants/$tenantId/index'
@@ -36,6 +38,11 @@ import { Route as AuthenticatedTenantsTenantIdDomainsRouteImport } from './route
 const LogoutRoute = LogoutRouteImport.update({
   id: '/logout',
   path: '/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CallbackRoute = CallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -103,6 +110,12 @@ const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
   path: '/api/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedTenantsCreateRoute =
+  AuthenticatedTenantsCreateRouteImport.update({
+    id: '/tenants/create',
+    path: '/tenants/create',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedTenantsTenantIdRoute =
   AuthenticatedTenantsTenantIdRouteImport.update({
     id: '/tenants/$tenantId',
@@ -156,12 +169,14 @@ const AuthenticatedTenantsTenantIdDomainsRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/callback': typeof CallbackRoute
   '/logout': typeof LogoutRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/demo/drizzle': typeof DemoDrizzleRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/workos': typeof DemoWorkosRoute
   '/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRouteWithChildren
+  '/tenants/create': typeof AuthenticatedTenantsCreateRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
@@ -180,11 +195,13 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/callback': typeof CallbackRoute
   '/logout': typeof LogoutRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/demo/drizzle': typeof DemoDrizzleRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/workos': typeof DemoWorkosRoute
+  '/tenants/create': typeof AuthenticatedTenantsCreateRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
@@ -205,12 +222,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/callback': typeof CallbackRoute
   '/logout': typeof LogoutRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/demo/drizzle': typeof DemoDrizzleRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/demo/workos': typeof DemoWorkosRoute
   '/_authenticated/tenants/$tenantId': typeof AuthenticatedTenantsTenantIdRouteWithChildren
+  '/_authenticated/tenants/create': typeof AuthenticatedTenantsCreateRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
@@ -231,12 +250,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/callback'
     | '/logout'
     | '/dashboard'
     | '/demo/drizzle'
     | '/demo/tanstack-query'
     | '/demo/workos'
     | '/tenants/$tenantId'
+    | '/tenants/create'
     | '/api/auth/callback'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
@@ -255,11 +276,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/callback'
     | '/logout'
     | '/dashboard'
     | '/demo/drizzle'
     | '/demo/tanstack-query'
     | '/demo/workos'
+    | '/tenants/create'
     | '/api/auth/callback'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
@@ -279,12 +302,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/callback'
     | '/logout'
     | '/_authenticated/dashboard'
     | '/demo/drizzle'
     | '/demo/tanstack-query'
     | '/demo/workos'
     | '/_authenticated/tenants/$tenantId'
+    | '/_authenticated/tenants/create'
     | '/api/auth/callback'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
@@ -305,6 +330,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  CallbackRoute: typeof CallbackRoute
   LogoutRoute: typeof LogoutRoute
   DemoDrizzleRoute: typeof DemoDrizzleRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
@@ -328,6 +354,13 @@ declare module '@tanstack/react-router' {
       path: '/logout'
       fullPath: '/logout'
       preLoaderRoute: typeof LogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/callback': {
+      id: '/callback'
+      path: '/callback'
+      fullPath: '/callback'
+      preLoaderRoute: typeof CallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -420,6 +453,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/auth/callback'
       preLoaderRoute: typeof ApiAuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/tenants/create': {
+      id: '/_authenticated/tenants/create'
+      path: '/tenants/create'
+      fullPath: '/tenants/create'
+      preLoaderRoute: typeof AuthenticatedTenantsCreateRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/tenants/$tenantId': {
       id: '/_authenticated/tenants/$tenantId'
@@ -514,6 +554,7 @@ const AuthenticatedTenantsTenantIdRouteWithChildren =
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedTenantsTenantIdRoute: typeof AuthenticatedTenantsTenantIdRouteWithChildren
+  AuthenticatedTenantsCreateRoute: typeof AuthenticatedTenantsCreateRoute
   AuthenticatedTenantsIndexRoute: typeof AuthenticatedTenantsIndexRoute
 }
 
@@ -521,6 +562,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedTenantsTenantIdRoute:
     AuthenticatedTenantsTenantIdRouteWithChildren,
+  AuthenticatedTenantsCreateRoute: AuthenticatedTenantsCreateRoute,
   AuthenticatedTenantsIndexRoute: AuthenticatedTenantsIndexRoute,
 }
 
@@ -531,6 +573,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  CallbackRoute: CallbackRoute,
   LogoutRoute: LogoutRoute,
   DemoDrizzleRoute: DemoDrizzleRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,

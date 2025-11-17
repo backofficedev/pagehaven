@@ -5,7 +5,7 @@ import { CreateTenantModal } from "./CreateTenantModal";
 
 /**
  * TenantSwitcher - Simple dropdown to switch between tenants and create new ones
- * Note: Not using WorkOS OrganizationSwitcher widget due to server-side auth incompatibility
+ * Using custom UI instead of WorkOS widgets due to server-side auth architecture
  */
 export function TenantSwitcher() {
 	const [showCreateModal, setShowCreateModal] = useState(false);

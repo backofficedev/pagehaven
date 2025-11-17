@@ -10,13 +10,11 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
 import { UserButton } from "../components/UserButton";
 import { TenantSwitcher } from "../components/TenantSwitcher";
-import { ClientOnly } from "../components/ClientOnly";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import WorkOSProvider from "../integrations/workos/provider";
 
 import appCss from "../styles.css?url";
 import "@radix-ui/themes/styles.css";
-import "@workos-inc/widgets/base.css";
 
 import type { QueryClient } from "@tanstack/react-query";
 import { getAuth, getSignInUrl } from "../authkit/serverFunctions";
@@ -73,11 +71,7 @@ function RootComponent() {
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
 					<h1 className="text-2xl font-bold text-gray-900">PageHaven</h1>
 					<div className="flex items-center gap-4">
-						{user && (
-							<ClientOnly fallback={<div className="h-9 w-9" />}>
-								<TenantSwitcher />
-							</ClientOnly>
-						)}
+						{user && <TenantSwitcher />}
 						<UserButton user={user} signInUrl={signInUrl} />
 					</div>
 				</div>

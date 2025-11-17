@@ -16,17 +16,10 @@ export default function AppWorkOSProvider({
 }: {
 	children: React.ReactNode;
 }) {
-	const navigate = useNavigate();
-
 	return (
 		<AuthKitProvider
 			clientId={VITE_WORKOS_CLIENT_ID}
 			apiHostname={VITE_WORKOS_API_HOSTNAME}
-			onRedirectCallback={({ state }) => {
-				if (state?.returnTo) {
-					navigate(state.returnTo);
-				}
-			}}
 		>
 			{children}
 		</AuthKitProvider>
