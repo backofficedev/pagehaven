@@ -1,25 +1,43 @@
-import { defineConfig } from 'vite'
-import { devtools } from '@tanstack/devtools-vite'
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
-import viteReact from '@vitejs/plugin-react'
-import viteTsConfigPaths from 'vite-tsconfig-paths'
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
 
-const config = defineConfig({
+// https://vite.dev/config/
+export default defineConfig(({ mode }) => ({
   plugins: [
-    devtools(),
-    // this is the plugin that enables path aliases
-    viteTsConfigPaths({
-      projects: ['./tsconfig.json'],
-    }),
-    tailwindcss(),
-    tanstackStart(),
-    viteReact({
-      babel: {
-        plugins: ['babel-plugin-react-compiler'],
-      },
-    }),
-  ],
-})
+    react(),
+    // The code below enables dev tools like taking screenshots of your site
+    // while it is being developed on chef.convex.dev.
+    // Feel free to remove this code if you're no longer developing your app with Chef.
+    mode === "development"
+      ? {
+          name: "inject-chef-dev",
+          transform(code: string, id: string) {
+            if (id.includes("main.tsx")) {
+              return {
+                code: `${code}
 
-export default config
+/* Added by Vite plugin inject-chef-dev */
+window.addEventListener('message', async (message) => {
+  if (message.source !== window.parent) return;
+  if (message.data.type !== 'chefPreviewRequest') return;
+
+  const worker = await import('https://chef.convex.dev/scripts/worker.bundled.mjs');
+  await worker.respondToMessage(message);
+});
+            `,
+                map: null,
+              };
+            }
+            return null;
+          },
+        }
+      : null,
+    // End of code for taking screenshots on chef.convex.dev.
+  ].filter(Boolean),
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+}));

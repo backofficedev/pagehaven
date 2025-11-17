@@ -1,106 +1,82 @@
-import * as Avatar from "@radix-ui/react-avatar";
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { Authenticated, Unauthenticated, useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import { useState } from "react";
-import type { AuthUser } from "../authkit/serverFunctions";
-import { UserProfileModal } from "./UserProfileModal";
+import { UserModal } from "./UserModal";
+import { SignInForm } from "../SignInForm";
 
-interface UserButtonProps {
-	user: AuthUser;
-	signInUrl: string;
+export function UserButton() {
+  const [showModal, setShowModal] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
+
+  return (
+    <>
+      <Authenticated>
+        <AuthenticatedUserButton onShowModal={() => setShowModal(true)} />
+        {showModal && (
+          <UserModal onClose={() => setShowModal(false)} />
+        )}
+      </Authenticated>
+
+      <Unauthenticated>
+        <button
+          onClick={() => setShowSignIn(true)}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+        >
+          Sign In
+        </button>
+        {showSignIn && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Sign In</h2>
+                <button
+                  onClick={() => setShowSignIn(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
+              <SignInForm />
+            </div>
+          </div>
+        )}
+      </Unauthenticated>
+    </>
+  );
 }
 
-export function UserButton({ user, signInUrl }: UserButtonProps) {
-	const [showProfileModal, setShowProfileModal] = useState(false);
+function AuthenticatedUserButton({ onShowModal }: { onShowModal: () => void }) {
+  const user = useQuery(api.users.getUserProfile);
 
-	// If no user, show sign in button
-	if (!user) {
-		return (
-			<a
-				href={signInUrl}
-				className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-			>
-				Sign In
-			</a>
-		);
-	}
+  if (!user) {
+    return (
+      <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
+    );
+  }
 
-	// Get user initials for avatar fallback
-	const getInitials = (name: string | null, email: string) => {
-		if (name) {
-			return name
-				.split(" ")
-				.map((n) => n[0])
-				.join("")
-				.toUpperCase()
-				.slice(0, 2);
-		}
-		return email[0].toUpperCase();
-	};
+  const displayName = user.profile?.firstName 
+    ? `${user.profile.firstName} ${user.profile?.lastName || ''}`.trim()
+    : user.email?.split('@')[0] || 'User';
 
-	const initials = getInitials(user.name, user.email);
-
-	return (
-		<>
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger asChild>
-					<button
-						type="button"
-						className="flex items-center gap-2 rounded-full shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 hover:ring-2 hover:ring-blue-400 hover:ring-offset-2 transition-all"
-						aria-label="User menu"
-					>
-						<Avatar.Root className="inline-flex h-9 w-9 select-none items-center justify-center overflow-hidden rounded-full bg-blue-600 align-middle">
-							<Avatar.Image
-								src={user.workosUser?.profilePictureUrl ?? undefined}
-								alt={user.name || user.email}
-								className="h-full w-full object-cover"
-							/>
-							<Avatar.Fallback className="text-sm font-medium text-white leading-none flex items-center justify-center w-full h-full">
-								{initials}
-							</Avatar.Fallback>
-						</Avatar.Root>
-					</button>
-				</DropdownMenu.Trigger>
-
-				<DropdownMenu.Portal>
-					<DropdownMenu.Content
-						className="min-w-[220px] bg-white rounded-md p-1 shadow-lg border border-gray-200 will-change-[opacity,transform] data-[side=top]:animate-slideDownAndFade data-[side=right]:animate-slideLeftAndFade data-[side=bottom]:animate-slideUpAndFade data-[side=left]:animate-slideRightAndFade z-50"
-						sideOffset={5}
-						align="end"
-					>
-						{/* User info header */}
-						<div className="px-3 py-2 border-b border-gray-100">
-							<div className="text-sm font-medium text-gray-900">
-								{user.name || "User"}
-							</div>
-							<div className="text-xs text-gray-500">{user.email}</div>
-						</div>
-
-						{/* Manage Profile */}
-						<DropdownMenu.Item
-							className="group text-sm leading-none text-gray-700 rounded-sm flex items-center h-9 px-3 relative select-none outline-none cursor-pointer hover:bg-blue-50 hover:text-blue-900 data-[disabled]:text-gray-400 data-[disabled]:pointer-events-none"
-							onSelect={() => setShowProfileModal(true)}
-						>
-							Manage Profile
-						</DropdownMenu.Item>
-
-						<DropdownMenu.Separator className="h-[1px] bg-gray-100 my-1" />
-
-						{/* Sign Out */}
-						<DropdownMenu.Item
-							className="group text-sm leading-none text-red-600 rounded-sm flex items-center h-9 px-3 relative select-none outline-none cursor-pointer hover:bg-red-50 data-[disabled]:text-gray-400 data-[disabled]:pointer-events-none"
-							asChild
-						>
-							<a href="/logout">Sign Out</a>
-						</DropdownMenu.Item>
-					</DropdownMenu.Content>
-				</DropdownMenu.Portal>
-			</DropdownMenu.Root>
-
-			{/* User Profile Modal */}
-			<UserProfileModal
-				isOpen={showProfileModal}
-				onClose={() => setShowProfileModal(false)}
-			/>
-		</>
-	);
+  return (
+    <button
+      onClick={onShowModal}
+      className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+    >
+      <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-semibold overflow-hidden">
+        {user.profile?.avatarUrl ? (
+          <img 
+            src={user.profile.avatarUrl} 
+            alt="Avatar" 
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          displayName.charAt(0).toUpperCase()
+        )}
+      </div>
+      <span className="text-sm font-medium text-gray-700 hidden sm:block">
+        {displayName}
+      </span>
+    </button>
+  );
 }
