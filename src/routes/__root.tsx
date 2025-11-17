@@ -15,9 +15,10 @@ import WorkOSProvider from "../integrations/workos/provider";
 
 import appCss from "../styles.css?url";
 import "@radix-ui/themes/styles.css";
+import "@workos-inc/widgets/base.css";
 
 import type { QueryClient } from "@tanstack/react-query";
-import { getAuth, getSignInUrl } from "../authkit/serverFunctions";
+import { getAuth, getSignInUrl, getWidgetToken } from "../authkit/serverFunctions";
 
 interface MyRouterContext {
 	queryClient: QueryClient;
@@ -28,11 +29,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 		try {
 			const { user } = await getAuth({});
 			const signInUrl = await getSignInUrl({});
-			return { user, signInUrl };
+			const { widgetToken } = await getWidgetToken({}); return { user, signInUrl, widgetToken };
 		} catch (error) {
 			console.error("Error in beforeLoad:", error);
 			// Return default values if there's an error
-			return { user: null, signInUrl: "#" };
+			return { user: null, signInUrl: "#", widgetToken: null };
 		}
 	},
 
@@ -63,7 +64,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 });
 
 function RootComponent() {
-	const { user, signInUrl } = Route.useRouteContext();
+	const { user, signInUrl, widgetToken } = Route.useRouteContext();
 
 	return (
 		<div className="min-h-screen bg-gray-50">
@@ -71,7 +72,7 @@ function RootComponent() {
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
 					<h1 className="text-2xl font-bold text-gray-900">PageHaven</h1>
 					<div className="flex items-center gap-4">
-						{user && <TenantSwitcher />}
+						{user && widgetToken && <TenantSwitcher widgetToken={widgetToken} />}
 						<UserButton user={user} signInUrl={signInUrl} />
 					</div>
 				</div>

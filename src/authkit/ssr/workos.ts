@@ -18,3 +18,6 @@ export const getWorkOS = lazy(() => {
 		port,
 	});
 });
+
+// Export a direct instance for convenience
+export const workos = getWorkOS();
