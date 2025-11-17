@@ -10,16 +10,17 @@ This prompt contains the **full specification**. Follow it exactly.
 Build a SaaS platform where:
 
 1. **Users sign in via WorkOS**.
-2. **Users can create organizations (“tenants”)**.
-3. Each tenant gets a **subdomain** like:
+2. **Users automatically get a default organization ("tenant")** upon first sign-in, named "{User's Name}'s Sites".
+3. **Users can create additional organizations ("tenants")**.
+4. Each tenant gets a **subdomain** like:
    `https://<slug>.myapp.com`
-4. Each tenant can:
+5. Each tenant can:
 
    * Upload a ZIP of static HTML/CSS/JS files
      **OR**
    * Connect a private GitHub repo (you pull its static build)
    * The static files are stored in **R2** under `tenants/<tenantId>/...`
-5. When a visitor goes to `https://<tenant>.myapp.com`:
+6. When a visitor goes to `https://<tenant>.myapp.com`:
 
    * An **edge worker** resolves the tenant from the hostname (via KV)
    * Checks whether the tenant requires auth
@@ -27,14 +28,14 @@ Build a SaaS platform where:
    * Fetches the requested static file from **R2**
    * Injects a small overlay UI (HTMLRewriter) for logged-in users
    * Returns the static HTML
-6. Admin users can:
+7. Admin users can:
 
    * Manage domains
    * Manage membership (invite/remove users)
    * Configure auth mode (public vs WorkOS/SSO-only)
    * Upload/sync site content
    * Trigger redeploy (publish to KV)
-7. Viewer users:
+8. Viewer users:
 
    * Can see the tenant in the dashboard
    * Can see the static site if the tenant auth rules allow it
@@ -160,6 +161,15 @@ Value (JSON):
 
   * upserts into `users`
   * sets session cookie / JWT
+* **Default Organization Auto-Provisioning**:
+  * Upon first widget token request, system checks if user has any WorkOS organizations
+  * If none exist, automatically creates:
+    * WorkOS organization named "{User's Name}'s Sites" (e.g., "John's Sites")
+    * Local tenant record with slug `${userId}-default`
+    * User added as admin member
+    * Session refreshed with organization context
+  * This ensures WorkOS widgets (OrganizationSwitcher, etc.) always have data to render
+  * Pattern is idempotent and self-healing (recreates if org deleted)
 * For every **tenant-specific CP API route**, check:
 
   * membership exists → allow read
@@ -566,11 +576,19 @@ See [development_log.md](development_log.md) for detailed implementation notes.
 - Database user persistence
 - Server functions: `getAuth()`, `getSignInUrl()`, `signOut()`
 
-### 🔄 Phase 3: Dashboard Routes (In Progress)
-- Tenant selection/switching UI
-- Tenant dashboard
-- Tenant creation workflow
-- Tenant settings page
+### ✅ Phase 3: Dashboard Routes (Nov 16, 2024)
+- **WorkOS Widget-First Architecture**: Maximum use of WorkOS widgets for UI
+  - `<OrganizationSwitcher />` for tenant switching in header
+  - `<UsersManagement />` for member management
+  - `<UserProfile />` for user account settings
+- **Default Organization Auto-Provisioning**: Every user gets "{User's Name}'s Sites" on first widget load
+  - Ensures OrganizationSwitcher always has data to render
+  - Uses checkpoint pattern in `getWidgetToken()` for resilience
+  - Slug convention: `${userId}-default`
+- **Tenant-to-Organization Mapping**: Each PageHaven tenant maps 1:1 to WorkOS organization
+- Tenant creation workflow with WorkOS org sync
+- Tenant dashboard with role-based access (admin/viewer)
+- Tenant settings, domains, and member management pages
 
 ### ⏳ Phase 4: Control Plane API (Not Started)
 ### ⏳ Phase 5: Content Management (Not Started)

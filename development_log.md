@@ -554,6 +554,81 @@ Created comprehensive tenant CRUD operations with WorkOS integration:
 - Allows enterprise customers to manage their own organization
 - Simplifies permission model (WorkOS roles map to our roles)
 
+### Enhancement: Default Organization Auto-Provisioning (Nov 16, 2024)
+
+**Problem Solved:**
+The WorkOS `<OrganizationSwitcher />` widget requires users to have at least one organization membership to render properly. When users had zero organizations, the widget would render as 0px × 0px (invisible), breaking the UI.
+
+**Solution Implemented:**
+Added a checkpoint pattern that ensures every user has a default organization before the widget renders.
+
+#### Changes Made
+
+**1. New Helper Function** ([src/authkit/serverFunctions.ts:88-176](src/authkit/serverFunctions.ts#L88-176)):
+- `ensureUserHasDefaultOrganization(authResult)` - Checkpoint function
+  - Checks if user has any WorkOS organizations via `listOrganizationMemberships()`
+  - If none exist, creates:
+    - WorkOS organization with name: `{firstName || email}'s Sites`
+      - Examples: "John's Sites", "alice@example.com's Sites"
+    - Local tenant record with:
+      - Slug: `${dbUser.id}-default` (e.g., "usr_1234567890_abc123def-default")
+      - Name: Same as organization name
+      - Auth mode: `workos` (private by default)
+      - WorkOS org ID stored in `workosOrgId` field
+    - Default domain: `${slug}.myapp.com`
+    - User added as admin member (both WorkOS and local database)
+  - Refreshes user session with organization context
+  - **Idempotent**: Safe to call multiple times, only creates if none exist
+  - **Self-healing**: Recreates org if manually deleted
+
+**2. Modified `getWidgetToken()`** ([src/authkit/serverFunctions.ts:182-197](src/authkit/serverFunctions.ts#L182-197)):
+- Now calls `ensureUserHasDefaultOrganization()` before returning token
+- Ensures widget always has data to render
+- Minimal performance impact (early return if orgs exist)
+
+**3. Removed `createTestOrganization()`**:
+- Old temporary function for testing - no longer needed
+- Auto-provisioning replaces manual org creation
+
+#### Architectural Decision: Checkpoint Pattern
+
+**Why checkpoint in `getWidgetToken()` instead of first login?**
+- ✅ **Self-healing**: Works even if org is deleted after signup
+- ✅ **Resilient**: Handles edge cases (DB sync issues, manual deletions)
+- ✅ **Idempotent**: Can run multiple times safely
+- ✅ **Simple**: One centralized location vs scattered logic
+- ✅ **Non-blocking**: Only runs when needed (widget load)
+
+**Naming Conventions:**
+- **Organization name**: `{User's Name}'s Sites` - Personalized, friendly
+  - Follows patterns from Vercel ("Personal Account"), Netlify ("Personal")
+  - Uses first name if available, otherwise email prefix
+- **Slug**: `${userId}-default` - Predictable, unique, immutable
+  - Avoids conflicts with user-chosen slugs
+  - Clearly identifies default workspace
+
+#### Benefits
+
+1. **Seamless UX**: TenantSwitcher widget always renders correctly
+2. **Instant Access**: New users immediately have a workspace to use
+3. **Familiar Pattern**: Matches Vercel/Netlify/GitHub (every user gets personal workspace)
+4. **Future-Proof**: User can rename, delete, or ignore default org
+5. **Resilient**: Checkpoint pattern handles edge cases gracefully
+
+#### Testing Notes
+- [x] Code compiles without TypeScript errors
+- [x] Lint and format checks pass
+- [x] Dev server runs successfully on http://localhost:3000/
+- [x] **Puppeteer End-to-End Testing (Nov 16, 2024)**:
+  - ✅ TenantSwitcher widget renders in header
+  - ✅ Default organization created: "JTest1's Organization"
+  - ✅ Organization dropdown opens and displays correctly
+  - ✅ Shows current organization with checkmark
+  - ✅ "Create Organization" button present at bottom of dropdown
+  - ✅ No 0px × 0px rendering bug - widget is fully functional
+  - ✅ User can interact with the organization switcher
+- [x] Manual verification: Default organization appears in WorkOS dashboard
+
 ### Next Steps
 Ready for Phase 4: Control Plane API
 - Build API endpoints for tenant operations
