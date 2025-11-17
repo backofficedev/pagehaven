@@ -3,12 +3,9 @@ import { signOut } from "../authkit/serverFunctions";
 
 export const Route = createFileRoute("/logout")({
 	beforeLoad: async ({ context }) => {
-		// Invalidate auth cache - this ensures fresh data is fetched after logout
-		context.queryClient.setQueryData(["auth"], {
-			user: null,
-			signInUrl: "#",
-			widgetToken: null,
-		});
+		// Clear auth cache completely - this ensures fresh sign-in URL is generated after logout
+		// We remove the data entirely so getAuthData will generate a fresh URL with forceAccountSelection
+		context.queryClient.removeQueries({ queryKey: ["auth"] });
 		context.queryClient.invalidateQueries({ queryKey: ["auth"] });
 
 		// Clear all browser storage aggressively to force account selection on next login

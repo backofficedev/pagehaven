@@ -240,8 +240,11 @@ export function getAuthorizationUrl(options?: {
 		screenHint: options?.screenHint,
 	};
 
-	// Pass prompt=select_account to the OAuth provider (Google, etc) via provider_query_params
+	// Try both approaches to force account selection
 	if (options?.forceAccountSelection) {
+		// Approach 1: Pass prompt directly (might work with newer WorkOS versions)
+		params.prompt = "select_account";
+		// Approach 2: Pass via provider_query_params (for OAuth providers)
 		params.provider_query_params = {
 			prompt: "select_account",
 		};
@@ -249,7 +252,20 @@ export function getAuthorizationUrl(options?: {
 
 	log("Authorization URL params:", params);
 
-	const authorizationUrl = workos.userManagement.getAuthorizationUrl(params);
+	let authorizationUrl = workos.userManagement.getAuthorizationUrl(params);
+
+	// Add cache-busting parameter and ensure prompt is in the URL
+	// This ensures that after logout, users are forced to go through account selection
+	if (options?.forceAccountSelection) {
+		const url = new URL(authorizationUrl);
+		// Add timestamp to force fresh authentication flow
+		url.searchParams.set("_t", Date.now().toString());
+		// Ensure prompt=select_account is in the URL (in case WorkOS didn't include it)
+		if (!url.searchParams.has("prompt")) {
+			url.searchParams.set("prompt", "select_account");
+		}
+		authorizationUrl = url.toString();
+	}
 
 	log("Generated authorization URL:", authorizationUrl);
 	return authorizationUrl;
