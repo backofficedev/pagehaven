@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm db:generate:*)",
+      "Bash(pnpm db:migrate:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(pnpm add:*)",
+      "Bash(xargs -r kill -9)",
+      "Bash(awk:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm biome lint:*)",
+      "Bash(pnpm format:*)",
+      "Bash(pnpm check:*)",
+      "Bash(pnpm biome check:*)",
+      "Bash(cat:*)",
+      "mcp__puppeteer-mcp-claude__puppeteer_launch",
+      "mcp__puppeteer-mcp-claude__puppeteer_new_page",
+      "mcp__puppeteer-mcp-claude__puppeteer_navigate",
+      "mcp__puppeteer-mcp-claude__puppeteer_click",
+      "mcp__puppeteer-mcp-claude__puppeteer_type",
+      "mcp__puppeteer-mcp-claude__puppeteer_get_text",
+      "mcp__puppeteer-mcp-claude__puppeteer_screenshot",
+      "mcp__puppeteer-mcp-claude__puppeteer_evaluate",
+      "mcp__puppeteer-mcp-claude__puppeteer_wait_for_selector",
+      "mcp__puppeteer-mcp-claude__puppeteer_close_page",
+      "mcp__puppeteer-mcp-claude__puppeteer_close_browser",
+      "mcp__puppeteer-mcp-claude__puppeteer_set_cookies",
+      "mcp__puppeteer-mcp-claude__puppeteer_get_cookies",
+      "mcp__puppeteer-mcp-claude__puppeteer_delete_cookies",
+      "mcp__puppeteer-mcp-claude__puppeteer_set_request_interception"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

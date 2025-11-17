@@ -39,6 +39,23 @@ PageHaven is a multi-tenant static-site hosting platform built with TanStack Sta
 5. **Update development_log.md** ✅
 6. Commit if appropriate
 
+### 🌐 Browser Testing with Puppeteer MCP
+**When testing the application UI or flows:**
+- **Always use the Puppeteer MCP tools** (prefixed with `mcp__puppeteer-mcp-claude__`)
+- **Iterate until it works**: Don't give up on the first failure
+  - If a selector doesn't work, try alternative selectors
+  - Wait for elements to load before interacting
+  - Take screenshots to debug issues
+  - Adjust timing and waits as needed
+- **Common workflow**:
+  1. Launch browser with `puppeteer_launch`
+  2. Create a new page with `puppeteer_new_page`
+  3. Navigate to the URL with `puppeteer_navigate`
+  4. Wait for selectors with `puppeteer_wait_for_selector`
+  5. Interact using `puppeteer_click`, `puppeteer_type`, etc.
+  6. Take screenshots to verify state
+  7. Close when done with `puppeteer_close_browser`
+
 ## Project Structure
 
 ```
