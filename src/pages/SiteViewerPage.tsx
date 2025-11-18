@@ -1,11 +1,14 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "convex/react";
+import { useEffect, useRef } from "react";
 import { api } from "../../convex/_generated/api";
 import { SiteNavBar } from "../components/SiteNavBar";
 import { getConvexHttpUrl } from "../lib/utils";
 
 export function SiteViewerPage() {
   const { slug, "*": filePath } = useParams<{ slug: string; "*": string }>();
+  const navigate = useNavigate();
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   
   // Get the file path from the URL (everything after /view/:slug/)
   const actualFilePath = filePath || "";
@@ -17,10 +20,33 @@ export function SiteViewerPage() {
   );
   
   // Construct the iframe src URL
-  // Add cache-busting parameter to ensure fresh content
+  // Use the file path as part of the key to ensure iframe updates when path changes
   const iframeSrc = slug 
-    ? `${getConvexHttpUrl(`${slug}/${actualFilePath}`)}?_t=${Date.now()}`
+    ? getConvexHttpUrl(`${slug}/${actualFilePath}`)
     : "";
+
+  // Listen for navigation messages from the iframe
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Verify message is from our iframe (check origin if needed)
+      if (event.data && event.data.type === 'pagehaven-navigation') {
+        const newPath = event.data.path || '';
+        
+        // Only update if the path is different from current
+        const currentPath = actualFilePath;
+        if (newPath !== currentPath && slug) {
+          const newUrl = newPath ? `/view/${slug}/${newPath}` : `/view/${slug}`;
+          navigate(newUrl, { replace: true });
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [slug, navigate, actualFilePath]);
 
   if (!slug) {
     return (
@@ -72,6 +98,8 @@ export function SiteViewerPage() {
       <SiteNavBar siteId={site._id} showDashboard showSharing />
       <div className="flex-1 overflow-hidden">
         <iframe
+          key={`${slug}-${actualFilePath}`}
+          ref={iframeRef}
           src={iframeSrc}
           className="w-full h-full border-0"
           title={`${site.slug} - ${actualFilePath || 'index'}`}

@@ -134,6 +134,77 @@ async function serveSiteFile(
     if (mimeType.startsWith('text/') || mimeType === 'application/javascript' || mimeType === 'application/json') {
       // Text-based files
       let text = await file.async('string');
+      
+      // For HTML files, inject a script to intercept link clicks and communicate with parent
+      if (mimeType === 'text/html') {
+        const navigationScript = `
+<script>
+(function() {
+  function getPathAfterSlug(url) {
+    // Extract path after slug from URL like /slug/path/to/file.html
+    const pathname = typeof url === 'string' ? url : url.pathname;
+    const segments = pathname.split('/').filter(Boolean);
+    if (segments.length > 1) {
+      return segments.slice(1).join('/');
+    }
+    return '';
+  }
+  
+  // Intercept all link clicks
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    if (!link) return;
+    
+    const href = link.getAttribute('href');
+    if (!href) return;
+    
+    // Skip external links, mailto, tel, etc.
+    if (href.startsWith('http://') || href.startsWith('https://') || 
+        href.startsWith('mailto:') || href.startsWith('tel:') || 
+        href.startsWith('javascript:') || href.startsWith('#')) {
+      return;
+    }
+    
+    // Prevent default navigation
+    e.preventDefault();
+    
+    // Resolve the href relative to current location
+    let resolvedUrl;
+    try {
+      resolvedUrl = new URL(href, window.location.href);
+    } catch (e) {
+      // If URL resolution fails, just use the href as-is
+      resolvedUrl = new URL(href, window.location.origin);
+    }
+    
+    // Extract the path after the slug
+    const pathAfterSlug = getPathAfterSlug(resolvedUrl);
+    
+    // Send message to parent window BEFORE navigating
+    // This allows the parent to update the URL
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'pagehaven-navigation',
+        path: pathAfterSlug
+      }, '*');
+    }
+    
+    // Navigate within the iframe
+    window.location.href = href;
+  });
+})();
+</script>
+`;
+        // Inject script before closing </body> tag, or at the end if no body tag
+        if (text.includes('</body>')) {
+          text = text.replace('</body>', navigationScript + '</body>');
+        } else if (text.includes('</html>')) {
+          text = text.replace('</html>', navigationScript + '</html>');
+        } else {
+          text = text + navigationScript;
+        }
+      }
+      
       content = new Blob([text], { type: mimeType });
     } else {
       // Binary files (images, fonts, etc.)
