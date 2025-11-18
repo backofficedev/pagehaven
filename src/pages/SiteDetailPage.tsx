@@ -1,14 +1,21 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { UserButton } from "../components/UserButton";
-import { useState } from "react";
+import { SiteNavBar } from "../components/SiteNavBar";
+import { useState, useEffect } from "react";
 import { Id } from "../../convex/_generated/dataModel";
-import { getConvexHttpUrl } from "../lib/utils";
 
 export function SiteDetailPage() {
   const { siteId } = useParams<{ siteId: string }>();
   const [activeTab, setActiveTab] = useState<"overview" | "settings" | "members" | "content">("overview");
+  
+  // Handle hash navigation (e.g., #members)
+  useEffect(() => {
+    const hash = window.location.hash.slice(1); // Remove the #
+    if (hash === "members" || hash === "settings" || hash === "content" || hash === "overview") {
+      setActiveTab(hash as "overview" | "settings" | "members" | "content");
+    }
+  }, []);
 
   if (!siteId) {
     return <div>Site ID required</div>;
@@ -16,14 +23,7 @@ export function SiteDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link to="/sites" className="text-2xl font-bold text-indigo-600">
-            PageHaven
-          </Link>
-          <UserButton />
-        </div>
-      </header>
+      <SiteNavBar siteId={siteId as Id<"sites">} showDashboard showSharing />
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         <SiteDetailContent siteId={siteId as Id<"sites">} activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -184,14 +184,12 @@ function OverviewTab({ site }: { site: any }) {
 
       {site.isUploaded && (
         <div>
-          <a
-            href={getConvexHttpUrl(site.slug)}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to={`/view/${site.slug}`}
             className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
           >
             View Site
-          </a>
+          </Link>
         </div>
       )}
     </div>
@@ -521,14 +519,12 @@ function ContentTab({ site }: { site: any }) {
       {site.isUploaded ? (
         <div>
           <p className="text-gray-600 mb-4">Site files are uploaded and ready to serve.</p>
-          <a
-            href={getConvexHttpUrl(site.slug)}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to={`/view/${site.slug}`}
             className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
           >
             View Site
-          </a>
+          </Link>
         </div>
       ) : (
         <div>

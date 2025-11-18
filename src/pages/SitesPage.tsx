@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Authenticated, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { UserButton } from "../components/UserButton";
+import { SiteNavBar } from "../components/SiteNavBar";
 import { SiteCard } from "../components/SiteCard";
 import { AddSiteCard } from "../components/AddSiteCard";
 import { useState } from "react";
@@ -20,14 +20,7 @@ function SitesContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold text-indigo-600">
-            PageHaven
-          </Link>
-          <UserButton />
-        </div>
-      </header>
+      <SiteNavBar />
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         <div className="mb-8">

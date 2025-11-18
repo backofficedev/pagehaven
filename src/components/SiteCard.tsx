@@ -5,7 +5,6 @@ import { Id } from "../../convex/_generated/dataModel";
 import { toast } from "sonner";
 import { useState } from "react";
 import { SiteUpload } from "./SiteUpload";
-import { getConvexHttpUrl } from "../lib/utils";
 
 interface Site {
   _id: Id<"sites">;
@@ -95,14 +94,12 @@ export function SiteCard({ site }: SiteCardProps) {
         )}
 
         {site.isUploaded && (
-          <a
-            href={getConvexHttpUrl(site.slug)}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to={`/view/${site.slug}`}
             className="w-full inline-block text-center px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
           >
             View Site
-          </a>
+          </Link>
         )}
       </div>
 

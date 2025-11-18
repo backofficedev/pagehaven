@@ -242,15 +242,20 @@ async function serveSiteFile(
       // Text-based files
       let text = await file.async('string');
       
-      // Inject nav bar into HTML files
+      // Inject nav bar into HTML files (unless noNavbar query parameter is present)
       if (mimeType === 'text/html') {
-        // Get the Convex URL from the request URL
         const url = new URL(requestUrl);
-        const baseUrl = `${url.protocol}//${url.host}`;
-        // Convert .convex.site to .convex.cloud for dashboard links
-        const dashboardBaseUrl = baseUrl.replace('.convex.site', '.convex.cloud');
-        const navBar = generateNavBar(site._id, slug, userId, isAdmin, baseUrl, dashboardBaseUrl);
-        text = injectNavBar(text, navBar);
+        const noNavbar = url.searchParams.get('noNavbar');
+        
+        // Only inject navbar if noNavbar parameter is not set
+        if (!noNavbar) {
+          // Get the Convex URL from the request URL
+          const baseUrl = `${url.protocol}//${url.host}`;
+          // Convert .convex.site to .convex.cloud for dashboard links
+          const dashboardBaseUrl = baseUrl.replace('.convex.site', '.convex.cloud');
+          const navBar = generateNavBar(site._id, slug, userId, isAdmin, baseUrl, dashboardBaseUrl);
+          text = injectNavBar(text, navBar);
+        }
       }
       
       content = new Blob([text], { type: mimeType });
@@ -263,9 +268,16 @@ async function serveSiteFile(
     }
     
     // Set appropriate headers
+    // Check if noNavbar is set - if so, disable caching to ensure fresh content
+    const url = new URL(requestUrl);
+    const noNavbar = url.searchParams.get('noNavbar');
+    const cacheControl = noNavbar 
+      ? 'no-cache, no-store, must-revalidate' 
+      : 'public, max-age=3600';
+    
     const headers = new Headers({
       'Content-Type': mimeType,
-      'Cache-Control': 'public, max-age=3600',
+      'Cache-Control': cacheControl,
     });
     
     // Add CORS headers for cross-origin requests

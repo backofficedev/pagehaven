@@ -3,6 +3,7 @@ import { Toaster } from "sonner";
 import { HomePage } from "./pages/HomePage";
 import { SitesPage } from "./pages/SitesPage";
 import { SiteDetailPage } from "./pages/SiteDetailPage";
+import { SiteViewerPage } from "./pages/SiteViewerPage";
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/sites" element={<SitesPage />} />
           <Route path="/sites/:siteId" element={<SiteDetailPage />} />
+          <Route path="/view/:slug/*" element={<SiteViewerPage />} />
         </Routes>
         <Toaster />
       </div>
