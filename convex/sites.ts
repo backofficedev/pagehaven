@@ -235,6 +235,39 @@ export const getSiteById = query({
   },
 });
 
+// Check if user is admin or owner of a site (for nav bar display)
+export const checkUserIsAdmin = query({
+  args: {
+    siteId: v.id("sites"),
+    userId: v.optional(v.id("users")),
+  },
+  handler: async (ctx, args) => {
+    if (!args.userId) {
+      return false;
+    }
+
+    const site = await ctx.db.get(args.siteId);
+    if (!site) {
+      return false;
+    }
+
+    // Owner is always admin
+    if (site.ownerId === args.userId) {
+      return true;
+    }
+
+    // Check if user has admin membership
+    const membership = await ctx.db
+      .query("siteMemberships")
+      .withIndex("by_site_and_user", (q) => 
+        q.eq("siteId", args.siteId).eq("userId", args.userId!)
+      )
+      .first();
+
+    return membership?.role === "admin";
+  },
+});
+
 // Update site auth mode (admin only)
 export const updateSiteAuthMode = mutation({
   args: {
