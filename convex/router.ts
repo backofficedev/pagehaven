@@ -6,6 +6,10 @@ import JSZip from "jszip";
 
 const http = httpRouter();
 
+// In-memory cache for extracted ZIP files
+// Key: siteFilesId, Value: { zip: JSZip, lastUpdated: number }
+const zipCache = new Map<string, { zip: JSZip; lastUpdated: number }>();
+
 // Helper function to get MIME type from file extension
 function getMimeType(filename: string): string {
   const ext = filename.split('.').pop()?.toLowerCase() || '';
@@ -56,7 +60,8 @@ async function serveSiteFile(
   ctx: any,
   slug: string,
   filePath: string,
-  requestUrl: string
+  requestUrl: string,
+  request?: Request
 ): Promise<Response> {
   // Get the site by slug
   const site = await ctx.runQuery(api.sites.getSiteBySlug, { slug });
@@ -87,16 +92,44 @@ async function serveSiteFile(
     }
   }
 
-    // Get the ZIP file from storage
-    const zipBlob = await ctx.storage.get(site.siteFilesId);
-    if (!zipBlob) {
-      return new Response("Site files not found", { status: 404 });
+    // Try to get ZIP from cache first
+    const cacheKey = site.siteFilesId;
+    const cached = zipCache.get(cacheKey);
+    let zip: JSZip;
+    
+    // Check if we have a valid cached ZIP
+    if (cached && cached.lastUpdated >= (site.lastUpdated || 0)) {
+      zip = cached.zip;
+    } else {
+      // Get the ZIP file from storage
+      const zipBlob = await ctx.storage.get(site.siteFilesId);
+      if (!zipBlob) {
+        return new Response("Site files not found", { status: 404 });
+      }
+
+      // Convert blob to array buffer for JSZip
+      const arrayBuffer = await zipBlob.arrayBuffer();
+      zip = await JSZip.loadAsync(arrayBuffer);
+      
+      // Cache the ZIP file
+      zipCache.set(cacheKey, {
+        zip,
+        lastUpdated: site.lastUpdated || Date.now(),
+      });
+      
+      // Clean up old cache entries periodically (simple LRU-like behavior)
+      if (zipCache.size > 50) {
+        // Remove oldest entries (keep most recent 30)
+        const entries = Array.from(zipCache.entries());
+        entries.sort((a, b) => b[1].lastUpdated - a[1].lastUpdated);
+        zipCache.clear();
+        entries.slice(0, 30).forEach(([key, value]) => {
+          zipCache.set(key, value);
+        });
+      }
     }
 
   try {
-    // Convert blob to array buffer for JSZip
-    const arrayBuffer = await zipBlob.arrayBuffer();
-    const zip = await JSZip.loadAsync(arrayBuffer);
     
     // Normalize the requested file path
     let requestedPath = normalizePath(filePath);
@@ -149,6 +182,45 @@ async function serveSiteFile(
     }
     return '';
   }
+  
+  // Prefetch links on hover for faster navigation
+  let prefetchTimeout;
+  document.addEventListener('mouseover', function(e) {
+    const link = e.target.closest('a');
+    if (!link) return;
+    
+    const href = link.getAttribute('href');
+    if (!href) return;
+    
+    // Skip external links, mailto, tel, etc.
+    if (href.startsWith('http://') || href.startsWith('https://') || 
+        href.startsWith('mailto:') || href.startsWith('tel:') || 
+        href.startsWith('javascript:') || href.startsWith('#')) {
+      return;
+    }
+    
+    // Prefetch after a short delay (100ms) to avoid prefetching on accidental hovers
+    clearTimeout(prefetchTimeout);
+    prefetchTimeout = setTimeout(function() {
+      try {
+        const resolvedUrl = new URL(href, window.location.href);
+        // Create a link element to prefetch
+        const prefetchLink = document.createElement('link');
+        prefetchLink.rel = 'prefetch';
+        prefetchLink.href = resolvedUrl.href;
+        document.head.appendChild(prefetchLink);
+      } catch (e) {
+        // Ignore prefetch errors
+      }
+    }, 100);
+  });
+  
+  document.addEventListener('mouseout', function(e) {
+    const link = e.target.closest('a');
+    if (link) {
+      clearTimeout(prefetchTimeout);
+    }
+  });
   
   // Intercept all link clicks
   document.addEventListener('click', function(e) {
@@ -214,16 +286,34 @@ async function serveSiteFile(
       content = new Blob([uint8Array], { type: mimeType });
     }
     
-    // Set appropriate headers
-    const cacheControl = 'public, max-age=3600';
+    // Set appropriate headers with better caching
+    // Static assets can be cached longer, HTML should be shorter
+    const isStaticAsset = mimeType.startsWith('image/') || 
+                         mimeType.startsWith('font/') || 
+                         mimeType === 'text/css' || 
+                         mimeType === 'application/javascript';
+    const maxAge = isStaticAsset ? 31536000 : 3600; // 1 year for static, 1 hour for HTML
+    const cacheControl = `public, max-age=${maxAge}, immutable`;
+    
+    // Generate ETag for better caching
+    const etag = `"${site.siteFilesId}-${requestedPath}-${site.lastUpdated || 0}"`;
     
     const headers = new Headers({
       'Content-Type': mimeType,
       'Cache-Control': cacheControl,
+      'ETag': etag,
     });
     
     // Add CORS headers for cross-origin requests
     headers.set('Access-Control-Allow-Origin', '*');
+    
+    // Check if client has cached version (304 Not Modified)
+    if (request) {
+      const ifNoneMatch = request.headers.get('if-none-match');
+      if (ifNoneMatch === etag) {
+        return new Response(null, { status: 304, headers });
+      }
+    }
     
     return new Response(content, {
       status: 200,
@@ -260,7 +350,7 @@ http.route({
     const slug = pathSegments[0];
     const filePath = pathSegments.slice(1).join('/');
     
-    return serveSiteFile(ctx, slug, filePath, request.url);
+    return serveSiteFile(ctx, slug, filePath, request.url, request);
   }),
 });
 
