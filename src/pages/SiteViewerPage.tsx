@@ -16,10 +16,10 @@ export function SiteViewerPage() {
     slug ? { slug } : "skip"
   );
   
-  // Construct the iframe src URL with a query parameter to skip navbar injection
+  // Construct the iframe src URL
   // Add cache-busting parameter to ensure fresh content
   const iframeSrc = slug 
-    ? `${getConvexHttpUrl(`${slug}/${actualFilePath}`)}?noNavbar=1&_t=${Date.now()}`
+    ? `${getConvexHttpUrl(`${slug}/${actualFilePath}`)}?_t=${Date.now()}`
     : "";
 
   if (!slug) {
