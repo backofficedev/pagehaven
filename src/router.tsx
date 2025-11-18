@@ -2,9 +2,10 @@ import { createRouter } from '@tanstack/react-router';
 import { ConvexQueryClient } from '@convex-dev/react-query';
 import { QueryClient } from '@tanstack/react-query';
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query';
-import { ConvexProvider, ConvexProviderWithAuth, ConvexReactClient } from 'convex/react';
+import { ConvexProviderWithAuth, ConvexReactClient } from 'convex/react';
 import { AuthKitProvider, useAccessToken, useAuth } from '@workos/authkit-tanstack-react-start/client';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect, useState } from 'react';
+import type React from 'react';
 import { routeTree } from './routeTree.gen';
 
 export function getRouter() {
@@ -35,16 +36,49 @@ export function getRouter() {
     defaultNotFoundComponent: () => <p>not found</p>,
     context: { queryClient, convexClient: convex, convexQueryClient },
     Wrap: ({ children }) => (
-      <AuthKitProvider>
-        <ConvexProviderWithAuth client={convexQueryClient.convexClient} useAuth={useAuthFromWorkOS}>
-          {children}
-        </ConvexProviderWithAuth>
-      </AuthKitProvider>
+      <ProvidersWrapper convexClient={convex}>{children}</ProvidersWrapper>
     ),
   });
   setupRouterSsrQueryIntegration({ router, queryClient });
 
   return router;
+}
+
+function ProvidersWrapper({
+  convexClient,
+  children,
+}: {
+  convexClient: ConvexReactClient;
+  children: React.ReactNode;
+}) {
+  // Delay AuthKitProvider render to ensure RouterProvider is available
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    // Render without AuthKitProvider initially to avoid useRouter warning
+    return <ConvexProviderWithAuth client={convexClient} useAuth={() => ({ isLoading: true, isAuthenticated: false, fetchAccessToken: async () => null })}>{children}</ConvexProviderWithAuth>;
+  }
+
+  return (
+    <AuthKitProvider>
+      <ConvexAuthWrapper client={convexClient}>{children}</ConvexAuthWrapper>
+    </AuthKitProvider>
+  );
+}
+
+function ConvexAuthWrapper({
+  client,
+  children,
+}: {
+  client: ConvexReactClient;
+  children: React.ReactNode;
+}) {
+  const auth = useAuthFromWorkOS();
+  return <ConvexProviderWithAuth client={client} useAuth={() => auth}>{children}</ConvexProviderWithAuth>;
 }
 
 function useAuthFromWorkOS() {
