@@ -4,6 +4,7 @@ import { api } from "../../convex/_generated/api";
 import { UserButton } from "../components/UserButton";
 import { useState } from "react";
 import { Id } from "../../convex/_generated/dataModel";
+import { getConvexHttpUrl } from "../lib/utils";
 
 export function SiteDetailPage() {
   const { siteId } = useParams<{ siteId: string }>();
@@ -184,7 +185,7 @@ function OverviewTab({ site }: { site: any }) {
       {site.isUploaded && (
         <div>
           <a
-            href={`/${site.slug}`}
+            href={getConvexHttpUrl(site.slug)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
@@ -521,7 +522,7 @@ function ContentTab({ site }: { site: any }) {
         <div>
           <p className="text-gray-600 mb-4">Site files are uploaded and ready to serve.</p>
           <a
-            href={`/${site.slug}`}
+            href={getConvexHttpUrl(site.slug)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"

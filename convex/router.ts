@@ -64,17 +64,23 @@ async function serveSiteFile(
     return new Response("Site not found", { status: 404 });
   }
 
-  // Check authentication and access
-  const userId = await getAuthUserId(ctx);
-  
-  // Check if user can access the site
-  const canAccess = await ctx.runQuery(api.sites.checkSiteAccess, {
-    siteId: site._id,
-    userId: userId || undefined,
-  });
+  // Check if site is public - if so, allow access without authentication
+  const authMode = site.authMode || "authenticated";
+  if (authMode === "public") {
+    // Public site - no authentication required
+  } else {
+    // Authenticated site - check authentication and access
+    const userId = await getAuthUserId(ctx);
+    
+    // Check if user can access the site
+    const canAccess = await ctx.runQuery(api.sites.checkSiteAccess, {
+      siteId: site._id,
+      userId: userId || undefined,
+    });
 
-  if (!canAccess) {
-    return new Response("Access denied", { status: 403 });
+    if (!canAccess) {
+      return new Response("Access denied. This site requires authentication.", { status: 403 });
+    }
   }
 
     // Get the ZIP file from storage
@@ -152,28 +158,30 @@ async function serveSiteFile(
   }
 }
 
-// Serve static sites - root path (just slug)
+// Serve static sites - catch-all route for all paths
+// This will match any path that doesn't match other routes (like /api/auth/*)
+// We need to check if it's a site slug and serve the file, otherwise return 404
 http.route({
-  path: "/{slug}",
+  pathPrefix: "/",
   method: "GET",
   handler: httpAction(async (ctx, request) => {
     const url = new URL(request.url);
-    const slug = url.pathname.slice(1).split('/')[0]; // Get slug (first path segment)
-    const filePath = url.pathname.slice(slug.length + 1); // Get remaining path (empty for root)
+    const pathname = url.pathname;
     
-    return serveSiteFile(ctx, slug, filePath);
-  }),
-});
-
-// Serve static sites - catch-all for sub-paths
-http.route({
-  path: "/{slug}/*",
-  method: "GET",
-  handler: httpAction(async (ctx, request) => {
-    const url = new URL(request.url);
-    const pathSegments = url.pathname.slice(1).split('/');
-    const slug = pathSegments[0]; // Get slug (first path segment)
-    const filePath = pathSegments.slice(1).join('/'); // Get remaining path
+    // Skip auth routes and other API routes
+    if (pathname.startsWith("/api/")) {
+      return new Response("Not found", { status: 404 });
+    }
+    
+    // Parse the path: /slug or /slug/path/to/file
+    const pathSegments = pathname.slice(1).split('/').filter(Boolean);
+    
+    if (pathSegments.length === 0) {
+      return new Response("Not found", { status: 404 });
+    }
+    
+    const slug = pathSegments[0];
+    const filePath = pathSegments.slice(1).join('/');
     
     return serveSiteFile(ctx, slug, filePath);
   }),
