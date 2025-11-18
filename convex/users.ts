@@ -76,3 +76,27 @@ export const generateUploadUrl = mutation({
     return await ctx.storage.generateUploadUrl();
   },
 });
+
+// Find user by email (for adding members to sites)
+export const findUserByEmail = query({
+  args: {
+    email: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Search through all users to find by email
+    // Note: This is not efficient for large user bases, but works for now
+    // In production, you'd want an index on email
+    const users = await ctx.db.query("users").collect();
+    const user = users.find((u) => u.email === args.email);
+    
+    if (!user) {
+      return null;
+    }
+
+    return {
+      _id: user._id,
+      email: user.email,
+      name: user.name,
+    };
+  },
+});

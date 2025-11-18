@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import { HomePage } from "./pages/HomePage";
 import { SitesPage } from "./pages/SitesPage";
+import { SiteDetailPage } from "./pages/SiteDetailPage";
 
 export default function App() {
   return (
@@ -10,6 +11,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/sites" element={<SitesPage />} />
+          <Route path="/sites/:siteId" element={<SiteDetailPage />} />
         </Routes>
         <Toaster />
       </div>

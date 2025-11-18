@@ -1,4 +1,5 @@
 import { useMutation } from "convex/react";
+import { Link } from "react-router-dom";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { toast } from "sonner";
@@ -59,7 +60,9 @@ export function SiteCard({ site }: SiteCardProps) {
       
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-semibold text-gray-900 truncate">{site.name}</h3>
+          <Link to={`/sites/${site._id}`} className="font-semibold text-gray-900 truncate hover:text-indigo-600">
+            {site.name}
+          </Link>
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="text-gray-400 hover:text-red-500 transition-colors ml-2"
