@@ -42,7 +42,7 @@ function SiteViewerPage() {
                 const currentPath = actualFilePath;
                 if (newPath !== currentPath && slug) {
                     const newUrl = newPath ? `/view/${slug}/${newPath}` : `/view/${slug}`;
-                    navigate({ to: newUrl, replace: true });
+                    navigate({ to: newUrl });
                 }
             }
         };
