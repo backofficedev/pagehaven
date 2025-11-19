@@ -62,6 +62,7 @@ export function SiteCard({ site }: SiteCardProps) {
                     <Link
                         to="/sites/$siteId"
                         params={{ siteId: site._id }}
+                        preload="intent"
                         className="font-semibold text-gray-900 truncate hover:text-indigo-600"
                     >
                         {site.name}
@@ -100,6 +101,7 @@ export function SiteCard({ site }: SiteCardProps) {
                     <Link
                         to="/view/$slug"
                         params={{ slug: site.slug }}
+                        preload="intent"
                         className="w-full inline-block text-center px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
                     >
                         View Site

@@ -12,7 +12,7 @@ function HomePage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
             <header className="flex justify-between items-center p-6">
-                <Link to="/" className="text-2xl font-bold text-indigo-600">
+                <Link to="/" preload="intent" className="text-2xl font-bold text-indigo-600">
                     PageHaven
                 </Link>
                 <UserButton />
@@ -52,6 +52,7 @@ function AuthenticatedContent() {
             </p>
             <Link
                 to="/sites"
+                preload="intent"
                 className="inline-flex items-center px-8 py-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-lg hover:shadow-xl"
             >
                 Manage Your Sites

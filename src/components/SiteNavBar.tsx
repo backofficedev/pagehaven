@@ -28,11 +28,16 @@ export function SiteNavBar({ siteId, showDashboard = false, showSharing = false 
         <header className="bg-white shadow-sm border-b">
             <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
                 <div className="flex items-center gap-4">
-                    <Link to="/" className="text-2xl font-bold text-indigo-600">
+                    <Link
+                        to="/"
+                        preload="intent"
+                        className="text-2xl font-bold text-indigo-600"
+                    >
                         PageHaven
                     </Link>
                     <Link
                         to="/sites"
+                        preload="intent"
                         className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50 rounded-md transition-colors"
                     >
                         My Sites
@@ -41,7 +46,9 @@ export function SiteNavBar({ siteId, showDashboard = false, showSharing = false 
                 <div className="flex items-center gap-3">
                     {showDashboard && isAdmin && actualSiteId && (
                         <Link
-                            to={`/sites/${actualSiteId}`}
+                            to="/sites/$siteId"
+                            preload="intent"
+                            params={{ siteId: actualSiteId }}
                             className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
                         >
                             Dashboard
@@ -49,7 +56,10 @@ export function SiteNavBar({ siteId, showDashboard = false, showSharing = false 
                     )}
                     {showSharing && isAdmin && actualSiteId && (
                         <Link
-                            to={`/sites/${actualSiteId}#members`}
+                            to="/sites/$siteId"
+                            preload="intent"
+                            params={{ siteId: actualSiteId }}
+                            hash="members"
                             className="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 transition-colors"
                         >
                             Sharing
