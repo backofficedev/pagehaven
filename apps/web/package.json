@@ -3,12 +3,21 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./alchemy": {
+      "bun": "./alchemy.run.ts",
+      "types": "./alchemy.run.ts"
+    }
+  },
   "scripts": {
     "dev": "vite --port=3001",
     "build": "vite build",
     "serve": "vite preview",
     "start": "vite",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "dev:alchemy": "alchemy dev --app web",
+    "deploy": "alchemy deploy --app web",
+    "destroy": "alchemy destroy --app web"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
@@ -34,7 +43,8 @@
     "libsql": "catalog:",
     "better-auth": "catalog:",
     "@pagehaven/api": "workspace:*",
-    "@pagehaven/auth": "workspace:*"
+    "@pagehaven/auth": "workspace:*",
+    "server": "workspace:*"
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.114.27",

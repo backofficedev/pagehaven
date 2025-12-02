@@ -17,19 +17,26 @@
       "cache": false,
       "persistent": true
     },
+    "deploy": {
+      "dependsOn": ["^deploy"],
+      "cache": false
+    },
+    "server#destroy": {
+      "dependsOn": ["web#destroy"],
+      "cache": false
+    },
+    "web#destroy": {
+      "cache": false
+    },
+    "db:generate": {
+      "cache": false,
+      "persistent": true
+    },
     "db:push": {
       "cache": false,
       "persistent": true
     },
     "db:studio": {
-      "cache": false,
-      "persistent": true
-    },
-    "db:migrate": {
-      "cache": false,
-      "persistent": true
-    },
-    "db:generate": {
       "cache": false,
       "persistent": true
     }

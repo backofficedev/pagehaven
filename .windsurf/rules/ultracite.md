@@ -1,12 +1,16 @@
+---
+trigger: always_on
+---
+
 # Ultracite Code Standards
 
 This project uses **Ultracite**, a zero-config Biome preset that enforces strict code quality standards through automated formatting and linting.
 
 ## Quick Reference
 
-- **Format code**: `npx ultracite fix`
-- **Check for issues**: `npx ultracite check`
-- **Diagnose setup**: `npx ultracite doctor`
+- **Format code**: `bunx ultracite fix`
+- **Check for issues**: `bunx ultracite check`
+- **Diagnose setup**: `bunx ultracite doctor`
 
 Biome (the underlying engine) provides extremely fast Rust-based linting and formatting. Most issues are automatically fixable.
 
@@ -87,10 +91,13 @@ Write code that is **accessible, performant, type-safe, and maintainable**. Focu
 
 ### Framework-Specific Guidance
 
-**Next.js:**
-- Use Next.js `<Image>` component for images
-- Use `next/head` or App Router metadata API for head elements
-- Use Server Components for async data fetching instead of async Client Components
+**TanStack Router & Query:**
+- Use TanStack Router for all client-side routing instead of ad-hoc navigation
+- Co-locate data fetching with routes using loader APIs where appropriate
+- Use TanStack Query for server state; avoid duplicating server state in React component state
+- Prefer `useQuery`/`useInfiniteQuery` for fetching data and `useMutation` for writes
+- Configure stable query keys and cache times to balance freshness and performance
+- Use optimistic updates and query invalidation instead of manual refetch patterns
 
 **React 19+:**
 - Use ref as a prop instead of `React.forwardRef`
@@ -120,4 +127,4 @@ Biome's linter will catch most issues automatically. Focus your attention on:
 
 ---
 
-Most formatting and common issues are automatically fixed by Biome. Run `npx ultracite fix` before committing to ensure compliance.
+Most formatting and common issues are automatically fixed by Biome. Run `bunx ultracite fix` before committing to ensure compliance.

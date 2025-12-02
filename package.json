@@ -24,16 +24,21 @@
   "scripts": {
     "check": "biome check --write .",
     "prepare": "husky",
-    "dev": "alchemy dev",
+    "dev": "turbo dev",
     "build": "turbo build",
     "check-types": "turbo check-types",
     "dev:native": "turbo -F native dev",
     "dev:web": "turbo -F web dev",
     "dev:server": "turbo -F server dev",
-    "db:push": "turbo -F @pagehaven/db db:push",
+    "deploy": "turbo deploy --ui=stream",
+    "deploy:web": "turbo -F web deploy",
+    "deploy:server": "turbo -F server deploy",
+    "destroy": "turbo destroy --ui=stream",
+    "destroy:web": "turbo -F web destroy",
+    "destroy:server": "turbo -F server destroy",
     "db:generate": "turbo -F @pagehaven/db db:generate",
-    "deploy": "alchemy deploy",
-    "destroy": "alchemy destroy"
+    "db:push": "turbo -F @pagehaven/db db:push",
+    "db:studio": "turbo -F @pagehaven/db db:studio"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
