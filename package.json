@@ -8,17 +8,15 @@
       "packages/*"
     ],
     "catalog": {
-      "hono": "^4.8.2",
-      "@orpc/server": "^1.10.0",
-      "@orpc/openapi": "^1.10.0",
-      "@orpc/zod": "^1.10.0",
-      "better-auth": "^1.4.0",
-      "dotenv": "^17.2.2",
-      "alchemy": "^0.77.0",
-      "@orpc/client": "^1.10.0",
-      "@libsql/client": "^0.14.0",
-      "libsql": "^0.5.22",
-      "drizzle-orm": "^0.44.2"
+      "hono": "^4.10.7",
+      "@orpc/server": "^1.12.2",
+      "@orpc/openapi": "^1.12.2",
+      "@orpc/zod": "^1.12.2",
+      "better-auth": "^1.4.4",
+      "dotenv": "^17.2.3",
+      "alchemy": "^0.79.0",
+      "@orpc/client": "^1.12.2",
+      "drizzle-orm": "^0.44.7"
     }
   },
   "scripts": {
@@ -46,9 +44,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.8",
-    "@cloudflare/workers-types": "^4.20251128.0",
+    "@cloudflare/workers-types": "^4.20251202.0",
     "@types/node": "^22.19.1",
-    "alchemy": "^0.78.0",
+    "alchemy": "^0.79.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "turbo": "^2.6.1",
