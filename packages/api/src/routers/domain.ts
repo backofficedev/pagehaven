@@ -1,6 +1,6 @@
 import { db } from "@pagehaven/db";
 import { domainVerification } from "@pagehaven/db/schema/analytics";
-import { type SiteRole, site, siteMember } from "@pagehaven/db/schema/site";
+import { site, siteMember } from "@pagehaven/db/schema/site";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
@@ -42,9 +42,7 @@ export const domainRouter = {
         )
         .get();
 
-      if (
-        !(membership && hasPermission(membership.role as SiteRole, "admin"))
-      ) {
+      if (!(membership && hasPermission(membership.role, "admin"))) {
         throw new Error("Permission denied");
       }
 
@@ -110,9 +108,7 @@ export const domainRouter = {
         )
         .get();
 
-      if (
-        !(membership && hasPermission(membership.role as SiteRole, "admin"))
-      ) {
+      if (!(membership && hasPermission(membership.role, "admin"))) {
         throw new Error("Permission denied");
       }
 
@@ -213,9 +209,7 @@ export const domainRouter = {
         )
         .get();
 
-      if (
-        !(membership && hasPermission(membership.role as SiteRole, "admin"))
-      ) {
+      if (!(membership && hasPermission(membership.role, "admin"))) {
         throw new Error("Permission denied");
       }
 

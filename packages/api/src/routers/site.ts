@@ -1,10 +1,5 @@
 import { db } from "@pagehaven/db";
-import {
-  type SiteRole,
-  site,
-  siteAccess,
-  siteMember,
-} from "@pagehaven/db/schema/site";
+import { site, siteAccess, siteMember } from "@pagehaven/db/schema/site";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
@@ -152,9 +147,7 @@ export const siteRouter = {
         )
         .get();
 
-      if (
-        !(membership && hasPermission(membership.role as SiteRole, "admin"))
-      ) {
+      if (!(membership && hasPermission(membership.role, "admin"))) {
         throw new Error("Permission denied");
       }
 
@@ -223,9 +216,7 @@ export const siteRouter = {
         )
         .get();
 
-      if (
-        !(membership && hasPermission(membership.role as SiteRole, "owner"))
-      ) {
+      if (!(membership && hasPermission(membership.role, "owner"))) {
         throw new Error("Only owners can delete sites");
       }
 
@@ -288,14 +279,12 @@ export const siteRouter = {
         )
         .get();
 
-      if (
-        !(membership && hasPermission(membership.role as SiteRole, "admin"))
-      ) {
+      if (!(membership && hasPermission(membership.role, "admin"))) {
         throw new Error("Permission denied");
       }
 
       // Cannot add someone with higher role than yourself
-      if (!hasPermission(membership.role as SiteRole, input.role)) {
+      if (!hasPermission(membership.role, input.role)) {
         throw new Error("Cannot assign a role higher than your own");
       }
 
@@ -362,10 +351,7 @@ export const siteRouter = {
       ]);
 
       if (
-        !(
-          currentMembership &&
-          hasPermission(currentMembership.role as SiteRole, "admin")
-        )
+        !(currentMembership && hasPermission(currentMembership.role, "admin"))
       ) {
         throw new Error("Permission denied");
       }
@@ -377,10 +363,7 @@ export const siteRouter = {
       // Cannot remove someone with equal or higher role (unless removing self)
       if (
         input.userId !== currentUserId &&
-        !hasPermission(
-          currentMembership.role as SiteRole,
-          targetMembership.role as SiteRole
-        )
+        !hasPermission(currentMembership.role, targetMembership.role)
       ) {
         throw new Error("Cannot remove a member with equal or higher role");
       }

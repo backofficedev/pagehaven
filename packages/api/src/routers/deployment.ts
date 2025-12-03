@@ -1,10 +1,5 @@
 import { db } from "@pagehaven/db";
-import {
-  deployment,
-  type SiteRole,
-  site,
-  siteMember,
-} from "@pagehaven/db/schema/site";
+import { deployment, site, siteMember } from "@pagehaven/db/schema/site";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
@@ -107,9 +102,7 @@ export const deploymentRouter = {
         )
         .get();
 
-      if (
-        !(membership && hasPermission(membership.role as SiteRole, "editor"))
-      ) {
+      if (!(membership && hasPermission(membership.role, "editor"))) {
         throw new Error("Permission denied");
       }
 
@@ -152,7 +145,7 @@ export const deploymentRouter = {
         )
         .get();
 
-      if (!(result && hasPermission(result.role as SiteRole, "editor"))) {
+      if (!(result && hasPermission(result.role, "editor"))) {
         throw new Error("Permission denied");
       }
 
@@ -196,7 +189,7 @@ export const deploymentRouter = {
         )
         .get();
 
-      if (!(result && hasPermission(result.role as SiteRole, "editor"))) {
+      if (!(result && hasPermission(result.role, "editor"))) {
         throw new Error("Permission denied");
       }
 
@@ -246,7 +239,7 @@ export const deploymentRouter = {
         )
         .get();
 
-      if (!(result && hasPermission(result.role as SiteRole, "editor"))) {
+      if (!(result && hasPermission(result.role, "editor"))) {
         throw new Error("Permission denied");
       }
 
@@ -280,7 +273,7 @@ export const deploymentRouter = {
         )
         .get();
 
-      if (!(result && hasPermission(result.role as SiteRole, "admin"))) {
+      if (!(result && hasPermission(result.role, "admin"))) {
         throw new Error("Permission denied - admin required for rollback");
       }
 

@@ -1,11 +1,5 @@
 import { db } from "@pagehaven/db";
-import {
-  type AccessType,
-  type SiteRole,
-  siteAccess,
-  siteInvite,
-  siteMember,
-} from "@pagehaven/db/schema/site";
+import { siteAccess, siteInvite, siteMember } from "@pagehaven/db/schema/site";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure } from "../index";
@@ -108,7 +102,7 @@ export const accessRouter = {
 
       return {
         id: access.id,
-        accessType: access.accessType as AccessType,
+        accessType: access.accessType,
         hasPassword: !!access.hasPassword,
       };
     }),
@@ -137,9 +131,7 @@ export const accessRouter = {
         )
         .get();
 
-      if (
-        !(membership && hasPermission(membership.role as SiteRole, "admin"))
-      ) {
+      if (!(membership && hasPermission(membership.role, "admin"))) {
         throw new Error("Permission denied");
       }
 
@@ -216,9 +208,7 @@ export const accessRouter = {
         )
         .get();
 
-      if (
-        !(membership && hasPermission(membership.role as SiteRole, "admin"))
-      ) {
+      if (!(membership && hasPermission(membership.role, "admin"))) {
         throw new Error("Permission denied");
       }
 
@@ -254,9 +244,7 @@ export const accessRouter = {
         )
         .get();
 
-      if (
-        !(membership && hasPermission(membership.role as SiteRole, "admin"))
-      ) {
+      if (!(membership && hasPermission(membership.role, "admin"))) {
         throw new Error("Permission denied");
       }
 
@@ -320,9 +308,7 @@ export const accessRouter = {
         )
         .get();
 
-      if (
-        !(membership && hasPermission(membership.role as SiteRole, "admin"))
-      ) {
+      if (!(membership && hasPermission(membership.role, "admin"))) {
         throw new Error("Permission denied");
       }
 
@@ -351,7 +337,7 @@ export const accessRouter = {
         return { allowed: false, reason: "site_not_found" };
       }
 
-      const accessType = access.accessType as AccessType;
+      const accessType = access.accessType;
 
       if (accessType === "public") {
         return { allowed: true };
