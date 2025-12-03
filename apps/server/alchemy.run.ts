@@ -10,7 +10,10 @@ const app = await alchemy("server");
 const PORT = 3000;
 
 export const db = await D1Database("database", {
-  migrationsDir: path.join(import.meta.dirname, "../db/drizzle"),
+  migrationsDir: path.join(
+    import.meta.dirname,
+    "../../packages/db/src/migrations"
+  ),
 });
 
 export const server = await Worker("server", {
