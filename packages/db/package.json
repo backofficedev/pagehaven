@@ -15,16 +15,16 @@
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.2",
-    "@pagehaven/config": "workspace:*"
+    "@pagehaven/config": "workspace:*",
+    "@cloudflare/workers-types": "^4.20251202.0"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
     "drizzle-orm": "catalog:",
-    "@libsql/client": "catalog:",
-    "libsql": "catalog:",
     "dotenv": "catalog:",
-    "zod": "^4.1.11"
+    "zod": "^4.1.11",
+    "server": "workspace:*"
   }
 }

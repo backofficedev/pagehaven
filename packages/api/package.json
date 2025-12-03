@@ -26,6 +26,7 @@
     "dotenv": "catalog:",
     "zod": "^4.1.11",
     "@pagehaven/auth": "workspace:*",
-    "@pagehaven/db": "workspace:*"
+    "@pagehaven/db": "workspace:*",
+    "server": "workspace:*"
   }
 }
