@@ -11,7 +11,8 @@
   "type": "module",
   "scripts": {},
   "devDependencies": {
-    "@pagehaven/config": "workspace:*"
+    "@pagehaven/config": "workspace:*",
+    "@cloudflare/workers-types": "catalog:"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -20,7 +21,6 @@
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "zod": "^4.1.11",
-    "@pagehaven/db": "workspace:*",
-    "server": "workspace:*"
+    "@pagehaven/db": "workspace:*"
   }
 }

@@ -16,7 +16,7 @@
   "devDependencies": {
     "drizzle-kit": "^0.31.2",
     "@pagehaven/config": "workspace:*",
-    "@cloudflare/workers-types": "^4.20251202.0"
+    "@cloudflare/workers-types": "catalog:"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -24,7 +24,6 @@
   "dependencies": {
     "drizzle-orm": "catalog:",
     "dotenv": "catalog:",
-    "zod": "^4.1.11",
-    "server": "workspace:*"
+    "zod": "^4.1.11"
   }
 }

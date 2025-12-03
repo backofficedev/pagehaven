@@ -36,6 +36,6 @@
     "alchemy": "catalog:",
     "wrangler": "^4.40.3",
     "@types/node": "^22.13.11",
-    "@cloudflare/workers-types": "^4.20250822.0"
+    "@cloudflare/workers-types": "catalog:"
   }
 }

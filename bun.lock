@@ -9,7 +9,7 @@
       },
       "devDependencies": {
         "@biomejs/biome": "2.3.8",
-        "@cloudflare/workers-types": "^4.20251202.0",
+        "@cloudflare/workers-types": "catalog:",
         "@types/node": "^22.19.1",
         "alchemy": "catalog:",
         "husky": "^9.1.7",
@@ -33,7 +33,7 @@
         "zod": "^4.1.11",
       },
       "devDependencies": {
-        "@cloudflare/workers-types": "^4.20250822.0",
+        "@cloudflare/workers-types": "catalog:",
         "@pagehaven/config": "workspace:*",
         "@types/node": "^22.13.11",
         "alchemy": "catalog:",
@@ -71,7 +71,6 @@
         "zod": "^4.0.2",
       },
       "devDependencies": {
-        "@pagehaven/config": "workspace:*",
         "@tanstack/react-query-devtools": "^5.85.5",
         "@tanstack/react-router-devtools": "^1.114.27",
         "@tanstack/router-plugin": "^1.114.27",
@@ -98,7 +97,6 @@
         "dotenv": "catalog:",
         "drizzle-orm": "catalog:",
         "hono": "catalog:",
-        "server": "workspace:*",
         "zod": "^4.1.11",
       },
       "devDependencies": {
@@ -114,10 +112,10 @@
         "@pagehaven/db": "workspace:*",
         "better-auth": "catalog:",
         "dotenv": "catalog:",
-        "server": "workspace:*",
         "zod": "^4.1.11",
       },
       "devDependencies": {
+        "@cloudflare/workers-types": "catalog:",
         "@pagehaven/config": "workspace:*",
       },
       "peerDependencies": {
@@ -133,11 +131,10 @@
       "dependencies": {
         "dotenv": "catalog:",
         "drizzle-orm": "catalog:",
-        "server": "workspace:*",
         "zod": "^4.1.11",
       },
       "devDependencies": {
-        "@cloudflare/workers-types": "^4.20251202.0",
+        "@cloudflare/workers-types": "catalog:",
         "@pagehaven/config": "workspace:*",
         "drizzle-kit": "^0.31.2",
       },
@@ -147,6 +144,7 @@
     },
   },
   "catalog": {
+    "@cloudflare/workers-types": "^4.20251202.0",
     "@orpc/client": "^1.12.2",
     "@orpc/openapi": "^1.12.2",
     "@orpc/server": "^1.12.2",
