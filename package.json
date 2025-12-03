@@ -38,9 +38,9 @@
     "db:generate": "turbo -F @pagehaven/db db:generate",
     "db:push": "turbo -F @pagehaven/db db:push",
     "db:studio": "turbo -F @pagehaven/db db:studio",
-    "cpd": "jscpd ./apps ./packages",
     "test": "turbo test",
     "test:coverage": "turbo test:coverage",
+    "cpd": "jscpd ./apps ./packages",
     "sonar:up": "docker compose -f docker-compose.sonar.yml up -d",
     "sonar:down": "docker compose -f docker-compose.sonar.yml down",
     "sonar": "sonar-scanner -Dsonar.host.url=http://localhost:9000"
