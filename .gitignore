@@ -43,8 +43,15 @@ lerna-debug.log*
 coverage
 .nyc_output
 
+# SonarQube
+.scannerwork
+sonarqube_data
+sonarqube_logs
+sonarqube_extensions
+
 # Misc
 *.tgz
 .cache
 tmp
 temp
+report

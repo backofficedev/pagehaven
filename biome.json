@@ -6,6 +6,7 @@
       "**",
       "!**/.next",
       "!**/dist",
+      "!**/build",
       "!**/.turbo",
       "!**/dev-dist",
       "!**/.zed",
@@ -19,7 +20,10 @@
       "!**/.alchemy",
       "!**/.svelte-kit",
       "!**/wrangler.jsonc",
-      "!**/.source"
+      "!**/.source",
+      "!**/coverage",
+      "!**/report",
+      "!**/.scannerwork"
     ]
   },
   "extends": ["ultracite/core", "ultracite/react"]

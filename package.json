@@ -40,7 +40,10 @@
     "db:studio": "turbo -F @pagehaven/db db:studio",
     "cpd": "jscpd ./apps ./packages",
     "test": "turbo test",
-    "test:coverage": "turbo test:coverage"
+    "test:coverage": "turbo test:coverage",
+    "sonar:up": "docker compose -f docker-compose.sonar.yml up -d",
+    "sonar:down": "docker compose -f docker-compose.sonar.yml down",
+    "sonar": "sonar-scanner -Dsonar.host.url=http://localhost:9000"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
@@ -55,6 +58,7 @@
     "husky": "^9.1.7",
     "jscpd": "^4.0.5",
     "lint-staged": "^16.2.7",
+    "sonar-scanner": "^3.1.0",
     "turbo": "^2.6.1",
     "ultracite": "6.3.8",
     "vitest": "^4.0.15"
