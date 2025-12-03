@@ -26,6 +26,16 @@ STASHED=$?
 bun x ultracite fix
 FORMAT_EXIT_CODE=$?
 
+# Run type check (fast with turbo caching)
+if [ $FORMAT_EXIT_CODE -eq 0 ]; then
+  echo "🔍 Running type check..."
+  bun run check-types
+  TYPES_EXIT_CODE=$?
+  if [ $TYPES_EXIT_CODE -ne 0 ]; then
+    FORMAT_EXIT_CODE=$TYPES_EXIT_CODE
+  fi
+fi
+
 # Restore working directory state
 if [ $STASHED -eq 0 ]; then
   # Re-stage the formatted files

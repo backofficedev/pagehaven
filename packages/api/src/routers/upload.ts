@@ -7,6 +7,7 @@ import {
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
+import { hasPermission } from "../lib/permissions";
 import {
   deleteFiles,
   getContentType,
@@ -14,17 +15,6 @@ import {
   listFiles,
   uploadFile,
 } from "../lib/storage";
-
-const roleHierarchy: Record<SiteRole, number> = {
-  owner: 4,
-  admin: 3,
-  editor: 2,
-  viewer: 1,
-};
-
-function hasPermission(userRole: SiteRole, requiredRole: SiteRole): boolean {
-  return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
-}
 
 export const uploadRouter = {
   // Upload a single file to a deployment

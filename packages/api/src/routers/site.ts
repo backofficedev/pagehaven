@@ -9,20 +9,8 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
 import { invalidateSiteCache } from "../lib/cache";
+import { hasPermission } from "../lib/permissions";
 
-// Role hierarchy for permission checks
-const roleHierarchy: Record<SiteRole, number> = {
-  owner: 4,
-  admin: 3,
-  editor: 2,
-  viewer: 1,
-};
-
-function hasPermission(userRole: SiteRole, requiredRole: SiteRole): boolean {
-  return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
-}
-
-// Generate a unique ID
 function generateId(): string {
   return crypto.randomUUID();
 }

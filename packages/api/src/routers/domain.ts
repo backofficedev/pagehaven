@@ -4,17 +4,7 @@ import { type SiteRole, site, siteMember } from "@pagehaven/db/schema/site";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
-
-const roleHierarchy: Record<SiteRole, number> = {
-  owner: 4,
-  admin: 3,
-  editor: 2,
-  viewer: 1,
-};
-
-function hasPermission(userRole: SiteRole, requiredRole: SiteRole): boolean {
-  return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
-}
+import { hasPermission } from "../lib/permissions";
 
 function generateId(): string {
   return crypto.randomUUID();
