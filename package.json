@@ -43,7 +43,7 @@
     "cpd": "jscpd ./apps ./packages",
     "sonar:up": "docker compose -f docker-compose.sonar.yml up -d",
     "sonar:down": "docker compose -f docker-compose.sonar.yml down",
-    "sonar": "sonar-scanner -Dsonar.host.url=http://localhost:9000"
+    "sonar": "dotenv -- sonar-scanner -Dsonar.host.url=http://localhost:9000 -Dsonar.token=$SONAR_TOKEN"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
@@ -55,6 +55,7 @@
     "@types/node": "^22.19.1",
     "@vitest/coverage-v8": "^4.0.15",
     "alchemy": "catalog:",
+    "dotenv-cli": "^11.0.0",
     "husky": "^9.1.7",
     "jscpd": "^4.0.5",
     "lint-staged": "^16.2.7",
