@@ -37,7 +37,10 @@
     "destroy:server": "turbo -F server destroy",
     "db:generate": "turbo -F @pagehaven/db db:generate",
     "db:push": "turbo -F @pagehaven/db db:push",
-    "db:studio": "turbo -F @pagehaven/db db:studio"
+    "db:studio": "turbo -F @pagehaven/db db:studio",
+    "cpd": "jscpd ./apps ./packages",
+    "test": "turbo test",
+    "test:coverage": "turbo test:coverage"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
@@ -47,11 +50,14 @@
     "@biomejs/biome": "2.3.8",
     "@cloudflare/workers-types": "catalog:",
     "@types/node": "^22.19.1",
+    "@vitest/coverage-v8": "^4.0.15",
     "alchemy": "catalog:",
     "husky": "^9.1.7",
+    "jscpd": "^4.0.5",
     "lint-staged": "^16.2.7",
     "turbo": "^2.6.1",
-    "ultracite": "6.3.8"
+    "ultracite": "6.3.8",
+    "vitest": "^4.0.15"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/jscpd.json",
+  "threshold": 15,
+  "reporters": ["console"],
+  "output": "./coverage/jscpd",
+  "ignore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.next/**",
+    "**/coverage/**",
+    "**/*.min.js",
+    "**/*.d.ts",
+    "**/migrations/**",
+    "**/routeTree.gen.ts"
+  ],
+  "format": ["typescript", "tsx", "javascript", "jsx"],
+  "absolute": true,
+  "gitignore": true
+}
