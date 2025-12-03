@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import {
   ArrowLeft,
+  BarChart3,
   CheckCircle,
   Clock,
   ExternalLink,
@@ -136,6 +137,12 @@ function SiteDetailPage() {
             <Button>
               <Upload className="mr-2 h-4 w-4" />
               Deploy
+            </Button>
+          </Link>
+          <Link params={{ siteId }} to="/sites/$siteId/analytics">
+            <Button variant="outline">
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Analytics
             </Button>
           </Link>
           <Link params={{ siteId }} to="/sites/$siteId/settings">

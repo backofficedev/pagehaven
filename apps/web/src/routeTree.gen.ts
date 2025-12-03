@@ -20,6 +20,7 @@ import { Route as GateDeniedRouteImport } from './routes/gate/denied'
 import { Route as SitesSiteIdIndexRouteImport } from './routes/sites/$siteId/index'
 import { Route as SitesSiteIdSettingsRouteImport } from './routes/sites/$siteId/settings'
 import { Route as SitesSiteIdDeployRouteImport } from './routes/sites/$siteId/deploy'
+import { Route as SitesSiteIdAnalyticsRouteImport } from './routes/sites/$siteId/analytics'
 
 const TodosRoute = TodosRouteImport.update({
   id: '/todos',
@@ -76,6 +77,11 @@ const SitesSiteIdDeployRoute = SitesSiteIdDeployRouteImport.update({
   path: '/sites/$siteId/deploy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SitesSiteIdAnalyticsRoute = SitesSiteIdAnalyticsRouteImport.update({
+  id: '/sites/$siteId/analytics',
+  path: '/sites/$siteId/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/gate/login': typeof GateLoginRoute
   '/gate/password': typeof GatePasswordRoute
   '/sites': typeof SitesIndexRoute
+  '/sites/$siteId/analytics': typeof SitesSiteIdAnalyticsRoute
   '/sites/$siteId/deploy': typeof SitesSiteIdDeployRoute
   '/sites/$siteId/settings': typeof SitesSiteIdSettingsRoute
   '/sites/$siteId': typeof SitesSiteIdIndexRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/gate/login': typeof GateLoginRoute
   '/gate/password': typeof GatePasswordRoute
   '/sites': typeof SitesIndexRoute
+  '/sites/$siteId/analytics': typeof SitesSiteIdAnalyticsRoute
   '/sites/$siteId/deploy': typeof SitesSiteIdDeployRoute
   '/sites/$siteId/settings': typeof SitesSiteIdSettingsRoute
   '/sites/$siteId': typeof SitesSiteIdIndexRoute
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/gate/login': typeof GateLoginRoute
   '/gate/password': typeof GatePasswordRoute
   '/sites/': typeof SitesIndexRoute
+  '/sites/$siteId/analytics': typeof SitesSiteIdAnalyticsRoute
   '/sites/$siteId/deploy': typeof SitesSiteIdDeployRoute
   '/sites/$siteId/settings': typeof SitesSiteIdSettingsRoute
   '/sites/$siteId/': typeof SitesSiteIdIndexRoute
@@ -128,6 +137,7 @@ export interface FileRouteTypes {
     | '/gate/login'
     | '/gate/password'
     | '/sites'
+    | '/sites/$siteId/analytics'
     | '/sites/$siteId/deploy'
     | '/sites/$siteId/settings'
     | '/sites/$siteId'
@@ -141,6 +151,7 @@ export interface FileRouteTypes {
     | '/gate/login'
     | '/gate/password'
     | '/sites'
+    | '/sites/$siteId/analytics'
     | '/sites/$siteId/deploy'
     | '/sites/$siteId/settings'
     | '/sites/$siteId'
@@ -154,6 +165,7 @@ export interface FileRouteTypes {
     | '/gate/login'
     | '/gate/password'
     | '/sites/'
+    | '/sites/$siteId/analytics'
     | '/sites/$siteId/deploy'
     | '/sites/$siteId/settings'
     | '/sites/$siteId/'
@@ -168,6 +180,7 @@ export interface RootRouteChildren {
   GateLoginRoute: typeof GateLoginRoute
   GatePasswordRoute: typeof GatePasswordRoute
   SitesIndexRoute: typeof SitesIndexRoute
+  SitesSiteIdAnalyticsRoute: typeof SitesSiteIdAnalyticsRoute
   SitesSiteIdDeployRoute: typeof SitesSiteIdDeployRoute
   SitesSiteIdSettingsRoute: typeof SitesSiteIdSettingsRoute
   SitesSiteIdIndexRoute: typeof SitesSiteIdIndexRoute
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitesSiteIdDeployRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sites/$siteId/analytics': {
+      id: '/sites/$siteId/analytics'
+      path: '/sites/$siteId/analytics'
+      fullPath: '/sites/$siteId/analytics'
+      preLoaderRoute: typeof SitesSiteIdAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -264,6 +284,7 @@ const rootRouteChildren: RootRouteChildren = {
   GateLoginRoute: GateLoginRoute,
   GatePasswordRoute: GatePasswordRoute,
   SitesIndexRoute: SitesIndexRoute,
+  SitesSiteIdAnalyticsRoute: SitesSiteIdAnalyticsRoute,
   SitesSiteIdDeployRoute: SitesSiteIdDeployRoute,
   SitesSiteIdSettingsRoute: SitesSiteIdSettingsRoute,
   SitesSiteIdIndexRoute: SitesSiteIdIndexRoute,
