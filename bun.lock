@@ -71,6 +71,7 @@
         "zod": "^4.0.2",
       },
       "devDependencies": {
+        "@cloudflare/workers-types": "catalog:",
         "@tanstack/react-query-devtools": "^5.85.5",
         "@tanstack/react-router-devtools": "^1.114.27",
         "@tanstack/router-plugin": "^1.114.27",
