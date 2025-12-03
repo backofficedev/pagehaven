@@ -1,5 +1,8 @@
 import type { RouterClient } from "@orpc/server";
 import { protectedProcedure, publicProcedure } from "../index";
+import { accessRouter } from "./access";
+import { deploymentRouter } from "./deployment";
+import { siteRouter } from "./site";
 import { todoRouter } from "./todo";
 
 export const appRouter = {
@@ -9,6 +12,9 @@ export const appRouter = {
     user: context.session?.user,
   })),
   todo: todoRouter,
+  site: siteRouter,
+  deployment: deploymentRouter,
+  access: accessRouter,
 };
 export type AppRouter = typeof appRouter;
 export type AppRouterClient = RouterClient<typeof appRouter>;

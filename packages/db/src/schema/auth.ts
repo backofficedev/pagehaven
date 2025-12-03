@@ -90,6 +90,8 @@ export const verification = sqliteTable(
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  // Site relations - imported dynamically to avoid circular deps
+  // siteMembers, createdSites, deployments defined in site.ts
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

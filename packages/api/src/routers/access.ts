@@ -1,0 +1,407 @@
+import { db } from "@pagehaven/db";
+import {
+  type AccessType,
+  type SiteRole,
+  siteAccess,
+  siteInvite,
+  siteMember,
+} from "@pagehaven/db/schema/site";
+import { and, eq } from "drizzle-orm";
+import { z } from "zod";
+import { protectedProcedure, publicProcedure } from "../index";
+
+// Role hierarchy for permission checks
+const roleHierarchy: Record<SiteRole, number> = {
+  owner: 4,
+  admin: 3,
+  editor: 2,
+  viewer: 1,
+};
+
+function hasPermission(userRole: SiteRole, requiredRole: SiteRole): boolean {
+  return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
+}
+
+function generateId(): string {
+  return crypto.randomUUID();
+}
+
+type AccessResult = { allowed: boolean; reason?: string };
+
+async function checkMembership(
+  siteId: string,
+  userId: string
+): Promise<boolean> {
+  const membership = await db
+    .select({ role: siteMember.role })
+    .from(siteMember)
+    .where(and(eq(siteMember.siteId, siteId), eq(siteMember.userId, userId)))
+    .get();
+  return !!membership;
+}
+
+async function checkInvite(
+  siteId: string,
+  email: string
+): Promise<AccessResult> {
+  const invite = await db
+    .select({
+      id: siteInvite.id,
+      expiresAt: siteInvite.expiresAt,
+    })
+    .from(siteInvite)
+    .where(and(eq(siteInvite.siteId, siteId), eq(siteInvite.email, email)))
+    .get();
+
+  if (!invite) {
+    return { allowed: false, reason: "not_invited" };
+  }
+  if (invite.expiresAt && invite.expiresAt < new Date()) {
+    return { allowed: false, reason: "invite_expired" };
+  }
+  return { allowed: true };
+}
+
+// Simple password hashing (in production, use bcrypt or argon2)
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function verifyPassword(
+  password: string,
+  hash: string
+): Promise<boolean> {
+  const inputHash = await hashPassword(password);
+  return inputHash === hash;
+}
+
+export const accessRouter = {
+  // Get access settings for a site
+  get: protectedProcedure
+    .input(z.object({ siteId: z.string() }))
+    .handler(async ({ input, context }) => {
+      const userId = context.session.user.id;
+
+      // Check access
+      const membership = await db
+        .select({ role: siteMember.role })
+        .from(siteMember)
+        .where(
+          and(
+            eq(siteMember.siteId, input.siteId),
+            eq(siteMember.userId, userId)
+          )
+        )
+        .get();
+
+      if (!membership) {
+        throw new Error("Access denied");
+      }
+
+      const access = await db
+        .select({
+          id: siteAccess.id,
+          accessType: siteAccess.accessType,
+          hasPassword: siteAccess.passwordHash,
+        })
+        .from(siteAccess)
+        .where(eq(siteAccess.siteId, input.siteId))
+        .get();
+
+      if (!access) {
+        throw new Error("Access settings not found");
+      }
+
+      return {
+        id: access.id,
+        accessType: access.accessType as AccessType,
+        hasPassword: !!access.hasPassword,
+      };
+    }),
+
+  // Update access settings (requires admin+)
+  update: protectedProcedure
+    .input(
+      z.object({
+        siteId: z.string(),
+        accessType: z.enum(["public", "password", "private", "owner_only"]),
+        password: z.string().min(4).max(100).optional(),
+      })
+    )
+    .handler(async ({ input, context }) => {
+      const userId = context.session.user.id;
+
+      // Check permission
+      const membership = await db
+        .select({ role: siteMember.role })
+        .from(siteMember)
+        .where(
+          and(
+            eq(siteMember.siteId, input.siteId),
+            eq(siteMember.userId, userId)
+          )
+        )
+        .get();
+
+      if (
+        !(membership && hasPermission(membership.role as SiteRole, "admin"))
+      ) {
+        throw new Error("Permission denied");
+      }
+
+      // Validate password requirement
+      if (input.accessType === "password" && !input.password) {
+        throw new Error("Password is required for password-protected sites");
+      }
+
+      const updates: Partial<typeof siteAccess.$inferInsert> = {
+        accessType: input.accessType,
+      };
+
+      if (input.password) {
+        updates.passwordHash = await hashPassword(input.password);
+      } else if (input.accessType !== "password") {
+        // Clear password if switching away from password protection
+        updates.passwordHash = null;
+      }
+
+      await db
+        .update(siteAccess)
+        .set(updates)
+        .where(eq(siteAccess.siteId, input.siteId));
+
+      return { success: true };
+    }),
+
+  // Verify site password (public - for visitors)
+  verifyPassword: publicProcedure
+    .input(
+      z.object({
+        siteId: z.string(),
+        password: z.string(),
+      })
+    )
+    .handler(async ({ input }) => {
+      const access = await db
+        .select({ passwordHash: siteAccess.passwordHash })
+        .from(siteAccess)
+        .where(eq(siteAccess.siteId, input.siteId))
+        .get();
+
+      if (!access?.passwordHash) {
+        throw new Error("Site is not password protected");
+      }
+
+      const valid = await verifyPassword(input.password, access.passwordHash);
+      return { valid };
+    }),
+
+  // List invites for a site
+  listInvites: protectedProcedure
+    .input(z.object({ siteId: z.string() }))
+    .handler(async ({ input, context }) => {
+      const userId = context.session.user.id;
+
+      // Check access
+      const membership = await db
+        .select({ role: siteMember.role })
+        .from(siteMember)
+        .where(
+          and(
+            eq(siteMember.siteId, input.siteId),
+            eq(siteMember.userId, userId)
+          )
+        )
+        .get();
+
+      if (
+        !(membership && hasPermission(membership.role as SiteRole, "admin"))
+      ) {
+        throw new Error("Permission denied");
+      }
+
+      const invites = await db
+        .select()
+        .from(siteInvite)
+        .where(eq(siteInvite.siteId, input.siteId));
+
+      return invites;
+    }),
+
+  // Create an invite for a private site
+  createInvite: protectedProcedure
+    .input(
+      z.object({
+        siteId: z.string(),
+        email: z.string().email(),
+        expiresInDays: z.number().min(1).max(365).optional(),
+      })
+    )
+    .handler(async ({ input, context }) => {
+      const userId = context.session.user.id;
+
+      // Check permission
+      const membership = await db
+        .select({ role: siteMember.role })
+        .from(siteMember)
+        .where(
+          and(
+            eq(siteMember.siteId, input.siteId),
+            eq(siteMember.userId, userId)
+          )
+        )
+        .get();
+
+      if (
+        !(membership && hasPermission(membership.role as SiteRole, "admin"))
+      ) {
+        throw new Error("Permission denied");
+      }
+
+      // Check if invite already exists
+      const existing = await db
+        .select({ id: siteInvite.id })
+        .from(siteInvite)
+        .where(
+          and(
+            eq(siteInvite.siteId, input.siteId),
+            eq(siteInvite.email, input.email)
+          )
+        )
+        .get();
+
+      if (existing) {
+        throw new Error("Invite already exists for this email");
+      }
+
+      const inviteId = generateId();
+      const expiresAt = input.expiresInDays
+        ? new Date(Date.now() + input.expiresInDays * 24 * 60 * 60 * 1000)
+        : undefined;
+
+      await db.insert(siteInvite).values({
+        id: inviteId,
+        siteId: input.siteId,
+        email: input.email,
+        invitedBy: userId,
+        expiresAt,
+      });
+
+      return { id: inviteId };
+    }),
+
+  // Delete an invite
+  deleteInvite: protectedProcedure
+    .input(z.object({ inviteId: z.string() }))
+    .handler(async ({ input, context }) => {
+      const userId = context.session.user.id;
+
+      // Get invite and check permission
+      const invite = await db
+        .select({ siteId: siteInvite.siteId })
+        .from(siteInvite)
+        .where(eq(siteInvite.id, input.inviteId))
+        .get();
+
+      if (!invite) {
+        throw new Error("Invite not found");
+      }
+
+      const membership = await db
+        .select({ role: siteMember.role })
+        .from(siteMember)
+        .where(
+          and(
+            eq(siteMember.siteId, invite.siteId),
+            eq(siteMember.userId, userId)
+          )
+        )
+        .get();
+
+      if (
+        !(membership && hasPermission(membership.role as SiteRole, "admin"))
+      ) {
+        throw new Error("Permission denied");
+      }
+
+      await db.delete(siteInvite).where(eq(siteInvite.id, input.inviteId));
+
+      return { success: true };
+    }),
+
+  // Check if user/email has access to a private site (public - for site serving)
+  checkAccess: publicProcedure
+    .input(
+      z.object({
+        siteId: z.string(),
+        email: z.string().email().optional(),
+        userId: z.string().optional(),
+      })
+    )
+    .handler(async ({ input }): Promise<AccessResult> => {
+      const access = await db
+        .select({ accessType: siteAccess.accessType })
+        .from(siteAccess)
+        .where(eq(siteAccess.siteId, input.siteId))
+        .get();
+
+      if (!access) {
+        return { allowed: false, reason: "site_not_found" };
+      }
+
+      const accessType = access.accessType as AccessType;
+
+      if (accessType === "public") {
+        return { allowed: true };
+      }
+
+      if (accessType === "password") {
+        return { allowed: false, reason: "password_required" };
+      }
+
+      if (accessType === "owner_only") {
+        return input.userId
+          ? checkOwnerOnlyAccess(input.siteId, input.userId)
+          : { allowed: false, reason: "login_required" };
+      }
+
+      if (accessType === "private") {
+        return checkPrivateAccess(input.siteId, input.userId, input.email);
+      }
+
+      return { allowed: false, reason: "unknown_access_type" };
+    }),
+};
+
+async function checkOwnerOnlyAccess(
+  siteId: string,
+  userId: string
+): Promise<AccessResult> {
+  const isMember = await checkMembership(siteId, userId);
+  return isMember
+    ? { allowed: true }
+    : { allowed: false, reason: "not_a_member" };
+}
+
+async function checkPrivateAccess(
+  siteId: string,
+  userId?: string,
+  email?: string
+): Promise<AccessResult> {
+  if (userId) {
+    const isMember = await checkMembership(siteId, userId);
+    if (isMember) {
+      return { allowed: true };
+    }
+  }
+
+  if (email) {
+    return checkInvite(siteId, email);
+  }
+
+  return { allowed: false, reason: "not_invited" };
+}
