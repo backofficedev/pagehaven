@@ -1,15 +1,15 @@
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
-type FormFieldProps = {
+type FormFieldProps = Readonly<{
   name: string;
   label: string;
   type?: "text" | "email" | "password";
   value: string;
-  errors: Array<{ message?: string } | undefined>;
+  errors: ReadonlyArray<{ message?: string } | undefined>;
   onBlur: () => void;
   onChange: (value: string) => void;
-};
+}>;
 
 export function FormField({
   name,

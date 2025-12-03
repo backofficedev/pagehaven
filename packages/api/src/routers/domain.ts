@@ -118,7 +118,7 @@ export const domainRouter = {
 
       // In production, this would do actual DNS lookup
       // For now, we'll simulate verification
-      const isVerified = await checkDnsRecord(
+      const isVerified = checkDnsRecord(
         domainRecord.domain,
         domainRecord.verificationToken
       );

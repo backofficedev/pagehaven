@@ -22,7 +22,7 @@ export async function checkSitePermission(
     return null;
   }
 
-  const userRole = membership.role as SiteRole;
+  const userRole = membership.role;
   if (!hasPermission(userRole, requiredRole)) {
     return null;
   }

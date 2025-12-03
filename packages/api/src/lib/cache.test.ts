@@ -52,13 +52,15 @@ describe("Cache operations without initialization", () => {
   });
 
   it("cacheSet does nothing when not initialized", async () => {
-    // Should not throw
-    await cacheSet("test-key", { data: "test" }, 60);
+    // Should not throw - verify it completes without error
+    const result = await cacheSet("test-key", { data: "test" }, 60);
+    expect(result).toBeUndefined();
   });
 
   it("cacheDelete does nothing when not initialized", async () => {
-    // Should not throw
-    await cacheDelete("test-key");
+    // Should not throw - verify it completes without error
+    const result = await cacheDelete("test-key");
+    expect(result).toBeUndefined();
   });
 });
 

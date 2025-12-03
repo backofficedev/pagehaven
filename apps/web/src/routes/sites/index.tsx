@@ -188,13 +188,13 @@ function SitesPage() {
                 <div className="text-muted-foreground text-sm">
                   {site.activeDeploymentId ? (
                     <span className="flex items-center gap-1 text-green-600">
-                      <span className="h-2 w-2 rounded-full bg-green-500" />
+                      <span className="h-2 w-2 rounded-full bg-green-500" />{" "}
                       Live
                     </span>
                   ) : (
                     <span className="flex items-center gap-1">
-                      <span className="h-2 w-2 rounded-full bg-yellow-500" />
-                      No deployment
+                      <span className="h-2 w-2 rounded-full bg-yellow-500" /> No
+                      deployment
                     </span>
                   )}
                 </div>

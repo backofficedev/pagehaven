@@ -9,9 +9,9 @@ import { Button } from "./ui/button";
 
 export default function SignUpForm({
   onSwitchToSignIn,
-}: {
+}: Readonly<{
   onSwitchToSignIn: () => void;
-}) {
+}>) {
   const navigate = useNavigate({ from: "/" });
   const { isPending } = authClient.useSession();
 

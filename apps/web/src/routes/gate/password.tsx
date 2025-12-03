@@ -44,7 +44,7 @@ function PasswordGatePage() {
         setCookie(`site_password_${siteId}`, data.token, 30);
         toast.success("Access granted!");
         // Redirect to the original destination
-        window.location.href = redirect;
+        globalThis.location.href = redirect;
       } else {
         toast.error("Incorrect password");
       }

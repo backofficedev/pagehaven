@@ -42,18 +42,16 @@ async function fetchSiteFromDb(
     .get();
 
   // If not found, try custom domain
-  if (!result) {
-    result = await db
-      .select({
-        site,
-        accessType: siteAccess.accessType,
-        passwordHash: siteAccess.passwordHash,
-      })
-      .from(site)
-      .leftJoin(siteAccess, eq(site.id, siteAccess.siteId))
-      .where(eq(site.customDomain, hostname))
-      .get();
-  }
+  result ??= await db
+    .select({
+      site,
+      accessType: siteAccess.accessType,
+      passwordHash: siteAccess.passwordHash,
+    })
+    .from(site)
+    .leftJoin(siteAccess, eq(site.id, siteAccess.siteId))
+    .where(eq(site.customDomain, hostname))
+    .get();
 
   return result ?? null;
 }

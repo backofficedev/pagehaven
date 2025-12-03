@@ -235,7 +235,7 @@ export const accessRouter = {
     .input(
       z.object({
         siteId: z.string(),
-        email: z.string().email(),
+        email: z.email(),
         expiresInDays: z.number().min(1).max(365).optional(),
       })
     )
@@ -336,7 +336,7 @@ export const accessRouter = {
     .input(
       z.object({
         siteId: z.string(),
-        email: z.string().email().optional(),
+        email: z.email().optional(),
         userId: z.string().optional(),
       })
     )
