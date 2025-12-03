@@ -13,6 +13,10 @@ import { Route as TodosRouteImport } from './routes/todos'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SitesIndexRouteImport } from './routes/sites/index'
+import { Route as SitesSiteIdIndexRouteImport } from './routes/sites/$siteId/index'
+import { Route as SitesSiteIdSettingsRouteImport } from './routes/sites/$siteId/settings'
+import { Route as SitesSiteIdDeployRouteImport } from './routes/sites/$siteId/deploy'
 
 const TodosRoute = TodosRouteImport.update({
   id: '/todos',
@@ -34,18 +38,46 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SitesIndexRoute = SitesIndexRouteImport.update({
+  id: '/sites/',
+  path: '/sites/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitesSiteIdIndexRoute = SitesSiteIdIndexRouteImport.update({
+  id: '/sites/$siteId/',
+  path: '/sites/$siteId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitesSiteIdSettingsRoute = SitesSiteIdSettingsRouteImport.update({
+  id: '/sites/$siteId/settings',
+  path: '/sites/$siteId/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitesSiteIdDeployRoute = SitesSiteIdDeployRouteImport.update({
+  id: '/sites/$siteId/deploy',
+  path: '/sites/$siteId/deploy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/todos': typeof TodosRoute
+  '/sites': typeof SitesIndexRoute
+  '/sites/$siteId/deploy': typeof SitesSiteIdDeployRoute
+  '/sites/$siteId/settings': typeof SitesSiteIdSettingsRoute
+  '/sites/$siteId': typeof SitesSiteIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/todos': typeof TodosRoute
+  '/sites': typeof SitesIndexRoute
+  '/sites/$siteId/deploy': typeof SitesSiteIdDeployRoute
+  '/sites/$siteId/settings': typeof SitesSiteIdSettingsRoute
+  '/sites/$siteId': typeof SitesSiteIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +85,42 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/todos': typeof TodosRoute
+  '/sites/': typeof SitesIndexRoute
+  '/sites/$siteId/deploy': typeof SitesSiteIdDeployRoute
+  '/sites/$siteId/settings': typeof SitesSiteIdSettingsRoute
+  '/sites/$siteId/': typeof SitesSiteIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/login' | '/todos'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/todos'
+    | '/sites'
+    | '/sites/$siteId/deploy'
+    | '/sites/$siteId/settings'
+    | '/sites/$siteId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/login' | '/todos'
-  id: '__root__' | '/' | '/dashboard' | '/login' | '/todos'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/todos'
+    | '/sites'
+    | '/sites/$siteId/deploy'
+    | '/sites/$siteId/settings'
+    | '/sites/$siteId'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/todos'
+    | '/sites/'
+    | '/sites/$siteId/deploy'
+    | '/sites/$siteId/settings'
+    | '/sites/$siteId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +128,10 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   TodosRoute: typeof TodosRoute
+  SitesIndexRoute: typeof SitesIndexRoute
+  SitesSiteIdDeployRoute: typeof SitesSiteIdDeployRoute
+  SitesSiteIdSettingsRoute: typeof SitesSiteIdSettingsRoute
+  SitesSiteIdIndexRoute: typeof SitesSiteIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +164,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sites/': {
+      id: '/sites/'
+      path: '/sites'
+      fullPath: '/sites'
+      preLoaderRoute: typeof SitesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sites/$siteId/': {
+      id: '/sites/$siteId/'
+      path: '/sites/$siteId'
+      fullPath: '/sites/$siteId'
+      preLoaderRoute: typeof SitesSiteIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sites/$siteId/settings': {
+      id: '/sites/$siteId/settings'
+      path: '/sites/$siteId/settings'
+      fullPath: '/sites/$siteId/settings'
+      preLoaderRoute: typeof SitesSiteIdSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sites/$siteId/deploy': {
+      id: '/sites/$siteId/deploy'
+      path: '/sites/$siteId/deploy'
+      fullPath: '/sites/$siteId/deploy'
+      preLoaderRoute: typeof SitesSiteIdDeployRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +200,10 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   TodosRoute: TodosRoute,
+  SitesIndexRoute: SitesIndexRoute,
+  SitesSiteIdDeployRoute: SitesSiteIdDeployRoute,
+  SitesSiteIdSettingsRoute: SitesSiteIdSettingsRoute,
+  SitesSiteIdIndexRoute: SitesSiteIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

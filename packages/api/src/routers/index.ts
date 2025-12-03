@@ -4,6 +4,7 @@ import { accessRouter } from "./access";
 import { deploymentRouter } from "./deployment";
 import { siteRouter } from "./site";
 import { todoRouter } from "./todo";
+import { uploadRouter } from "./upload";
 
 export const appRouter = {
   healthCheck: publicProcedure.handler(() => "OK"),
@@ -15,6 +16,7 @@ export const appRouter = {
   site: siteRouter,
   deployment: deploymentRouter,
   access: accessRouter,
+  upload: uploadRouter,
 };
 export type AppRouter = typeof appRouter;
 export type AppRouterClient = RouterClient<typeof appRouter>;
