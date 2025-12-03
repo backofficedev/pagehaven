@@ -178,6 +178,7 @@ export const accessRouter = {
     }),
 
   // Verify site password (public - for visitors)
+  // Returns a token that can be stored in a cookie for future access
   verifyPassword: publicProcedure
     .input(
       z.object({
@@ -197,7 +198,11 @@ export const accessRouter = {
       }
 
       const valid = await verifyPassword(input.password, access.passwordHash);
-      return { valid };
+      if (!valid) {
+        return { valid: false, token: null };
+      }
+      // Return the hash as a token - the static server will compare this
+      return { valid: true, token: access.passwordHash };
     }),
 
   // List invites for a site

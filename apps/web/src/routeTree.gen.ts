@@ -14,6 +14,9 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SitesIndexRouteImport } from './routes/sites/index'
+import { Route as GatePasswordRouteImport } from './routes/gate/password'
+import { Route as GateLoginRouteImport } from './routes/gate/login'
+import { Route as GateDeniedRouteImport } from './routes/gate/denied'
 import { Route as SitesSiteIdIndexRouteImport } from './routes/sites/$siteId/index'
 import { Route as SitesSiteIdSettingsRouteImport } from './routes/sites/$siteId/settings'
 import { Route as SitesSiteIdDeployRouteImport } from './routes/sites/$siteId/deploy'
@@ -43,6 +46,21 @@ const SitesIndexRoute = SitesIndexRouteImport.update({
   path: '/sites/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GatePasswordRoute = GatePasswordRouteImport.update({
+  id: '/gate/password',
+  path: '/gate/password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GateLoginRoute = GateLoginRouteImport.update({
+  id: '/gate/login',
+  path: '/gate/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GateDeniedRoute = GateDeniedRouteImport.update({
+  id: '/gate/denied',
+  path: '/gate/denied',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitesSiteIdIndexRoute = SitesSiteIdIndexRouteImport.update({
   id: '/sites/$siteId/',
   path: '/sites/$siteId/',
@@ -64,6 +82,9 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/todos': typeof TodosRoute
+  '/gate/denied': typeof GateDeniedRoute
+  '/gate/login': typeof GateLoginRoute
+  '/gate/password': typeof GatePasswordRoute
   '/sites': typeof SitesIndexRoute
   '/sites/$siteId/deploy': typeof SitesSiteIdDeployRoute
   '/sites/$siteId/settings': typeof SitesSiteIdSettingsRoute
@@ -74,6 +95,9 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/todos': typeof TodosRoute
+  '/gate/denied': typeof GateDeniedRoute
+  '/gate/login': typeof GateLoginRoute
+  '/gate/password': typeof GatePasswordRoute
   '/sites': typeof SitesIndexRoute
   '/sites/$siteId/deploy': typeof SitesSiteIdDeployRoute
   '/sites/$siteId/settings': typeof SitesSiteIdSettingsRoute
@@ -85,6 +109,9 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/todos': typeof TodosRoute
+  '/gate/denied': typeof GateDeniedRoute
+  '/gate/login': typeof GateLoginRoute
+  '/gate/password': typeof GatePasswordRoute
   '/sites/': typeof SitesIndexRoute
   '/sites/$siteId/deploy': typeof SitesSiteIdDeployRoute
   '/sites/$siteId/settings': typeof SitesSiteIdSettingsRoute
@@ -97,6 +124,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/todos'
+    | '/gate/denied'
+    | '/gate/login'
+    | '/gate/password'
     | '/sites'
     | '/sites/$siteId/deploy'
     | '/sites/$siteId/settings'
@@ -107,6 +137,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/todos'
+    | '/gate/denied'
+    | '/gate/login'
+    | '/gate/password'
     | '/sites'
     | '/sites/$siteId/deploy'
     | '/sites/$siteId/settings'
@@ -117,6 +150,9 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/todos'
+    | '/gate/denied'
+    | '/gate/login'
+    | '/gate/password'
     | '/sites/'
     | '/sites/$siteId/deploy'
     | '/sites/$siteId/settings'
@@ -128,6 +164,9 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   TodosRoute: typeof TodosRoute
+  GateDeniedRoute: typeof GateDeniedRoute
+  GateLoginRoute: typeof GateLoginRoute
+  GatePasswordRoute: typeof GatePasswordRoute
   SitesIndexRoute: typeof SitesIndexRoute
   SitesSiteIdDeployRoute: typeof SitesSiteIdDeployRoute
   SitesSiteIdSettingsRoute: typeof SitesSiteIdSettingsRoute
@@ -171,6 +210,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/gate/password': {
+      id: '/gate/password'
+      path: '/gate/password'
+      fullPath: '/gate/password'
+      preLoaderRoute: typeof GatePasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gate/login': {
+      id: '/gate/login'
+      path: '/gate/login'
+      fullPath: '/gate/login'
+      preLoaderRoute: typeof GateLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gate/denied': {
+      id: '/gate/denied'
+      path: '/gate/denied'
+      fullPath: '/gate/denied'
+      preLoaderRoute: typeof GateDeniedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sites/$siteId/': {
       id: '/sites/$siteId/'
       path: '/sites/$siteId'
@@ -200,6 +260,9 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   TodosRoute: TodosRoute,
+  GateDeniedRoute: GateDeniedRoute,
+  GateLoginRoute: GateLoginRoute,
+  GatePasswordRoute: GatePasswordRoute,
   SitesIndexRoute: SitesIndexRoute,
   SitesSiteIdDeployRoute: SitesSiteIdDeployRoute,
   SitesSiteIdSettingsRoute: SitesSiteIdSettingsRoute,

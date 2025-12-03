@@ -1,7 +1,13 @@
 import { db } from "@pagehaven/db";
-import { site, siteAccess } from "@pagehaven/db/schema/site";
-import { eq } from "drizzle-orm";
+import {
+  site,
+  siteAccess,
+  siteInvite,
+  siteMember,
+} from "@pagehaven/db/schema/site";
+import { and, eq } from "drizzle-orm";
 import type { Context } from "hono";
+import { getCookie } from "hono/cookie";
 import { getContentType, getFile } from "./storage";
 
 type ServeResult =
@@ -110,19 +116,145 @@ export async function serveStaticFile(
   };
 }
 
-function checkAccessPermissions(
-  accessType: string | null,
-  passwordHeader: string | undefined
-): { allowed: boolean; status?: 401 | 403; error?: string } {
+type AccessCheckResult =
+  | { allowed: true }
+  | {
+      allowed: false;
+      reason:
+        | "password_required"
+        | "login_required"
+        | "not_invited"
+        | "not_member";
+    };
+
+function verifyPasswordCookie(
+  passwordCookie: string | undefined,
+  storedHash: string | null
+): boolean {
+  if (!(passwordCookie && storedHash)) {
+    return false;
+  }
+  // Cookie contains the hashed password - compare directly
+  return passwordCookie === storedHash;
+}
+
+async function checkMemberAccess(
+  siteId: string,
+  userId: string | undefined
+): Promise<boolean> {
+  if (!userId) {
+    return false;
+  }
+  const membership = await db
+    .select({ id: siteMember.id })
+    .from(siteMember)
+    .where(and(eq(siteMember.siteId, siteId), eq(siteMember.userId, userId)))
+    .get();
+  return !!membership;
+}
+
+async function checkInviteAccess(
+  siteId: string,
+  email: string | undefined
+): Promise<boolean> {
+  if (!email) {
+    return false;
+  }
+  const invite = await db
+    .select({ id: siteInvite.id, expiresAt: siteInvite.expiresAt })
+    .from(siteInvite)
+    .where(and(eq(siteInvite.siteId, siteId), eq(siteInvite.email, email)))
+    .get();
+
+  if (!invite) {
+    return false;
+  }
+  if (invite.expiresAt && invite.expiresAt < new Date()) {
+    return false;
+  }
+  return true;
+}
+
+type AccessCheckOptions = {
+  siteId: string;
+  accessType: string | null;
+  passwordHash: string | null;
+  passwordCookie: string | undefined;
+  userId: string | undefined;
+  userEmail: string | undefined;
+};
+
+function checkPasswordAccess(
+  passwordCookie: string | undefined,
+  passwordHash: string | null
+): AccessCheckResult {
+  const valid = verifyPasswordCookie(passwordCookie, passwordHash);
+  return valid
+    ? { allowed: true }
+    : { allowed: false, reason: "password_required" };
+}
+
+async function checkOwnerOnlyAccess(
+  siteId: string,
+  userId: string | undefined
+): Promise<AccessCheckResult> {
+  if (!userId) {
+    return { allowed: false, reason: "login_required" };
+  }
+  const isMember = await checkMemberAccess(siteId, userId);
+  return isMember
+    ? { allowed: true }
+    : { allowed: false, reason: "not_member" };
+}
+
+async function checkPrivateAccess(
+  siteId: string,
+  userId: string | undefined,
+  userEmail: string | undefined
+): Promise<AccessCheckResult> {
+  if (userId) {
+    const isMember = await checkMemberAccess(siteId, userId);
+    if (isMember) {
+      return { allowed: true };
+    }
+  }
+  if (userEmail) {
+    const isInvited = await checkInviteAccess(siteId, userEmail);
+    if (isInvited) {
+      return { allowed: true };
+    }
+  }
+  return { allowed: false, reason: userId ? "not_invited" : "login_required" };
+}
+
+async function checkAccessPermissions(
+  opts: AccessCheckOptions
+): Promise<AccessCheckResult> {
+  const {
+    siteId,
+    accessType,
+    passwordHash,
+    passwordCookie,
+    userId,
+    userEmail,
+  } = opts;
+
+  if (!accessType || accessType === "public") {
+    return { allowed: true };
+  }
+
+  if (accessType === "password") {
+    return checkPasswordAccess(passwordCookie, passwordHash);
+  }
+
   if (accessType === "owner_only") {
-    return { allowed: false, status: 401, error: "Authentication required" };
+    return await checkOwnerOnlyAccess(siteId, userId);
   }
-  if (accessType === "password" && !passwordHeader) {
-    return { allowed: false, status: 401, error: "Password required" };
-  }
+
   if (accessType === "private") {
-    return { allowed: false, status: 403, error: "Access denied" };
+    return await checkPrivateAccess(siteId, userId, userEmail);
   }
+
   return { allowed: true };
 }
 
@@ -162,6 +294,24 @@ async function serveFileWithFallback(
   });
 }
 
+function getAccessDeniedResponse(reason: string): {
+  status: 401 | 403;
+  error: string;
+} {
+  switch (reason) {
+    case "password_required":
+      return { status: 401, error: "Password required" };
+    case "login_required":
+      return { status: 401, error: "Login required" };
+    case "not_member":
+      return { status: 403, error: "You are not a member of this site" };
+    case "not_invited":
+      return { status: 403, error: "You are not invited to this site" };
+    default:
+      return { status: 403, error: "Access denied" };
+  }
+}
+
 /**
  * Create a Hono handler for serving static sites
  */
@@ -176,22 +326,31 @@ export function createStaticSiteHandler() {
       return c.json({ error: "Site not found" }, 404);
     }
 
-    const { site: resolvedSite, accessType } = siteData;
+    const { site: resolvedSite, accessType, passwordHash } = siteData;
 
     if (!resolvedSite.activeDeploymentId) {
       return c.json({ error: "No deployment available" }, 404);
     }
 
-    const accessCheck = checkAccessPermissions(
+    // Get password cookie for this site
+    const passwordCookie = getCookie(c, `site_password_${resolvedSite.id}`);
+
+    // TODO: Get user session from auth - for now these are undefined
+    const userId: string | undefined = undefined;
+    const userEmail: string | undefined = undefined;
+
+    const accessCheck = await checkAccessPermissions({
+      siteId: resolvedSite.id,
       accessType,
-      c.req.header("x-site-password")
-    );
+      passwordHash,
+      passwordCookie,
+      userId,
+      userEmail,
+    });
 
     if (!accessCheck.allowed) {
-      return c.json(
-        { error: accessCheck.error },
-        accessCheck.status as 401 | 403
-      );
+      const { status, error } = getAccessDeniedResponse(accessCheck.reason);
+      return c.json({ error, reason: accessCheck.reason }, status);
     }
 
     return serveFileWithFallback(
