@@ -39,8 +39,6 @@
     "@orpc/client": "catalog:",
     "@orpc/server": "catalog:",
     "@tanstack/react-query": "^5.85.5",
-    "@libsql/client": "catalog:",
-    "libsql": "catalog:",
     "better-auth": "catalog:",
     "@pagehaven/api": "workspace:*",
     "@pagehaven/auth": "workspace:*",
