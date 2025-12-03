@@ -9,6 +9,7 @@ import {
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure } from "../index";
+import { CacheKey, cacheDelete } from "../lib/cache";
 
 // Role hierarchy for permission checks
 const roleHierarchy: Record<SiteRole, number> = {
@@ -173,6 +174,9 @@ export const accessRouter = {
         .update(siteAccess)
         .set(updates)
         .where(eq(siteAccess.siteId, input.siteId));
+
+      // Invalidate access cache
+      await cacheDelete(CacheKey.access(input.siteId));
 
       return { success: true };
     }),

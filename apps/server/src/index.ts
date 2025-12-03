@@ -5,11 +5,17 @@ import { onError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { createContext } from "@pagehaven/api/context";
+import { initCache } from "@pagehaven/api/lib/cache";
 import { appRouter } from "@pagehaven/api/routers/index";
 import { auth } from "@pagehaven/auth";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+
+// Initialize cache with KV binding if available
+if (env.CACHE) {
+  initCache(env.CACHE);
+}
 
 const app = new Hono();
 

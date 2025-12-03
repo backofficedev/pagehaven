@@ -8,6 +8,7 @@ import {
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
+import { invalidateSiteCache } from "../lib/cache";
 
 // Role hierarchy for permission checks
 const roleHierarchy: Record<SiteRole, number> = {
@@ -184,7 +185,34 @@ export const siteRouter = {
         throw new Error("No updates provided");
       }
 
+      // Get current site data for cache invalidation
+      const currentSite = await db
+        .select({ subdomain: site.subdomain, customDomain: site.customDomain })
+        .from(site)
+        .where(eq(site.id, input.siteId))
+        .get();
+
       await db.update(site).set(updates).where(eq(site.id, input.siteId));
+
+      // Invalidate cache
+      if (currentSite) {
+        await invalidateSiteCache(
+          input.siteId,
+          currentSite.subdomain,
+          currentSite.customDomain
+        );
+        // Also invalidate new custom domain if changed
+        if (
+          input.customDomain &&
+          input.customDomain !== currentSite.customDomain
+        ) {
+          await invalidateSiteCache(
+            input.siteId,
+            undefined,
+            input.customDomain
+          );
+        }
+      }
 
       return { success: true };
     }),
@@ -213,8 +241,24 @@ export const siteRouter = {
         throw new Error("Only owners can delete sites");
       }
 
+      // Get site data for cache invalidation before deleting
+      const siteData = await db
+        .select({ subdomain: site.subdomain, customDomain: site.customDomain })
+        .from(site)
+        .where(eq(site.id, input.siteId))
+        .get();
+
       // Cascade delete handles members, access, invites, deployments
       await db.delete(site).where(eq(site.id, input.siteId));
+
+      // Invalidate cache
+      if (siteData) {
+        await invalidateSiteCache(
+          input.siteId,
+          siteData.subdomain,
+          siteData.customDomain
+        );
+      }
 
       return { success: true };
     }),

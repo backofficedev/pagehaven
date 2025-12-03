@@ -8,20 +8,25 @@ import {
 import { and, eq } from "drizzle-orm";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
+import { CacheKey, CacheTTL, cacheGetOrSet } from "./cache";
 import { getContentType, getFile } from "./storage";
 
 type ServeResult =
   | { success: true; body: ReadableStream; contentType: string; status: 200 }
   | { success: false; status: 404 | 403 | 401; message: string };
 
-/**
- * Resolve a site from subdomain or custom domain
- */
-export async function resolveSite(hostname: string) {
-  // Extract subdomain from hostname
-  // e.g., "mysite.pagehaven.io" -> "mysite"
-  // or custom domain "example.com"
+type SiteResolution = {
+  site: typeof site.$inferSelect;
+  accessType: string | null;
+  passwordHash: string | null;
+};
 
+/**
+ * Fetch site data from database
+ */
+async function fetchSiteFromDb(
+  hostname: string
+): Promise<SiteResolution | null> {
   const subdomain = hostname.split(".")[0] ?? "";
 
   // Try subdomain first
@@ -50,7 +55,28 @@ export async function resolveSite(hostname: string) {
       .get();
   }
 
-  return result;
+  return result ?? null;
+}
+
+/**
+ * Resolve a site from subdomain or custom domain (with caching)
+ */
+export async function resolveSite(
+  hostname: string
+): Promise<SiteResolution | null> {
+  // Extract subdomain for cache key
+  const subdomain = hostname.split(".")[0] ?? "";
+  const isCustomDomain =
+    hostname.includes(".") && !hostname.endsWith(".pagehaven.io");
+
+  // Use appropriate cache key based on lookup type
+  const cacheKey = isCustomDomain
+    ? CacheKey.siteByDomain(hostname)
+    : CacheKey.siteBySubdomain(subdomain);
+
+  return await cacheGetOrSet<SiteResolution>(cacheKey, CacheTTL.SITE, () =>
+    fetchSiteFromDb(hostname)
+  );
 }
 
 /**
