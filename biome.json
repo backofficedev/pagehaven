@@ -23,7 +23,8 @@
       "!**/.source",
       "!**/coverage",
       "!**/report",
-      "!**/.scannerwork"
+      "!**/.scannerwork",
+      "!**/migrations"
     ]
   },
   "extends": ["ultracite/core", "ultracite/react"]
