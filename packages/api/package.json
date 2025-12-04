@@ -1,5 +1,8 @@
 {
   "name": "@pagehaven/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
   "exports": {
     ".": {
       "default": "./src/index.ts"
@@ -8,17 +11,11 @@
       "default": "./src/*.ts"
     }
   },
-  "type": "module",
   "scripts": {
+    "check-types": "tsc -b",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
-  },
-  "devDependencies": {
-    "@pagehaven/config": "workspace:*"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
   },
   "dependencies": {
     "@orpc/server": "catalog:",
@@ -27,5 +24,11 @@
     "drizzle-orm": "catalog:",
     "hono": "catalog:",
     "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@pagehaven/config": "workspace:*"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
   }
 }

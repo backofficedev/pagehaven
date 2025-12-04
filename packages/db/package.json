@@ -1,5 +1,7 @@
 {
   "name": "@pagehaven/db",
+  "version": "0.0.0",
+  "private": true,
   "type": "module",
   "exports": {
     ".": {
@@ -10,6 +12,7 @@
     }
   },
   "scripts": {
+    "check-types": "tsc -b",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate"
   },

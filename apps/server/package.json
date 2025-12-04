@@ -1,7 +1,9 @@
 {
   "name": "server",
-  "main": "src/index.ts",
+  "version": "0.0.0",
+  "private": true,
   "type": "module",
+  "main": "src/index.ts",
   "exports": {
     "./alchemy": {
       "bun": "./alchemy.run.ts",
@@ -23,6 +25,7 @@
     "@orpc/zod": "catalog:",
     "@pagehaven/api": "workspace:*",
     "@pagehaven/auth": "workspace:*",
+    "@pagehaven/infra": "workspace:*",
     "dotenv": "catalog:",
     "hono": "catalog:",
     "zod": "^4.1.13"

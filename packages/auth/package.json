@@ -1,5 +1,8 @@
 {
   "name": "@pagehaven/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
   "exports": {
     ".": {
       "default": "./src/index.ts"
@@ -8,8 +11,9 @@
       "default": "./src/*.ts"
     }
   },
-  "type": "module",
-  "scripts": {},
+  "scripts": {
+    "check-types": "tsc -b"
+  },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
     "@pagehaven/config": "workspace:*"
