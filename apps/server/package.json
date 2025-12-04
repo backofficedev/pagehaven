@@ -18,22 +18,22 @@
     "destroy": "alchemy destroy --app server"
   },
   "dependencies": {
-    "hono": "catalog:",
-    "@orpc/server": "catalog:",
     "@orpc/openapi": "catalog:",
+    "@orpc/server": "catalog:",
     "@orpc/zod": "catalog:",
-    "dotenv": "catalog:",
-    "zod": "^4.1.11",
     "@pagehaven/api": "workspace:*",
-    "@pagehaven/auth": "workspace:*"
+    "@pagehaven/auth": "workspace:*",
+    "dotenv": "catalog:",
+    "hono": "catalog:",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
-    "typescript": "^5.8.2",
-    "tsdown": "^0.16.5",
+    "@cloudflare/workers-types": "catalog:",
     "@pagehaven/config": "workspace:*",
+    "@types/node": "^22.19.1",
     "alchemy": "catalog:",
-    "wrangler": "^4.40.3",
-    "@types/node": "^22.13.11",
-    "@cloudflare/workers-types": "catalog:"
+    "tsdown": "^0.16.8",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.52.1"
   }
 }

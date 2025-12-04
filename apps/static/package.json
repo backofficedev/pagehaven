@@ -18,20 +18,20 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "hono": "catalog:",
+    "@pagehaven/auth": "workspace:*",
+    "@pagehaven/db": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-orm": "catalog:",
-    "@pagehaven/auth": "workspace:*",
-    "@pagehaven/db": "workspace:*"
+    "hono": "catalog:"
   },
   "devDependencies": {
-    "typescript": "^5.8.2",
-    "tsdown": "^0.16.5",
-    "@pagehaven/config": "workspace:*",
-    "alchemy": "catalog:",
-    "wrangler": "^4.40.3",
-    "@types/node": "^22.13.11",
     "@cloudflare/workers-types": "catalog:",
-    "vitest": "^4.0.15"
+    "@pagehaven/config": "workspace:*",
+    "@types/node": "^22.19.1",
+    "alchemy": "catalog:",
+    "tsdown": "^0.16.8",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15",
+    "wrangler": "^4.52.1"
   }
 }

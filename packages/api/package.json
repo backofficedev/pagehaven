@@ -22,10 +22,10 @@
   },
   "dependencies": {
     "@orpc/server": "catalog:",
-    "hono": "catalog:",
-    "drizzle-orm": "catalog:",
-    "zod": "^4.1.11",
     "@pagehaven/auth": "workspace:*",
-    "@pagehaven/db": "workspace:*"
+    "@pagehaven/db": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "hono": "catalog:",
+    "zod": "^4.1.13"
   }
 }
