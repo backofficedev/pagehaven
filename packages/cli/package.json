@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target node",
-    "dev": "bun run ./src/index.ts",
+    "dev:local": "bun run ./src/index.ts",
     "check-types": "tsc -b"
   },
   "dependencies": {
