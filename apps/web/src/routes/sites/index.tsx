@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
+import { config, getSiteDisplayDomain } from "@/utils/config";
 import { orpc, queryClient } from "@/utils/orpc";
 
 export const Route = createFileRoute("/sites/")({
@@ -121,7 +122,7 @@ function SitesPage() {
                     value={newSiteSubdomain}
                   />
                   <span className="whitespace-nowrap text-muted-foreground">
-                    .pagehaven.io
+                    .{config.staticDomain}
                   </span>
                 </div>
               </div>
@@ -176,7 +177,7 @@ function SitesPage() {
                       {getAccessIcon()}
                     </CardTitle>
                     <CardDescription>
-                      {site.subdomain}.pagehaven.io
+                      {getSiteDisplayDomain(site.subdomain)}
                     </CardDescription>
                   </div>
                   <span className="rounded-full bg-muted px-2 py-1 text-xs capitalize">

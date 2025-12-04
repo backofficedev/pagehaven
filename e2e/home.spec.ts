@@ -20,17 +20,18 @@ test.describe("Home Page", () => {
     await expect(page.getByRole("link", { name: "Dashboard" })).toBeVisible();
   });
 
-  test("shows hero section", async ({ page }) => {
+  test("shows hero section with ASCII art", async ({ page }) => {
     await page.goto("/");
-    await expect(
-      page.getByRole("heading", { name: PAGEHAVEN_REGEX })
-    ).toBeVisible();
+    // The home page shows ASCII art in a pre element, not a heading
+    await expect(page.locator("pre")).toBeVisible();
   });
 
-  test("navigates to login when not authenticated", async ({ page }) => {
+  test("redirects to login when accessing protected route unauthenticated", async ({
+    page,
+  }) => {
     await page.goto("/sites");
-    // Should redirect to login
-    await expect(page).toHaveURL(LOGIN_REGEX);
+    // Should redirect to login (with timeout for auth check)
+    await expect(page).toHaveURL(LOGIN_REGEX, { timeout: 10_000 });
   });
 });
 

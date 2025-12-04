@@ -1,3 +1,4 @@
+import { env } from "cloudflare:workers";
 import { db } from "@pagehaven/db";
 import {
   site,
@@ -64,8 +65,9 @@ export async function resolveSite(
 ): Promise<SiteResolution | null> {
   // Extract subdomain for cache key
   const subdomain = hostname.split(".")[0] ?? "";
+  const staticDomain = env.STATIC_DOMAIN || "";
   const isCustomDomain =
-    hostname.includes(".") && !hostname.endsWith(".pagehaven.io");
+    hostname.includes(".") && !hostname.endsWith(`.${staticDomain}`);
 
   // Use appropriate cache key based on lookup type
   const cacheKey = isCustomDomain

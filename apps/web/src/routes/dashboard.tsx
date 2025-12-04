@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
+import { config, getSiteDisplayDomain } from "@/utils/config";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/dashboard")({
@@ -177,7 +178,7 @@ function DashboardPage() {
                           {getAccessIcon()}
                         </CardTitle>
                         <CardDescription className="flex items-center gap-1">
-                          {site.subdomain}.pagehaven.io
+                          {getSiteDisplayDomain(site.subdomain)}
                           <ExternalLink className="h-3 w-3" />
                         </CardDescription>
                       </div>
@@ -223,7 +224,7 @@ function DashboardPage() {
               <li>
                 Share your site at{" "}
                 <code className="rounded bg-muted px-1">
-                  yoursite.pagehaven.io
+                  yoursite.{config.staticDomain}
                 </code>
               </li>
             </ol>

@@ -21,6 +21,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
+import { getSiteDisplayDomain, getSiteUrl } from "@/utils/config";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/sites/$siteId/")({
@@ -120,11 +121,11 @@ function SiteDetailPage() {
             <Globe className="h-4 w-4" />
             <a
               className="hover:underline"
-              href={`https://${site.subdomain}.pagehaven.io`}
+              href={getSiteUrl(site.subdomain)}
               rel="noopener noreferrer"
               target="_blank"
             >
-              {site.subdomain}.pagehaven.io
+              {getSiteDisplayDomain(site.subdomain)}
               <ExternalLink className="ml-1 inline h-3 w-3" />
             </a>
           </div>
