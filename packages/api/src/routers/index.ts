@@ -5,7 +5,6 @@ import { analyticsRouter } from "./analytics";
 import { deploymentRouter } from "./deployment";
 import { domainRouter } from "./domain";
 import { siteRouter } from "./site";
-import { todoRouter } from "./todo";
 import { uploadRouter } from "./upload";
 
 export const appRouter = {
@@ -14,7 +13,6 @@ export const appRouter = {
     message: "This is private",
     user: context.session?.user,
   })),
-  todo: todoRouter,
   site: siteRouter,
   deployment: deploymentRouter,
   access: accessRouter,

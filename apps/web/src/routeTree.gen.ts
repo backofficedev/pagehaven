@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TodosRouteImport } from './routes/todos'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
@@ -22,11 +21,6 @@ import { Route as SitesSiteIdSettingsRouteImport } from './routes/sites/$siteId/
 import { Route as SitesSiteIdDeployRouteImport } from './routes/sites/$siteId/deploy'
 import { Route as SitesSiteIdAnalyticsRouteImport } from './routes/sites/$siteId/analytics'
 
-const TodosRoute = TodosRouteImport.update({
-  id: '/todos',
-  path: '/todos',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -87,7 +81,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
-  '/todos': typeof TodosRoute
   '/gate/denied': typeof GateDeniedRoute
   '/gate/login': typeof GateLoginRoute
   '/gate/password': typeof GatePasswordRoute
@@ -101,7 +94,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
-  '/todos': typeof TodosRoute
   '/gate/denied': typeof GateDeniedRoute
   '/gate/login': typeof GateLoginRoute
   '/gate/password': typeof GatePasswordRoute
@@ -116,7 +108,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
-  '/todos': typeof TodosRoute
   '/gate/denied': typeof GateDeniedRoute
   '/gate/login': typeof GateLoginRoute
   '/gate/password': typeof GatePasswordRoute
@@ -132,7 +123,6 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/login'
-    | '/todos'
     | '/gate/denied'
     | '/gate/login'
     | '/gate/password'
@@ -146,7 +136,6 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/login'
-    | '/todos'
     | '/gate/denied'
     | '/gate/login'
     | '/gate/password'
@@ -160,7 +149,6 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/login'
-    | '/todos'
     | '/gate/denied'
     | '/gate/login'
     | '/gate/password'
@@ -175,7 +163,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
-  TodosRoute: typeof TodosRoute
   GateDeniedRoute: typeof GateDeniedRoute
   GateLoginRoute: typeof GateLoginRoute
   GatePasswordRoute: typeof GatePasswordRoute
@@ -188,13 +175,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/todos': {
-      id: '/todos'
-      path: '/todos'
-      fullPath: '/todos'
-      preLoaderRoute: typeof TodosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -279,7 +259,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
-  TodosRoute: TodosRoute,
   GateDeniedRoute: GateDeniedRoute,
   GateLoginRoute: GateLoginRoute,
   GatePasswordRoute: GatePasswordRoute,
