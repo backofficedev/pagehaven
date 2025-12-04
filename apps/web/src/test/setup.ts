@@ -22,19 +22,30 @@ Object.defineProperty(window, "matchMedia", {
   })),
 });
 
-// Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+// Mock ResizeObserver as a proper class
+class MockResizeObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
+global.ResizeObserver = MockResizeObserver;
 
-// Mock IntersectionObserver
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-  root: null,
-  rootMargin: "",
-  thresholds: [],
-}));
+// Mock IntersectionObserver as a proper class
+class MockIntersectionObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+  root = null;
+  rootMargin = "";
+  thresholds: number[] = [];
+}
+global.IntersectionObserver =
+  MockIntersectionObserver as unknown as typeof IntersectionObserver;
+
+// Mock scrollIntoView for Radix components
+Element.prototype.scrollIntoView = vi.fn();
+
+// Mock getComputedStyle for Radix components
+const originalGetComputedStyle = window.getComputedStyle;
+window.getComputedStyle = (element: Element) =>
+  originalGetComputedStyle(element);
