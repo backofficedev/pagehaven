@@ -359,7 +359,7 @@ export function createStaticSiteHandler() {
     // Get password cookie for this site
     const passwordCookie = getCookie(c, `site_password_${resolvedSite.id}`);
 
-    // TODO: Get user session from auth - for now these are undefined
+    // User session not available in API handler context - auth is handled by static worker
     const userId: string | undefined = undefined;
     const userEmail: string | undefined = undefined;
 
