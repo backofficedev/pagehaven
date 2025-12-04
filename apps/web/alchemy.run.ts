@@ -8,14 +8,15 @@ config({ path: path.join(import.meta.dirname, ".env") });
 
 const app = await alchemy("web");
 
-if (alchemy.env.VITE_SERVER_URL !== server.url) {
+const URL = alchemy.env.VITE_SERVER_URL;
+if (URL !== server.url) {
   throw new Error("VITE_SERVER_URL does not match server.url");
 }
 
 export const web = await Vite("web", {
   assets: path.join(import.meta.dirname, "dist"),
   bindings: {
-    VITE_SERVER_URL: server.url,
+    VITE_SERVER_URL: URL,
   },
   dev: {
     command: "bun run dev",

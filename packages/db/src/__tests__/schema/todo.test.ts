@@ -3,7 +3,7 @@
  * Tests table structure and exported schema objects
  */
 import { describe, expect, it } from "vitest";
-import { todo } from "./todo";
+import { todo } from "../../schema/todo";
 
 describe("Todo Schema", () => {
   describe("smoke tests", () => {

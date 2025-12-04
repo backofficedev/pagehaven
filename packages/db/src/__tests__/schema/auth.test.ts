@@ -3,7 +3,7 @@
  * Tests table structure and exported schema objects
  */
 import { describe, expect, it } from "vitest";
-import { account, session, user, verification } from "./auth";
+import { account, session, user, verification } from "../../schema/auth";
 
 describe("Auth Schema", () => {
   describe("smoke tests", () => {

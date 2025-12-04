@@ -3,7 +3,7 @@
  * Tests table structure and exported types
  */
 import { describe, expect, it } from "vitest";
-import { domainVerification, siteAnalytics } from "./analytics";
+import { domainVerification, siteAnalytics } from "../../schema/analytics";
 
 describe("Analytics Schema", () => {
   describe("smoke tests", () => {

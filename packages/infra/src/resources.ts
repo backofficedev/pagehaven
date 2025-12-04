@@ -1,7 +1,20 @@
+import fs from "node:fs";
 import path from "node:path";
 import { D1Database, KVNamespace, R2Bucket } from "alchemy/cloudflare";
 
-const MIGRATIONS_DIR = path.join(import.meta.dirname, "../db/src/migrations");
+function findWorkspaceRoot(startDir: string): string {
+  let dir = startDir;
+  while (dir !== path.dirname(dir)) {
+    if (fs.existsSync(path.join(dir, "turbo.json"))) {
+      return dir;
+    }
+    dir = path.dirname(dir);
+  }
+  throw new Error("Could not find workspace root (turbo.json)");
+}
+
+const WORKSPACE_ROOT = findWorkspaceRoot(import.meta.dirname);
+const MIGRATIONS_DIR = path.join(WORKSPACE_ROOT, "packages/db/src/migrations");
 
 /**
  * Creates shared Cloudflare resources (D1, R2, KV) with adopt: true.

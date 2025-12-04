@@ -10,7 +10,7 @@ import {
   deploymentStatuses,
   type SiteRole,
   siteRoles,
-} from "./site";
+} from "../../schema/site";
 
 describe("Site Schema", () => {
   describe("smoke tests", () => {
