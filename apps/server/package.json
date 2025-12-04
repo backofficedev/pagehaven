@@ -22,12 +22,10 @@
     "@orpc/server": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/zod": "catalog:",
-    "better-auth": "catalog:",
     "dotenv": "catalog:",
     "zod": "^4.1.11",
     "@pagehaven/api": "workspace:*",
-    "@pagehaven/auth": "workspace:*",
-    "@pagehaven/db": "workspace:*"
+    "@pagehaven/auth": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.8.2",

@@ -20,7 +20,6 @@
     "destroy": "alchemy destroy --app web"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.1.1",
     "radix-ui": "^1.4.2",
     "@tanstack/react-form": "^1.12.3",
     "@tailwindcss/vite": "^4.0.15",
@@ -37,7 +36,6 @@
     "zod": "^4.0.2",
     "@orpc/tanstack-query": "^1.10.0",
     "@orpc/client": "catalog:",
-    "@orpc/server": "catalog:",
     "@tanstack/react-query": "^5.85.5",
     "better-auth": "catalog:",
     "@pagehaven/api": "workspace:*",
@@ -52,7 +50,6 @@
     "@types/react": "~19.1.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
-    "postcss": "^8.5.3",
     "typescript": "^5.8.3",
     "tailwindcss": "^4.0.15",
     "vite": "^6.2.2",

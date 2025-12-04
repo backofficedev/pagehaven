@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "drizzle-orm": "catalog:",
-    "dotenv": "catalog:",
-    "zod": "^4.1.11"
+    "dotenv": "catalog:"
   }
 }

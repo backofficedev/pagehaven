@@ -22,12 +22,8 @@
   },
   "dependencies": {
     "@orpc/server": "catalog:",
-    "@orpc/client": "catalog:",
-    "@orpc/openapi": "catalog:",
-    "@orpc/zod": "catalog:",
     "hono": "catalog:",
     "drizzle-orm": "catalog:",
-    "dotenv": "catalog:",
     "zod": "^4.1.11",
     "@pagehaven/auth": "workspace:*",
     "@pagehaven/db": "workspace:*"

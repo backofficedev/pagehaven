@@ -19,8 +19,6 @@
   },
   "dependencies": {
     "better-auth": "catalog:",
-    "dotenv": "catalog:",
-    "zod": "^4.1.11",
     "@pagehaven/db": "workspace:*"
   }
 }

@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "hono": "catalog:",
-    "better-auth": "catalog:",
     "dotenv": "catalog:",
     "drizzle-orm": "catalog:",
     "@pagehaven/auth": "workspace:*",
