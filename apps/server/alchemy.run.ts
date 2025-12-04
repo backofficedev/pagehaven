@@ -1,6 +1,7 @@
 import path from "node:path";
+import { cache, db, storage } from "@pagehaven/infra/alchemy";
 import alchemy from "alchemy";
-import { D1Database, KVNamespace, R2Bucket, Worker } from "alchemy/cloudflare";
+import { Worker } from "alchemy/cloudflare";
 import { config } from "dotenv";
 
 config({ path: path.join(import.meta.dirname, "../../.env") });
@@ -8,21 +9,6 @@ config({ path: path.join(import.meta.dirname, ".env") });
 
 const app = await alchemy("server");
 const PORT = 3000;
-
-export const db = await D1Database("database", {
-  migrationsDir: path.join(
-    import.meta.dirname,
-    "../../packages/db/src/migrations"
-  ),
-});
-
-export const storage = await R2Bucket("storage", {
-  name: "pagehaven-storage",
-});
-
-export const cache = await KVNamespace("cache", {
-  title: "pagehaven-cache",
-});
 
 export const server = await Worker("server", {
   entrypoint: path.join(import.meta.dirname, "src/index.ts"),

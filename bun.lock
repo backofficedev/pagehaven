@@ -8,10 +8,10 @@
       },
       "devDependencies": {
         "@biomejs/biome": "2.3.8",
-        "@cloudflare/workers-types": "catalog:",
+        "@cloudflare/workers-types": "^4.20251202.0",
         "@types/node": "^22.19.1",
         "@vitest/coverage-v8": "^4.0.15",
-        "alchemy": "catalog:",
+        "alchemy": "^0.79.0",
         "dotenv-cli": "^11.0.0",
         "husky": "^9.1.7",
         "jscpd": "^4.0.5",
@@ -30,6 +30,7 @@
         "@orpc/zod": "catalog:",
         "@pagehaven/api": "workspace:*",
         "@pagehaven/auth": "workspace:*",
+        "@pagehaven/infra": "workspace:*",
         "dotenv": "catalog:",
         "hono": "catalog:",
         "zod": "^4.1.13",
@@ -49,6 +50,7 @@
       "dependencies": {
         "@pagehaven/auth": "workspace:*",
         "@pagehaven/db": "workspace:*",
+        "@pagehaven/infra": "workspace:*",
         "dotenv": "catalog:",
         "drizzle-orm": "catalog:",
         "hono": "catalog:",
@@ -150,6 +152,20 @@
         "@cloudflare/workers-types": "catalog:",
         "@pagehaven/config": "workspace:*",
         "drizzle-kit": "^0.31.7",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
+    "packages/infra": {
+      "name": "@pagehaven/infra",
+      "version": "0.0.0",
+      "dependencies": {
+        "alchemy": "catalog:",
+        "dotenv": "catalog:",
+      },
+      "devDependencies": {
+        "@pagehaven/config": "workspace:*",
       },
       "peerDependencies": {
         "typescript": "^5",
@@ -588,6 +604,8 @@
     "@pagehaven/config": ["@pagehaven/config@workspace:packages/config"],
 
     "@pagehaven/db": ["@pagehaven/db@workspace:packages/db"],
+
+    "@pagehaven/infra": ["@pagehaven/infra@workspace:packages/infra"],
 
     "@pkgjs/parseargs": ["@pkgjs/parseargs@0.11.0", "", {}, "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg=="],
 
