@@ -1,0 +1,27 @@
+{
+  "name": "@pagehaven/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "pagehaven": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target node",
+    "dev": "bun run ./src/index.ts",
+    "check-types": "tsc -b"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "chalk": "^5.4.1",
+    "ora": "^8.2.0",
+    "glob": "^11.0.3"
+  },
+  "devDependencies": {
+    "@pagehaven/config": "workspace:*",
+    "@types/node": "^22.19.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

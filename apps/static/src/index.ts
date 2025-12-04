@@ -8,6 +8,7 @@ import {
   siteMember,
 } from "@pagehaven/db/schema/site";
 import { getContentType } from "@pagehaven/db/utils/content-type";
+import { getFile } from "@pagehaven/db/utils/storage";
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { getCookie } from "hono/cookie";
@@ -35,28 +36,6 @@ type AccessCheckResult =
         | "not_invited"
         | "not_member";
     };
-
-// ============ Storage Utilities ============
-
-function getStorage(): R2Bucket {
-  return env.STORAGE;
-}
-
-async function getFile(
-  key: string
-): Promise<{ body: ReadableStream; metadata: R2HTTPMetadata } | null> {
-  const storage = getStorage();
-  const object = await storage.get(key);
-
-  if (!object) {
-    return null;
-  }
-
-  return {
-    body: object.body,
-    metadata: object.httpMetadata ?? {},
-  };
-}
 
 // ============ Site Resolution ============
 

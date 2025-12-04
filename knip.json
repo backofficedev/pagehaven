@@ -7,6 +7,7 @@
     "@pagehaven/config",
     "@cloudflare/workers-types"
   ],
+  "ignoreBinaries": ["tsc"],
   "ignore": ["**/routeTree.gen.ts"],
   "ignoreExportsUsedInFile": true
 }

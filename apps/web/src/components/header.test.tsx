@@ -1,6 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { ThemeProvider } from "next-themes";
 import { describe, expect, it, vi } from "vitest";
+import { render, screen } from "@/test/test-utils";
 
 // Mock TanStack Router
 vi.mock("@tanstack/react-router", () => ({
@@ -49,49 +48,44 @@ vi.mock("@/lib/auth-client", () => ({
 // Import after mocks
 import Header from "./header";
 
-// Helper to render with providers
-function renderWithProviders(ui: React.ReactElement) {
-  return render(<ThemeProvider attribute="class">{ui}</ThemeProvider>);
-}
-
 describe("Header", () => {
   describe("smoke tests", () => {
     it("renders without crashing", () => {
-      renderWithProviders(<Header />);
+      render(<Header />);
       expect(screen.getByRole("navigation")).toBeInTheDocument();
     });
   });
 
   describe("navigation links", () => {
     it("renders Home link", () => {
-      renderWithProviders(<Header />);
+      render(<Header />);
       expect(screen.getByText("Home")).toBeInTheDocument();
     });
 
     it("renders Sites link", () => {
-      renderWithProviders(<Header />);
+      render(<Header />);
       expect(screen.getByText("Sites")).toBeInTheDocument();
     });
 
     it("renders Dashboard link", () => {
-      renderWithProviders(<Header />);
+      render(<Header />);
       expect(screen.getByText("Dashboard")).toBeInTheDocument();
     });
 
     it("Home link points to /", () => {
-      renderWithProviders(<Header />);
+      render(<Header />);
       const homeLink = screen.getByText("Home");
       expect(homeLink).toHaveAttribute("href", "/");
     });
 
     it("Sites link points to /sites", () => {
-      renderWithProviders(<Header />);
+      render(<Header />);
       const sitesLink = screen.getByText("Sites");
       expect(sitesLink).toHaveAttribute("href", "/sites");
     });
 
     it("Dashboard link points to /dashboard", () => {
-      renderWithProviders(<Header />);
+      render(<Header />);
       const dashboardLink = screen.getByText("Dashboard");
       expect(dashboardLink).toHaveAttribute("href", "/dashboard");
     });
@@ -99,17 +93,17 @@ describe("Header", () => {
 
   describe("structure", () => {
     it("renders nav element", () => {
-      renderWithProviders(<Header />);
+      render(<Header />);
       expect(screen.getByRole("navigation")).toBeInTheDocument();
     });
 
     it("renders horizontal rule separator", () => {
-      const { container } = renderWithProviders(<Header />);
+      const { container } = render(<Header />);
       expect(container.querySelector("hr")).toBeInTheDocument();
     });
 
     it("renders ModeToggle component", () => {
-      renderWithProviders(<Header />);
+      render(<Header />);
       // ModeToggle renders a button with "Toggle theme" sr-only text
       expect(screen.getByText("Toggle theme")).toBeInTheDocument();
     });
@@ -117,13 +111,13 @@ describe("Header", () => {
 
   describe("styling", () => {
     it("has flex layout for main container", () => {
-      const { container } = renderWithProviders(<Header />);
+      const { container } = render(<Header />);
       const flexContainer = container.querySelector(".flex.flex-row");
       expect(flexContainer).toBeInTheDocument();
     });
 
     it("has gap between nav links", () => {
-      renderWithProviders(<Header />);
+      render(<Header />);
       const nav = screen.getByRole("navigation");
       expect(nav).toHaveClass("gap-4");
     });

@@ -1,7 +1,9 @@
 import { env } from "cloudflare:workers";
+import { getStorage } from "@pagehaven/db/utils/storage";
 
-// biome-ignore lint/performance/noBarrelFile: Re-exporting single utility for API consumers
+// biome-ignore lint/performance/noBarrelFile: Re-exporting utilities for API consumers
 export { getContentType } from "@pagehaven/db/utils/content-type";
+export { getFile, getStorage } from "@pagehaven/db/utils/storage";
 
 const LEADING_SLASHES_REGEX = /^\/+/;
 
@@ -23,13 +25,6 @@ export type StorageFile = {
 };
 
 /**
- * Get the R2 bucket binding
- */
-function getStorage(): R2Bucket {
-  return env.STORAGE;
-}
-
-/**
  * Upload a file to R2
  */
 export async function uploadFile(
@@ -37,7 +32,7 @@ export async function uploadFile(
   data: ArrayBuffer | ReadableStream | string,
   contentType: string
 ): Promise<UploadedFile> {
-  const storage = getStorage();
+  const storage = env.STORAGE;
 
   const result = await storage.put(key, data, {
     httpMetadata: {
@@ -49,25 +44,6 @@ export async function uploadFile(
     key,
     size: result?.size ?? 0,
     contentType,
-  };
-}
-
-/**
- * Get a file from R2
- */
-export async function getFile(
-  key: string
-): Promise<{ body: ReadableStream; metadata: R2HTTPMetadata } | null> {
-  const storage = getStorage();
-  const object = await storage.get(key);
-
-  if (!object) {
-    return null;
-  }
-
-  return {
-    body: object.body,
-    metadata: object.httpMetadata ?? {},
   };
 }
 

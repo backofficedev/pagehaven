@@ -12,8 +12,7 @@
     "check-types": "tsc -b"
   },
   "dependencies": {
-    "alchemy": "catalog:",
-    "dotenv": "catalog:"
+    "alchemy": "catalog:"
   },
   "devDependencies": {
     "@pagehaven/config": "workspace:*"
