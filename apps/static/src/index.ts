@@ -11,7 +11,7 @@ import { getContentType } from "@pagehaven/db/utils/content-type";
 import { getFile } from "@pagehaven/db/utils/storage";
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { getCookie } from "hono/cookie";
+import { getCookie, setCookie } from "hono/cookie";
 import { logger } from "hono/logger";
 
 const app = new Hono();
@@ -344,6 +344,22 @@ app.all("/*", async (c) => {
 
   if (!resolvedSite.activeDeploymentId) {
     return c.json({ error: "No deployment available" }, 404);
+  }
+
+  // Check for password token in query params (from gate redirect)
+  const url = new URL(c.req.url);
+  const passwordToken = url.searchParams.get("__pagehaven_token");
+
+  // If token is provided and valid, set cookie and redirect to clean URL
+  if (passwordToken && passwordHash && passwordToken === passwordHash) {
+    setCookie(c, `site_password_${resolvedSite.id}`, passwordToken, {
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+      sameSite: "Lax",
+    });
+    // Remove the token from URL and redirect
+    url.searchParams.delete("__pagehaven_token");
+    return c.redirect(url.toString(), 302);
   }
 
   // Get password cookie for this site

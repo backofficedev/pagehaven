@@ -4,14 +4,6 @@ import { Lock } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date(
-    Date.now() + days * 24 * 60 * 60 * 1000
-  ).toUTCString();
-  // biome-ignore lint/suspicious/noDocumentCookie: Required for cross-domain cookie setting
-  document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
-}
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -40,11 +32,12 @@ function PasswordGatePage() {
     ...orpc.access.verifyPassword.mutationOptions(),
     onSuccess: (data) => {
       if (data.valid && data.token) {
-        // Set cookie for this site using a helper
-        setCookie(`site_password_${siteId}`, data.token, 30);
         toast.success("Access granted!");
-        // Redirect to the original destination
-        globalThis.location.href = redirect;
+        // Redirect to the static site with the token as a query param
+        // The static server will set the cookie on its domain and redirect to clean URL
+        const redirectUrl = new URL(redirect);
+        redirectUrl.searchParams.set("__pagehaven_token", data.token);
+        globalThis.location.href = redirectUrl.toString();
       } else {
         toast.error("Incorrect password");
       }
