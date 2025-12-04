@@ -13,6 +13,8 @@
   },
   "scripts": {
     "check-types": "tsc -b",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate"
   },
