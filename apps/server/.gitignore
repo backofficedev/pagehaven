@@ -17,10 +17,6 @@ dist/
 .idea/shelf
 .wrangler
 .alchemy
-alchemy.run.js
-alchemy.run.js.map
-alchemy.run.d.ts
-alchemy.run.d.ts.map
 /.next/
 .vercel
 prisma/generated/
