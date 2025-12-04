@@ -13,7 +13,9 @@
     "check-types": "tsc -b",
     "dev": "alchemy dev --app static",
     "deploy": "alchemy deploy --app static",
-    "destroy": "alchemy destroy --app static"
+    "destroy": "alchemy destroy --app static",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "hono": "catalog:",
@@ -30,6 +32,7 @@
     "alchemy": "catalog:",
     "wrangler": "^4.40.3",
     "@types/node": "^22.13.11",
-    "@cloudflare/workers-types": "catalog:"
+    "@cloudflare/workers-types": "catalog:",
+    "vitest": "^4.0.15"
   }
 }

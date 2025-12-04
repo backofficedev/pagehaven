@@ -64,6 +64,7 @@
         "alchemy": "catalog:",
         "tsdown": "^0.16.5",
         "typescript": "^5.8.2",
+        "vitest": "^4.0.15",
         "wrangler": "^4.40.3",
       },
     },
