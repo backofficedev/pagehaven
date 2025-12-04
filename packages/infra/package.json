@@ -4,19 +4,12 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
-    "./alchemy": {
-      "bun": "./alchemy.run.ts",
-      "types": "./alchemy.run.ts"
+    "./resources": {
+      "default": "./src/resources.ts"
     }
   },
   "scripts": {
-    "check-types": "tsc -b",
-    "dev": "alchemy dev --app infra",
-    "deploy": "alchemy deploy --app infra",
-    "destroy": "alchemy destroy --app infra"
+    "check-types": "tsc -b"
   },
   "dependencies": {
     "alchemy": "catalog:",

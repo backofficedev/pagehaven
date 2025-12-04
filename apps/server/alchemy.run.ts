@@ -1,5 +1,5 @@
 import path from "node:path";
-import { cache, db, storage } from "@pagehaven/infra/alchemy";
+import { createSharedResources } from "@pagehaven/infra/resources";
 import alchemy from "alchemy";
 import { Worker } from "alchemy/cloudflare";
 import { config } from "dotenv";
@@ -9,6 +9,8 @@ config({ path: path.join(import.meta.dirname, ".env") });
 
 const app = await alchemy("server");
 const PORT = 3000;
+
+const { db, storage, cache } = await createSharedResources();
 
 export const server = await Worker("server", {
   entrypoint: path.join(import.meta.dirname, "src/index.ts"),
