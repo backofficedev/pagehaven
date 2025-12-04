@@ -1,5 +1,3 @@
-# bun test
-
 #!/bin/sh
 # Exit on any error
 set -e
@@ -33,6 +31,16 @@ if [ $FORMAT_EXIT_CODE -eq 0 ]; then
   TYPES_EXIT_CODE=$?
   if [ $TYPES_EXIT_CODE -ne 0 ]; then
     FORMAT_EXIT_CODE=$TYPES_EXIT_CODE
+  fi
+fi
+
+# Run tests (fast with turbo caching)
+if [ $FORMAT_EXIT_CODE -eq 0 ]; then
+  echo "🧪 Running tests..."
+  bun run test
+  TEST_EXIT_CODE=$?
+  if [ $TEST_EXIT_CODE -ne 0 ]; then
+    FORMAT_EXIT_CODE=$TEST_EXIT_CODE
   fi
 fi
 
