@@ -47,6 +47,26 @@
         "wrangler": "^4.40.3",
       },
     },
+    "apps/static": {
+      "name": "static",
+      "dependencies": {
+        "@pagehaven/auth": "workspace:*",
+        "@pagehaven/db": "workspace:*",
+        "better-auth": "catalog:",
+        "dotenv": "catalog:",
+        "drizzle-orm": "catalog:",
+        "hono": "catalog:",
+      },
+      "devDependencies": {
+        "@cloudflare/workers-types": "catalog:",
+        "@pagehaven/config": "workspace:*",
+        "@types/node": "^22.13.11",
+        "alchemy": "catalog:",
+        "tsdown": "^0.16.5",
+        "typescript": "^5.8.2",
+        "wrangler": "^4.40.3",
+      },
+    },
     "apps/web": {
       "name": "web",
       "version": "0.0.0",
@@ -1647,6 +1667,8 @@
     "spark-md5": ["spark-md5@3.0.2", "", {}, "sha512-wcFzz9cDfbuqe0FZzfi2or1sgyIrsDwmPwfZC4hiNidPdPINjeUwNfv5kldczoEAcjl9Y1L3SM7Uz2PUEQzxQw=="],
 
     "stackback": ["stackback@0.0.2", "", {}, "sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw=="],
+
+    "static": ["static@workspace:apps/static"],
 
     "std-env": ["std-env@3.10.0", "", {}, "sha512-5GS12FdOZNliM5mAOxFRg7Ir0pWz8MdpYm6AY6VPkGpbA7ZzmbzNcBJQ0GPvvyWgcY7QAhCgf9Uy89I03faLkg=="],
 

@@ -1,6 +1,16 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
-import { ArrowLeft, Eye, Globe, Lock, Trash2, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  Eye,
+  Globe,
+  Lock,
+  Mail,
+  Plus,
+  Trash2,
+  Users,
+  X,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -57,6 +67,7 @@ const accessOptions = [
   },
 ] as const;
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Settings page has many form sections
 function SettingsPage() {
   const { siteId } = Route.useParams();
   const [siteName, setSiteName] = useState("");
@@ -69,6 +80,11 @@ function SettingsPage() {
   const accessQuery = useQuery(
     orpc.access.get.queryOptions({ input: { siteId } })
   );
+  const invitesQuery = useQuery(
+    orpc.access.listInvites.queryOptions({ input: { siteId } })
+  );
+
+  const [inviteEmail, setInviteEmail] = useState("");
 
   useEffect(() => {
     if (siteQuery.data) {
@@ -112,6 +128,29 @@ function SettingsPage() {
     onSuccess: () => {
       toast.success("Site deleted");
       queryClient.invalidateQueries({ queryKey: ["site"] });
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const createInviteMutation = useMutation({
+    ...orpc.access.createInvite.mutationOptions(),
+    onSuccess: () => {
+      toast.success("Invite sent");
+      queryClient.invalidateQueries({ queryKey: ["access", "listInvites"] });
+      setInviteEmail("");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const deleteInviteMutation = useMutation({
+    ...orpc.access.deleteInvite.mutationOptions(),
+    onSuccess: () => {
+      toast.success("Invite removed");
+      queryClient.invalidateQueries({ queryKey: ["access", "listInvites"] });
     },
     onError: (error) => {
       toast.error(error.message);
@@ -274,6 +313,93 @@ function SettingsPage() {
             </form>
           </CardContent>
         </Card>
+
+        {/* Invite Management - only show for private sites */}
+        {accessType === "private" ? (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Invited Users
+              </CardTitle>
+              <CardDescription>
+                Manage who can access your private site
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <form
+                className="flex gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (inviteEmail) {
+                    createInviteMutation.mutate({
+                      siteId,
+                      email: inviteEmail,
+                    });
+                  }
+                }}
+              >
+                <Input
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="user@example.com"
+                  type="email"
+                  value={inviteEmail}
+                />
+                <Button
+                  disabled={!inviteEmail || createInviteMutation.isPending}
+                  type="submit"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Invite
+                </Button>
+              </form>
+
+              {invitesQuery.isLoading ? (
+                <p className="text-muted-foreground text-sm">
+                  Loading invites...
+                </p>
+              ) : null}
+
+              {Array.isArray(invitesQuery.data) &&
+              invitesQuery.data.length > 0 ? (
+                <div className="space-y-2">
+                  {invitesQuery.data.map((invite) => (
+                    <div
+                      className="flex items-center justify-between rounded-lg border p-3"
+                      key={invite.id}
+                    >
+                      <div>
+                        <p className="font-medium text-sm">{invite.email}</p>
+                        {invite.expiresAt ? (
+                          <p className="text-muted-foreground text-xs">
+                            Expires:{" "}
+                            {new Date(invite.expiresAt).toLocaleDateString()}
+                          </p>
+                        ) : null}
+                      </div>
+                      <Button
+                        disabled={deleteInviteMutation.isPending}
+                        onClick={() =>
+                          deleteInviteMutation.mutate({ inviteId: invite.id })
+                        }
+                        size="sm"
+                        variant="ghost"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              {invitesQuery.data?.length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  No invites yet. Add email addresses above to invite users.
+                </p>
+              ) : null}
+            </CardContent>
+          </Card>
+        ) : null}
 
         <Card className="border-destructive">
           <CardHeader>

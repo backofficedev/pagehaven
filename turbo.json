@@ -22,6 +22,10 @@
       "cache": false
     },
     "server#destroy": {
+      "dependsOn": ["web#destroy", "static#destroy"],
+      "cache": false
+    },
+    "static#destroy": {
       "dependsOn": ["web#destroy"],
       "cache": false
     },
