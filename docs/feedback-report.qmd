@@ -1,0 +1,53 @@
+---
+title: "Collaboration & Feedback Report"
+author: "David Bauch"
+date: today
+format:
+  html:
+    theme: cosmo
+    toc: false
+---
+
+## Feedback Given
+
+Describe specific instances where you provided feedback:
+
+- **Ideas/Pitches**: 
+  - [Describe feedback you gave on someone's idea or pitch]
+
+- **Status Updates**: 
+  - [How did you engage with others' progress updates?]
+
+- **Questions Answered**: 
+  - [What questions from teammates did you help address?]
+
+- **Final Presentations**: 
+  - [Feedback provided on presentations or deliverables]
+
+## Active Listening
+
+How did you demonstrate active listening?
+
+- [Example: Asked clarifying questions during X's presentation]
+- [Example: Summarized key points to confirm understanding]
+- [Example: Followed up on concerns raised by teammates]
+
+## Knowledge Sharing
+
+What did you share with others?
+
+| What I Shared | With Whom | Outcome |
+|---------------|-----------|---------|
+| [Resource/insight] | [Person/team] | [Result] |
+| | | |
+
+## Contributions to Others' Success
+
+Specific ways you helped teammates succeed:
+
+1. **[Teammate/Project]**: [How you contributed]
+2. **[Teammate/Project]**: [How you contributed]
+
+---
+
+*Summary*: [One sentence summarizing your collaborative contributions this period]
