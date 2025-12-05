@@ -1,7 +1,48 @@
 import { db } from "@pagehaven/db";
-import { type SiteRole, siteMember } from "@pagehaven/db/schema/site";
+import {
+  deployment,
+  type SiteRole,
+  siteMember,
+} from "@pagehaven/db/schema/site";
 import { and, eq } from "drizzle-orm";
 import { hasPermission } from "./permissions";
+
+type DeploymentWithRole = {
+  deployment: typeof deployment.$inferSelect;
+  role: SiteRole;
+};
+
+/**
+ * Get a deployment and verify user has required permission
+ * @returns The deployment and user's role
+ * @throws Error if deployment not found or permission denied
+ */
+export async function getDeploymentWithPermission(
+  deploymentId: string,
+  userId: string,
+  requiredRole: SiteRole,
+  errorMessage = "Permission denied"
+): Promise<DeploymentWithRole> {
+  const result = await db
+    .select({
+      deployment,
+      role: siteMember.role,
+    })
+    .from(deployment)
+    .innerJoin(siteMember, eq(deployment.siteId, siteMember.siteId))
+    .where(and(eq(deployment.id, deploymentId), eq(siteMember.userId, userId)))
+    .get();
+
+  if (!result) {
+    throw new Error("Deployment not found or access denied");
+  }
+
+  if (!hasPermission(result.role, requiredRole)) {
+    throw new Error(errorMessage);
+  }
+
+  return result;
+}
 
 /**
  * Check if a user has the required permission for a site

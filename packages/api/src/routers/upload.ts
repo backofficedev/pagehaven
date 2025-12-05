@@ -1,9 +1,6 @@
-import { db } from "@pagehaven/db";
-import { deployment, siteMember } from "@pagehaven/db/schema/site";
-import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
-import { hasPermission } from "../lib/permissions";
+import { getDeploymentWithPermission } from "../lib/check-site-permission";
 import {
   deleteFiles,
   getContentType,
@@ -26,31 +23,13 @@ export const uploadRouter = {
     )
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
+      const { deployment: dep } = await getDeploymentWithPermission(
+        input.deploymentId,
+        userId,
+        "editor"
+      );
 
-      // Get deployment and verify permission
-      const result = await db
-        .select({
-          deployment,
-          role: siteMember.role,
-        })
-        .from(deployment)
-        .innerJoin(siteMember, eq(deployment.siteId, siteMember.siteId))
-        .where(
-          and(
-            eq(deployment.id, input.deploymentId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(result && hasPermission(result.role, "editor"))) {
-        throw new Error("Permission denied");
-      }
-
-      if (
-        result.deployment.status !== "pending" &&
-        result.deployment.status !== "processing"
-      ) {
+      if (dep.status !== "pending" && dep.status !== "processing") {
         throw new Error("Cannot upload to a finalized deployment");
       }
 
@@ -62,7 +41,7 @@ export const uploadRouter = {
       }
 
       const key = getDeploymentFileKey(
-        result.deployment.siteId,
+        dep.siteId,
         input.deploymentId,
         input.filePath
       );
@@ -94,31 +73,13 @@ export const uploadRouter = {
     )
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
+      const { deployment: dep } = await getDeploymentWithPermission(
+        input.deploymentId,
+        userId,
+        "editor"
+      );
 
-      // Get deployment and verify permission
-      const result = await db
-        .select({
-          deployment,
-          role: siteMember.role,
-        })
-        .from(deployment)
-        .innerJoin(siteMember, eq(deployment.siteId, siteMember.siteId))
-        .where(
-          and(
-            eq(deployment.id, input.deploymentId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(result && hasPermission(result.role, "editor"))) {
-        throw new Error("Permission denied");
-      }
-
-      if (
-        result.deployment.status !== "pending" &&
-        result.deployment.status !== "processing"
-      ) {
+      if (dep.status !== "pending" && dep.status !== "processing") {
         throw new Error("Cannot upload to a finalized deployment");
       }
 
@@ -134,7 +95,7 @@ export const uploadRouter = {
         }
 
         const key = getDeploymentFileKey(
-          result.deployment.siteId,
+          dep.siteId,
           input.deploymentId,
           file.filePath
         );
@@ -157,28 +118,13 @@ export const uploadRouter = {
     .input(z.object({ deploymentId: z.string() }))
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
+      const { deployment: dep } = await getDeploymentWithPermission(
+        input.deploymentId,
+        userId,
+        "viewer"
+      );
 
-      // Get deployment and verify permission
-      const result = await db
-        .select({
-          deployment,
-          role: siteMember.role,
-        })
-        .from(deployment)
-        .innerJoin(siteMember, eq(deployment.siteId, siteMember.siteId))
-        .where(
-          and(
-            eq(deployment.id, input.deploymentId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!result) {
-        throw new Error("Deployment not found or access denied");
-      }
-
-      const prefix = `sites/${result.deployment.siteId}/deployments/${input.deploymentId}/`;
+      const prefix = `sites/${dep.siteId}/deployments/${input.deploymentId}/`;
       const files = await listFiles(prefix);
 
       // Strip the prefix from keys to get relative paths
@@ -194,28 +140,14 @@ export const uploadRouter = {
     .input(z.object({ deploymentId: z.string() }))
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
+      const { deployment: dep } = await getDeploymentWithPermission(
+        input.deploymentId,
+        userId,
+        "admin",
+        "Permission denied - admin required"
+      );
 
-      // Get deployment and verify permission (admin+ required for deletion)
-      const result = await db
-        .select({
-          deployment,
-          role: siteMember.role,
-        })
-        .from(deployment)
-        .innerJoin(siteMember, eq(deployment.siteId, siteMember.siteId))
-        .where(
-          and(
-            eq(deployment.id, input.deploymentId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(result && hasPermission(result.role, "admin"))) {
-        throw new Error("Permission denied - admin required");
-      }
-
-      const prefix = `sites/${result.deployment.siteId}/deployments/${input.deploymentId}/`;
+      const prefix = `sites/${dep.siteId}/deployments/${input.deploymentId}/`;
       const files = await listFiles(prefix);
 
       if (files.length > 0) {

@@ -1,10 +1,12 @@
 import { db } from "@pagehaven/db";
-import { deployment, site, siteMember } from "@pagehaven/db/schema/site";
-import { and, desc, eq } from "drizzle-orm";
+import { deployment, site } from "@pagehaven/db/schema/site";
+import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
-import { requireSitePermission } from "../lib/check-site-permission";
-import { hasPermission } from "../lib/permissions";
+import {
+  getDeploymentWithPermission,
+  requireSitePermission,
+} from "../lib/check-site-permission";
 
 function generateId(): string {
   return crypto.randomUUID();
@@ -47,27 +49,12 @@ export const deploymentRouter = {
     .input(z.object({ deploymentId: z.string() }))
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
-
-      const result = await db
-        .select({
-          deployment,
-          role: siteMember.role,
-        })
-        .from(deployment)
-        .innerJoin(siteMember, eq(deployment.siteId, siteMember.siteId))
-        .where(
-          and(
-            eq(deployment.id, input.deploymentId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!result) {
-        throw new Error("Deployment not found or access denied");
-      }
-
-      return result.deployment;
+      const { deployment: dep } = await getDeploymentWithPermission(
+        input.deploymentId,
+        userId,
+        "viewer"
+      );
+      return dep;
     }),
 
   // Create a new deployment (requires editor+)
@@ -108,28 +95,13 @@ export const deploymentRouter = {
     .input(z.object({ deploymentId: z.string() }))
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
+      const { deployment: dep } = await getDeploymentWithPermission(
+        input.deploymentId,
+        userId,
+        "editor"
+      );
 
-      // Verify ownership and get deployment
-      const result = await db
-        .select({
-          deployment,
-          role: siteMember.role,
-        })
-        .from(deployment)
-        .innerJoin(siteMember, eq(deployment.siteId, siteMember.siteId))
-        .where(
-          and(
-            eq(deployment.id, input.deploymentId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(result && hasPermission(result.role, "editor"))) {
-        throw new Error("Permission denied");
-      }
-
-      if (result.deployment.status !== "pending") {
+      if (dep.status !== "pending") {
         throw new Error("Deployment is not in pending state");
       }
 
@@ -152,28 +124,13 @@ export const deploymentRouter = {
     )
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
+      const { deployment: dep } = await getDeploymentWithPermission(
+        input.deploymentId,
+        userId,
+        "editor"
+      );
 
-      // Verify ownership and get deployment
-      const result = await db
-        .select({
-          deployment,
-          role: siteMember.role,
-        })
-        .from(deployment)
-        .innerJoin(siteMember, eq(deployment.siteId, siteMember.siteId))
-        .where(
-          and(
-            eq(deployment.id, input.deploymentId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(result && hasPermission(result.role, "editor"))) {
-        throw new Error("Permission denied");
-      }
-
-      if (result.deployment.status !== "processing") {
+      if (dep.status !== "processing") {
         throw new Error("Deployment is not in processing state");
       }
 
@@ -191,7 +148,7 @@ export const deploymentRouter = {
         db
           .update(site)
           .set({ activeDeploymentId: input.deploymentId })
-          .where(eq(site.id, result.deployment.siteId)),
+          .where(eq(site.id, dep.siteId)),
       ]);
 
       return { success: true };
@@ -202,26 +159,7 @@ export const deploymentRouter = {
     .input(z.object({ deploymentId: z.string() }))
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
-
-      // Verify ownership
-      const result = await db
-        .select({
-          deployment,
-          role: siteMember.role,
-        })
-        .from(deployment)
-        .innerJoin(siteMember, eq(deployment.siteId, siteMember.siteId))
-        .where(
-          and(
-            eq(deployment.id, input.deploymentId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(result && hasPermission(result.role, "editor"))) {
-        throw new Error("Permission denied");
-      }
+      await getDeploymentWithPermission(input.deploymentId, userId, "editor");
 
       await db
         .update(deployment)
@@ -236,28 +174,14 @@ export const deploymentRouter = {
     .input(z.object({ deploymentId: z.string() }))
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
+      const { deployment: dep } = await getDeploymentWithPermission(
+        input.deploymentId,
+        userId,
+        "admin",
+        "Permission denied - admin required for rollback"
+      );
 
-      // Verify ownership and get deployment
-      const result = await db
-        .select({
-          deployment,
-          role: siteMember.role,
-        })
-        .from(deployment)
-        .innerJoin(siteMember, eq(deployment.siteId, siteMember.siteId))
-        .where(
-          and(
-            eq(deployment.id, input.deploymentId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(result && hasPermission(result.role, "admin"))) {
-        throw new Error("Permission denied - admin required for rollback");
-      }
-
-      if (result.deployment.status !== "live") {
+      if (dep.status !== "live") {
         throw new Error("Can only rollback to a live deployment");
       }
 
@@ -265,7 +189,7 @@ export const deploymentRouter = {
       await db
         .update(site)
         .set({ activeDeploymentId: input.deploymentId })
-        .where(eq(site.id, result.deployment.siteId));
+        .where(eq(site.id, dep.siteId));
 
       return { success: true };
     }),
