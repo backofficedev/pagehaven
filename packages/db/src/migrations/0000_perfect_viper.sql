@@ -159,9 +159,4 @@ CREATE TABLE `site_member` (
 --> statement-breakpoint
 CREATE INDEX `site_member_site_idx` ON `site_member` (`site_id`);--> statement-breakpoint
 CREATE INDEX `site_member_user_idx` ON `site_member` (`user_id`);--> statement-breakpoint
-CREATE INDEX `site_member_site_user_idx` ON `site_member` (`site_id`,`user_id`);--> statement-breakpoint
-CREATE TABLE `todo` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`text` text NOT NULL,
-	`completed` integer DEFAULT false NOT NULL
-);
+CREATE INDEX `site_member_site_user_idx` ON `site_member` (`site_id`,`user_id`);
