@@ -1,7 +1,8 @@
 import { env } from "cloudflare:workers";
 import { getStorage } from "@pagehaven/db/utils/storage";
 
-// biome-ignore lint/performance/noBarrelFile: Re-exporting utilities for API consumers
+// Re-exports for API consumers - this module also contains storage logic
+// biome-ignore lint/performance/noBarrelFile: Module has actual logic, re-exports are for convenience
 export { getContentType } from "@pagehaven/db/utils/content-type";
 export { getFile, getStorage } from "@pagehaven/db/utils/storage";
 

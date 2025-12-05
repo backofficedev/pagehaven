@@ -16,8 +16,8 @@ import {
 } from "./access-utils";
 
 export type { AccessCheckOptions, AccessCheckResult } from "./access-utils";
-// Re-export pure utility functions for consumers
-// biome-ignore lint/performance/noBarrelFile: Re-exporting pure utility functions for API consumers
+// Re-exports for API consumers - this module also contains access control logic
+// biome-ignore lint/performance/noBarrelFile: Module has actual logic, re-exports are for convenience
 export {
   checkPasswordAccess,
   getAccessDeniedResponse,
