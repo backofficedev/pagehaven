@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createMockSession } from "@/test/fixtures";
 
 // Mock sonner toast
 vi.mock("sonner", () => ({
@@ -21,27 +22,9 @@ vi.mock("@/lib/auth-client", () => ({
 // Import after mocks
 import ProfileForm from "./profile-form";
 
-const mockSession = {
-  user: {
-    id: "user-1",
-    name: "Test User",
-    email: "test@example.com",
-    emailVerified: true,
-    image: "https://example.com/avatar.jpg",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  session: {
-    id: "session-1",
-    userId: "user-1",
-    token: "test-token",
-    expiresAt: new Date(),
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ipAddress: null,
-    userAgent: null,
-  },
-};
+const mockSession = createMockSession({
+  user: { image: "https://example.com/avatar.jpg" },
+});
 
 describe("ProfileForm", () => {
   beforeEach(() => {

@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createMockSession } from "@/test/fixtures";
 
 // Mock child components
 vi.mock("@/components/settings/profile-form", () => ({
@@ -26,27 +27,7 @@ vi.mock("@/components/settings/delete-account-form", () => ({
 // Import after mocks
 import SettingsPage from "./settings-page";
 
-const mockSession = {
-  user: {
-    id: "user-1",
-    name: "Test User",
-    email: "test@example.com",
-    emailVerified: true,
-    image: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  session: {
-    id: "session-1",
-    userId: "user-1",
-    token: "test-token",
-    expiresAt: new Date(),
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ipAddress: null,
-    userAgent: null,
-  },
-};
+const mockSession = createMockSession();
 
 describe("SettingsPage", () => {
   beforeEach(() => {

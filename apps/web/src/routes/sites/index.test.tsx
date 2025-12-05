@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describeRouteExports } from "@/test/route-test-utils";
 
 // Regex patterns at module level for performance
 const YOUR_SITES_REGEX = /Your Sites/i;
@@ -223,20 +224,7 @@ describe("sites route", () => {
     });
   });
 
-  describe("Route export", () => {
-    it("exports Route", async () => {
-      const module = await import("./index");
-      expect(module.Route).toBeDefined();
-    });
-
-    it("has component defined", async () => {
-      const module = await import("./index");
-      const route = module.Route as unknown as {
-        component: React.ComponentType;
-      };
-      expect(route.component).toBeDefined();
-    });
-  });
+  describeRouteExports(() => import("./index"));
 
   describe("SitesPage rendering", () => {
     it("displays page title", async () => {

@@ -13,6 +13,11 @@ import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { logger } from "hono/logger";
+import {
+  type AccessCheckResult,
+  checkPasswordAccess,
+  getGateRedirectUrl,
+} from "./access-utils";
 
 const app = new Hono();
 
@@ -25,17 +30,6 @@ type SiteResolution = {
   accessType: string | null;
   passwordHash: string | null;
 };
-
-type AccessCheckResult =
-  | { allowed: true }
-  | {
-      allowed: false;
-      reason:
-        | "password_required"
-        | "login_required"
-        | "not_invited"
-        | "not_member";
-    };
 
 // ============ Site Resolution ============
 
@@ -64,16 +58,6 @@ async function fetchSiteFromDb(
 }
 
 // ============ Access Control ============
-
-function verifyPasswordCookie(
-  passwordCookie: string | undefined,
-  storedHash: string | null
-): boolean {
-  if (!(passwordCookie && storedHash)) {
-    return false;
-  }
-  return passwordCookie === storedHash;
-}
 
 async function checkMemberAccess(
   siteId: string,
@@ -120,16 +104,6 @@ type AccessCheckOptions = {
   userId: string | undefined;
   userEmail: string | undefined;
 };
-
-function checkPasswordAccess(
-  passwordCookie: string | undefined,
-  passwordHash: string | null
-): AccessCheckResult {
-  const valid = verifyPasswordCookie(passwordCookie, passwordHash);
-  return valid
-    ? { allowed: true }
-    : { allowed: false, reason: "password_required" };
-}
 
 async function checkOwnerOnlyAccess(
   siteId: string,
@@ -297,27 +271,6 @@ async function serveFileWithFallback(
 
 // ============ Gate Redirects ============
 
-function getGateRedirectUrl(
-  reason: string,
-  siteId: string,
-  originalUrl: string
-): string {
-  const webUrl = env.WEB_URL || "http://localhost:3001";
-  const redirectParam = encodeURIComponent(originalUrl);
-
-  switch (reason) {
-    case "password_required":
-      return `${webUrl}/gate/password?siteId=${siteId}&redirect=${redirectParam}`;
-    case "login_required":
-      return `${webUrl}/gate/login?redirect=${redirectParam}`;
-    case "not_member":
-    case "not_invited":
-      return `${webUrl}/gate/denied?reason=${reason}&redirect=${redirectParam}`;
-    default:
-      return `${webUrl}/gate/denied?reason=unknown`;
-  }
-}
-
 // ============ Main Handler ============
 
 app.all("/*", async (c) => {
@@ -385,10 +338,12 @@ app.all("/*", async (c) => {
 
   if (!accessCheck.allowed) {
     // Redirect to appropriate gate page
+    const webUrl = env.WEB_URL || "http://localhost:3001";
     const redirectUrl = getGateRedirectUrl(
       accessCheck.reason,
       resolvedSite.id,
-      originalUrl
+      originalUrl,
+      webUrl
     );
     return c.redirect(redirectUrl, 302);
   }
