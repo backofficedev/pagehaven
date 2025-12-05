@@ -1,4 +1,28 @@
-import { describe, expect, it, vi } from "vitest";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// Store mock functions for dynamic control
+const mockSpinner = {
+  start: vi.fn().mockReturnThis(),
+  text: "",
+  succeed: vi.fn(),
+  fail: vi.fn(),
+  warn: vi.fn(),
+};
+
+const mockOra = vi.fn(() => mockSpinner);
+
+const mockGlob = vi.fn();
+const mockApiCreate = vi.fn();
+const mockApiMarkProcessing = vi.fn();
+const mockApiFinalize = vi.fn();
+const mockApiUploadFiles = vi.fn();
+const mockIsAuthenticated = vi.fn();
+const mockProcessExit = vi.fn();
+const mockConsoleLog = vi.fn();
+const mockConsoleError = vi.fn();
 
 // Mock chalk
 vi.mock("chalk", () => ({
@@ -11,40 +35,79 @@ vi.mock("chalk", () => ({
 
 // Mock ora
 vi.mock("ora", () => ({
-  default: vi.fn(() => ({
-    start: vi.fn().mockReturnThis(),
-    text: "",
-    succeed: vi.fn(),
-    fail: vi.fn(),
-    warn: vi.fn(),
-  })),
+  default: () => mockOra(),
 }));
 
 // Mock glob
 vi.mock("glob", () => ({
-  glob: vi.fn(() => Promise.resolve([])),
+  glob: (...args: unknown[]) => mockGlob(...args),
 }));
 
 // Mock api
 vi.mock("../lib/api", () => ({
   api: {
     deployments: {
-      create: vi.fn(),
-      markProcessing: vi.fn(),
-      finalize: vi.fn(),
+      create: (...args: unknown[]) => mockApiCreate(...args),
+      markProcessing: (...args: unknown[]) => mockApiMarkProcessing(...args),
+      finalize: (...args: unknown[]) => mockApiFinalize(...args),
     },
     upload: {
-      uploadFiles: vi.fn(),
+      uploadFiles: (...args: unknown[]) => mockApiUploadFiles(...args),
     },
   },
 }));
 
 // Mock config
 vi.mock("../lib/config", () => ({
-  isAuthenticated: vi.fn(() => true),
+  isAuthenticated: () => mockIsAuthenticated(),
 }));
 
 describe("deploy command", () => {
+  let testDir: string;
+  let originalExit: typeof process.exit;
+  let originalConsoleLog: typeof console.log;
+  let originalConsoleError: typeof console.error;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    // Create temp directory for tests
+    testDir = join(tmpdir(), `deploy-test-${Date.now()}`);
+    mkdirSync(testDir, { recursive: true });
+
+    // Mock process.exit
+    originalExit = process.exit;
+    process.exit = mockProcessExit as unknown as typeof process.exit;
+
+    // Mock console
+    originalConsoleLog = console.log;
+    originalConsoleError = console.error;
+    console.log = mockConsoleLog;
+    console.error = mockConsoleError;
+
+    // Default mock implementations
+    mockIsAuthenticated.mockReturnValue(true);
+    mockGlob.mockResolvedValue([]);
+    mockApiCreate.mockResolvedValue({ id: "deploy-123" });
+    mockApiMarkProcessing.mockResolvedValue({});
+    mockApiFinalize.mockResolvedValue({});
+    mockApiUploadFiles.mockResolvedValue({ uploaded: 1 });
+  });
+
+  afterEach(() => {
+    // Cleanup temp directory
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch {
+      // Ignore cleanup errors
+    }
+
+    // Restore process.exit and console
+    process.exit = originalExit;
+    console.log = originalConsoleLog;
+    console.error = originalConsoleError;
+  });
+
   describe("deployCommand", () => {
     it("exports deployCommand", async () => {
       const { deployCommand } = await import("./deploy");
@@ -78,6 +141,324 @@ describe("deploy command", () => {
       const args = deployCommand.registeredArguments;
       expect(args.length).toBe(1);
       expect(args[0]?.name()).toBe("directory");
+    });
+  });
+
+  describe("authentication check", () => {
+    it("exits with error when not authenticated", async () => {
+      mockIsAuthenticated.mockReturnValue(false);
+
+      const { deployCommand } = await import("./deploy");
+      await deployCommand.parseAsync([
+        "node",
+        "deploy",
+        testDir,
+        "-s",
+        "site-1",
+      ]);
+
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        expect.stringContaining("Not authenticated")
+      );
+      expect(mockProcessExit).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe("site ID validation", () => {
+    it("exits with error when site ID is not provided", async () => {
+      mockIsAuthenticated.mockReturnValue(true);
+
+      const { deployCommand } = await import("./deploy");
+      await deployCommand.parseAsync(["node", "deploy", testDir]);
+
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        expect.stringContaining("Site ID is required")
+      );
+      expect(mockProcessExit).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe("file scanning", () => {
+    it("fails when no files found in directory", async () => {
+      mockGlob.mockResolvedValue([]);
+
+      const { deployCommand } = await import("./deploy");
+      await deployCommand.parseAsync([
+        "node",
+        "deploy",
+        testDir,
+        "-s",
+        "site-1",
+      ]);
+
+      expect(mockSpinner.fail).toHaveBeenCalledWith(
+        "No files found in directory"
+      );
+      expect(mockProcessExit).toHaveBeenCalledWith(1);
+    });
+
+    it("scans directory with correct glob options", async () => {
+      mockGlob.mockResolvedValue(["index.html"]);
+      writeFileSync(join(testDir, "index.html"), "<html></html>");
+
+      const { deployCommand } = await import("./deploy");
+      await deployCommand.parseAsync([
+        "node",
+        "deploy",
+        testDir,
+        "-s",
+        "site-1",
+      ]);
+
+      expect(mockGlob).toHaveBeenCalledWith("**/*", {
+        cwd: testDir,
+        nodir: true,
+        dot: false,
+        ignore: [
+          "**/node_modules/**",
+          "**/.git/**",
+          "**/.DS_Store",
+          "**/Thumbs.db",
+        ],
+      });
+    });
+  });
+
+  describe("file size validation", () => {
+    it("skips files larger than 10MB", async () => {
+      const largeFilePath = "large-file.bin";
+      mockGlob.mockResolvedValue([largeFilePath, "small.html"]);
+
+      // Create actual files - one large, one small
+      const largeContent = Buffer.alloc(11 * 1024 * 1024); // 11MB
+      writeFileSync(join(testDir, largeFilePath), largeContent);
+      writeFileSync(join(testDir, "small.html"), "<html></html>");
+
+      const { deployCommand } = await import("./deploy");
+      await deployCommand.parseAsync([
+        "node",
+        "deploy",
+        testDir,
+        "-s",
+        "site-1",
+      ]);
+
+      expect(mockSpinner.warn).toHaveBeenCalledWith(
+        expect.stringContaining("Skipping large-file.bin")
+      );
+    });
+  });
+
+  describe("deployment flow", () => {
+    it("creates deployment with site ID and message", async () => {
+      mockGlob.mockResolvedValue(["index.html"]);
+      writeFileSync(join(testDir, "index.html"), "<html></html>");
+
+      const { deployCommand } = await import("./deploy");
+      await deployCommand.parseAsync([
+        "node",
+        "deploy",
+        testDir,
+        "-s",
+        "site-123",
+        "-m",
+        "Initial deploy",
+      ]);
+
+      expect(mockApiCreate).toHaveBeenCalledWith("site-123", "Initial deploy");
+    });
+
+    it("marks deployment as processing", async () => {
+      mockGlob.mockResolvedValue(["index.html"]);
+      writeFileSync(join(testDir, "index.html"), "<html></html>");
+      mockApiCreate.mockResolvedValue({ id: "deploy-456" });
+
+      const { deployCommand } = await import("./deploy");
+      await deployCommand.parseAsync([
+        "node",
+        "deploy",
+        testDir,
+        "-s",
+        "site-1",
+      ]);
+
+      expect(mockApiMarkProcessing).toHaveBeenCalledWith("deploy-456");
+    });
+
+    it("uploads files in batches of 10", async () => {
+      // Create 25 files to test batching
+      const files = Array.from({ length: 25 }, (_, i) => `file${i}.txt`);
+      mockGlob.mockResolvedValue(files);
+      for (const file of files) {
+        writeFileSync(join(testDir, file), `content-${file}`);
+      }
+      mockApiCreate.mockResolvedValue({ id: "deploy-789" });
+
+      const { deployCommand } = await import("./deploy");
+      await deployCommand.parseAsync([
+        "node",
+        "deploy",
+        testDir,
+        "-s",
+        "site-1",
+      ]);
+
+      // Should be called 3 times: 10 + 10 + 5
+      expect(mockApiUploadFiles).toHaveBeenCalledTimes(3);
+    });
+
+    it("finalizes deployment with correct file count and size", async () => {
+      mockGlob.mockResolvedValue(["index.html", "style.css"]);
+      writeFileSync(join(testDir, "index.html"), "<html></html>"); // 13 bytes
+      writeFileSync(join(testDir, "style.css"), "body {}"); // 7 bytes
+      mockApiCreate.mockResolvedValue({ id: "deploy-final" });
+
+      const { deployCommand } = await import("./deploy");
+      await deployCommand.parseAsync([
+        "node",
+        "deploy",
+        testDir,
+        "-s",
+        "site-1",
+      ]);
+
+      expect(mockApiFinalize).toHaveBeenCalledWith("deploy-final", 2, 20);
+    });
+
+    it("shows success message on completion", async () => {
+      mockGlob.mockResolvedValue(["index.html"]);
+      writeFileSync(join(testDir, "index.html"), "<html></html>");
+
+      const { deployCommand } = await import("./deploy");
+      await deployCommand.parseAsync([
+        "node",
+        "deploy",
+        testDir,
+        "-s",
+        "site-1",
+      ]);
+
+      expect(mockSpinner.succeed).toHaveBeenCalledWith(
+        expect.stringContaining("Deployment successful")
+      );
+    });
+  });
+
+  describe("error handling", () => {
+    it("handles API create error", async () => {
+      mockGlob.mockResolvedValue(["index.html"]);
+      writeFileSync(join(testDir, "index.html"), "<html></html>");
+      mockApiCreate.mockRejectedValue(new Error("API Error"));
+
+      const { deployCommand } = await import("./deploy");
+      await deployCommand.parseAsync([
+        "node",
+        "deploy",
+        testDir,
+        "-s",
+        "site-1",
+      ]);
+
+      expect(mockSpinner.fail).toHaveBeenCalledWith("Deployment failed");
+      expect(mockConsoleError).toHaveBeenCalledWith("API Error");
+      expect(mockProcessExit).toHaveBeenCalledWith(1);
+    });
+
+    it("handles upload error", async () => {
+      mockGlob.mockResolvedValue(["index.html"]);
+      writeFileSync(join(testDir, "index.html"), "<html></html>");
+      mockApiUploadFiles.mockRejectedValue(new Error("Upload failed"));
+
+      const { deployCommand } = await import("./deploy");
+      await deployCommand.parseAsync([
+        "node",
+        "deploy",
+        testDir,
+        "-s",
+        "site-1",
+      ]);
+
+      expect(mockSpinner.fail).toHaveBeenCalledWith("Deployment failed");
+      expect(mockProcessExit).toHaveBeenCalledWith(1);
+    });
+
+    it("handles unknown error type", async () => {
+      mockGlob.mockResolvedValue(["index.html"]);
+      writeFileSync(join(testDir, "index.html"), "<html></html>");
+      mockApiCreate.mockRejectedValue("string error");
+
+      const { deployCommand } = await import("./deploy");
+      await deployCommand.parseAsync([
+        "node",
+        "deploy",
+        testDir,
+        "-s",
+        "site-1",
+      ]);
+
+      expect(mockConsoleError).toHaveBeenCalledWith("Unknown error");
+    });
+  });
+
+  describe("formatSize helper", () => {
+    it("formats bytes correctly", () => {
+      const formatSize = (bytes: number): string => {
+        if (bytes < 1024) {
+          return `${bytes} B`;
+        }
+        if (bytes < 1024 * 1024) {
+          return `${(bytes / 1024).toFixed(1)} KB`;
+        }
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+      };
+
+      expect(formatSize(500)).toBe("500 B");
+      expect(formatSize(1024)).toBe("1.0 KB");
+      expect(formatSize(2048)).toBe("2.0 KB");
+      expect(formatSize(1_048_576)).toBe("1.0 MB");
+      expect(formatSize(5_242_880)).toBe("5.0 MB");
+    });
+
+    it("formats edge cases", () => {
+      const formatSize = (bytes: number): string => {
+        if (bytes < 1024) {
+          return `${bytes} B`;
+        }
+        if (bytes < 1024 * 1024) {
+          return `${(bytes / 1024).toFixed(1)} KB`;
+        }
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+      };
+
+      expect(formatSize(0)).toBe("0 B");
+      expect(formatSize(1023)).toBe("1023 B");
+      expect(formatSize(1024 * 1024 - 1)).toBe("1024.0 KB");
+    });
+  });
+
+  describe("output messages", () => {
+    it("displays file count and size after deployment", async () => {
+      mockGlob.mockResolvedValue(["index.html"]);
+      writeFileSync(join(testDir, "index.html"), "<html></html>");
+
+      const { deployCommand } = await import("./deploy");
+      await deployCommand.parseAsync([
+        "node",
+        "deploy",
+        testDir,
+        "-s",
+        "mysite",
+      ]);
+
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        expect.stringContaining("Files:")
+      );
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        expect.stringContaining("Size:")
+      );
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        expect.stringContaining("https://mysite.pagehaven.io")
+      );
     });
   });
 });
