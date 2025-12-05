@@ -1,3 +1,6 @@
+import { redirect } from "@tanstack/react-router";
+import { authClient } from "./auth-client";
+
 /**
  * Shared authentication types for the web app
  */
@@ -22,3 +25,18 @@ export type SessionData = {
     userAgent?: string | null;
   };
 };
+
+/**
+ * Shared beforeLoad guard that requires authentication.
+ * Redirects to /login if no session exists.
+ */
+export async function requireAuth() {
+  const session = await authClient.getSession();
+  if (!session.data) {
+    redirect({
+      to: "/login",
+      throw: true,
+    });
+  }
+  return { session };
+}

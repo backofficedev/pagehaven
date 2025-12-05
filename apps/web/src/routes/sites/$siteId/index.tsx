@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
   BarChart3,
@@ -20,22 +20,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { authClient } from "@/lib/auth-client";
+import { requireAuth } from "@/lib/auth-types";
 import { getSiteDisplayDomain, getSiteUrl } from "@/utils/config";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/sites/$siteId/")({
   component: SiteDetailPage,
-  beforeLoad: async () => {
-    const session = await authClient.getSession();
-    if (!session.data) {
-      redirect({
-        to: "/login",
-        throw: true,
-      });
-    }
-    return { session };
-  },
+  beforeLoad: requireAuth,
 });
 
 function SiteDetailPage() {

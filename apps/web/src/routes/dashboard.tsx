@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ExternalLink,
   Eye,
@@ -18,22 +18,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { authClient } from "@/lib/auth-client";
+import { requireAuth } from "@/lib/auth-types";
 import { config, getSiteDisplayDomain } from "@/utils/config";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
-  beforeLoad: async () => {
-    const session = await authClient.getSession();
-    if (!session.data) {
-      redirect({
-        to: "/login",
-        throw: true,
-      });
-    }
-    return { session };
-  },
+  beforeLoad: requireAuth,
 });
 
 function DashboardPage() {

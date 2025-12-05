@@ -1,10 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  createFileRoute,
-  Link,
-  redirect,
-  useNavigate,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, File, Loader2, Upload } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -18,21 +13,12 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { authClient } from "@/lib/auth-client";
+import { requireAuth } from "@/lib/auth-types";
 import { orpc, queryClient } from "@/utils/orpc";
 
 export const Route = createFileRoute("/sites/$siteId/deploy")({
   component: DeployPage,
-  beforeLoad: async () => {
-    const session = await authClient.getSession();
-    if (!session.data) {
-      redirect({
-        to: "/login",
-        throw: true,
-      });
-    }
-    return { session };
-  },
+  beforeLoad: requireAuth,
 });
 
 type FileToUpload = {
