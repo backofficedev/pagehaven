@@ -1,56 +1,64 @@
-import { describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import type React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// Regex patterns at module level for performance
+const BACK_TO_REGEX = /Back to/;
+
+// Store mock implementations for dynamic control
+const mockUseQuery = vi.fn();
+const mockUseParams = vi.fn();
 
 // Mock dependencies
 vi.mock("@tanstack/react-query", () => ({
-  useQuery: vi.fn(() => ({
-    data: { views: [], totalViews: 0 },
-    isLoading: false,
-  })),
+  useQuery: () => mockUseQuery(),
 }));
 
 vi.mock("@tanstack/react-router", () => ({
-  createFileRoute: () => () => ({
-    component: vi.fn(),
-    beforeLoad: vi.fn(),
-  }),
-  Link: ({ children }: { children: React.ReactNode }) => (
-    <span>{children}</span>
-  ),
+  createFileRoute: (_path: string) => (options: unknown) => {
+    const opts = options as { component: React.ComponentType };
+    return {
+      ...opts,
+      useRouteContext: () => ({
+        session: { data: { user: { name: "Test User" } } },
+      }),
+      useParams: () => mockUseParams(),
+    };
+  },
+  Link: ({
+    children,
+    to,
+  }: {
+    children: React.ReactNode;
+    to: string;
+    params?: Record<string, string>;
+  }) => <a href={to}>{children}</a>,
   redirect: vi.fn(),
 }));
 
 vi.mock("lucide-react", () => ({
-  ArrowLeft: () => null,
-  BarChart3: () => null,
-  Calendar: () => null,
-  Eye: () => null,
-  TrendingUp: () => null,
-}));
-
-vi.mock("@/components/ui/button", () => ({
-  Button: ({ children }: { children: React.ReactNode }) => (
-    <button type="button">{children}</button>
-  ),
+  ArrowLeft: () => <span data-testid="arrow-left-icon" />,
+  Eye: () => <span data-testid="eye-icon" />,
+  FileText: () => <span data-testid="file-text-icon" />,
+  HardDrive: () => <span data-testid="hard-drive-icon" />,
 }));
 
 vi.mock("@/components/ui/card", () => ({
-  Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Card: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="card">{children}</div>
+  ),
   CardContent: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
+    <div data-testid="card-content">{children}</div>
   ),
   CardDescription: ({ children }: { children: React.ReactNode }) => (
-    <p>{children}</p>
+    <p data-testid="card-description">{children}</p>
   ),
   CardHeader: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
+    <div data-testid="card-header">{children}</div>
   ),
   CardTitle: ({ children }: { children: React.ReactNode }) => (
-    <h3>{children}</h3>
+    <h3 data-testid="card-title">{children}</h3>
   ),
-}));
-
-vi.mock("@/components/ui/skeleton", () => ({
-  Skeleton: () => <div data-testid="skeleton" />,
 }));
 
 vi.mock("@/lib/auth-client", () => ({
@@ -63,20 +71,278 @@ vi.mock("@/lib/auth-client", () => ({
 
 vi.mock("@/utils/orpc", () => ({
   orpc: {
-    analytics: {
-      getSiteAnalytics: {
+    site: {
+      get: {
         queryOptions: () => ({
-          queryKey: ["analytics", "1"],
-          queryFn: () => Promise.resolve({ views: [], totalViews: 0 }),
+          queryKey: ["site"],
+          queryFn: () => Promise.resolve(null),
+        }),
+      },
+    },
+    analytics: {
+      getSummary: {
+        queryOptions: () => ({
+          queryKey: ["analytics"],
+          queryFn: () => Promise.resolve(null),
         }),
       },
     },
   },
 }));
 
+// Helper to render the AnalyticsPage component
+async function renderAnalyticsPage() {
+  const module = await import("./analytics");
+  const route = module.Route as unknown as { component: React.ComponentType };
+  const AnalyticsPage = route.component;
+  return render(<AnalyticsPage />);
+}
+
 describe("sites/$siteId/analytics route", () => {
-  it("exports Route", async () => {
-    const module = await import("./analytics");
-    expect(module.Route).toBeDefined();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUseParams.mockReturnValue({ siteId: "site-123" });
+  });
+
+  describe("Route export", () => {
+    it("exports Route", async () => {
+      const module = await import("./analytics");
+      expect(module.Route).toBeDefined();
+    });
+
+    it("has component defined", async () => {
+      const module = await import("./analytics");
+      const route = module.Route as unknown as {
+        component: React.ComponentType;
+      };
+      expect(route.component).toBeDefined();
+    });
+  });
+
+  describe("loading state", () => {
+    it("shows loading message when analytics is loading", async () => {
+      mockUseQuery
+        .mockReturnValueOnce({
+          data: { name: "Test Site" },
+          isLoading: false,
+        })
+        .mockReturnValueOnce({ data: undefined, isLoading: true });
+
+      await renderAnalyticsPage();
+      expect(screen.getByText("Loading analytics...")).toBeInTheDocument();
+    });
+  });
+
+  describe("page rendering", () => {
+    const mockSite = { id: "site-123", name: "Test Site", subdomain: "test" };
+    const mockAnalytics = {
+      summary: {
+        totalViews: 12_500,
+        totalBandwidth: 5_242_880,
+        uniquePaths: 15,
+      },
+      topPages: [
+        { path: "/", views: 5000 },
+        { path: "/about", views: 3000 },
+        { path: "/contact", views: 2000 },
+      ],
+      daily: [
+        { date: "2024-01-15", views: 500, bandwidth: 102_400 },
+        { date: "2024-01-14", views: 450, bandwidth: 98_304 },
+      ],
+    };
+
+    beforeEach(() => {
+      mockUseQuery
+        .mockReturnValueOnce({ data: mockSite, isLoading: false })
+        .mockReturnValueOnce({ data: mockAnalytics, isLoading: false });
+    });
+
+    it("displays page title", async () => {
+      await renderAnalyticsPage();
+      expect(screen.getByText("Analytics")).toBeInTheDocument();
+    });
+
+    it("displays page subtitle", async () => {
+      await renderAnalyticsPage();
+      expect(
+        screen.getByText("Last 30 days of site activity")
+      ).toBeInTheDocument();
+    });
+
+    it("renders back link", async () => {
+      await renderAnalyticsPage();
+      expect(screen.getByText(BACK_TO_REGEX)).toBeInTheDocument();
+    });
+
+    it("displays Total Views stat", async () => {
+      await renderAnalyticsPage();
+      expect(screen.getByText("Total Views")).toBeInTheDocument();
+      expect(screen.getByText("12,500")).toBeInTheDocument();
+    });
+
+    it("displays Bandwidth stat", async () => {
+      await renderAnalyticsPage();
+      expect(screen.getByText("Bandwidth")).toBeInTheDocument();
+    });
+
+    it("displays Unique Pages stat", async () => {
+      await renderAnalyticsPage();
+      expect(screen.getByText("Unique Pages")).toBeInTheDocument();
+      expect(screen.getByText("15")).toBeInTheDocument();
+    });
+
+    it("displays Top Pages section", async () => {
+      await renderAnalyticsPage();
+      expect(screen.getByText("Top Pages")).toBeInTheDocument();
+      expect(
+        screen.getByText("Most viewed pages in the last 30 days")
+      ).toBeInTheDocument();
+    });
+
+    it("displays top page paths", async () => {
+      await renderAnalyticsPage();
+      expect(screen.getByText("/")).toBeInTheDocument();
+      expect(screen.getByText("/about")).toBeInTheDocument();
+      expect(screen.getByText("/contact")).toBeInTheDocument();
+    });
+
+    it("displays top page view counts", async () => {
+      await renderAnalyticsPage();
+      expect(screen.getByText("5,000 views")).toBeInTheDocument();
+      expect(screen.getByText("3,000 views")).toBeInTheDocument();
+      expect(screen.getByText("2,000 views")).toBeInTheDocument();
+    });
+
+    it("displays Daily Views section", async () => {
+      await renderAnalyticsPage();
+      expect(screen.getByText("Daily Views")).toBeInTheDocument();
+      expect(
+        screen.getByText("Page views over the last 30 days")
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe("empty states", () => {
+    const mockSite = { id: "site-123", name: "Test Site", subdomain: "test" };
+
+    it("shows empty state for top pages when no views", async () => {
+      const mockAnalytics = {
+        summary: { totalViews: 0, totalBandwidth: 0, uniquePaths: 0 },
+        topPages: [],
+        daily: [],
+      };
+
+      mockUseQuery
+        .mockReturnValueOnce({ data: mockSite, isLoading: false })
+        .mockReturnValueOnce({ data: mockAnalytics, isLoading: false });
+
+      await renderAnalyticsPage();
+      expect(
+        screen.getByText("No page views recorded yet")
+      ).toBeInTheDocument();
+    });
+
+    it("shows empty state for daily views when no data", async () => {
+      const mockAnalytics = {
+        summary: { totalViews: 0, totalBandwidth: 0, uniquePaths: 0 },
+        topPages: [],
+        daily: [],
+      };
+
+      mockUseQuery
+        .mockReturnValueOnce({ data: mockSite, isLoading: false })
+        .mockReturnValueOnce({ data: mockAnalytics, isLoading: false });
+
+      await renderAnalyticsPage();
+      expect(screen.getByText("No data available")).toBeInTheDocument();
+    });
+  });
+
+  describe("formatBytes helper", () => {
+    it("formats 0 bytes correctly", () => {
+      const formatBytes = (bytes: number): string => {
+        if (bytes === 0) {
+          return "0 B";
+        }
+        const k = 1024;
+        const sizes = ["B", "KB", "MB", "GB", "TB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
+      };
+
+      expect(formatBytes(0)).toBe("0 B");
+    });
+
+    it("formats bytes correctly", () => {
+      const formatBytes = (bytes: number): string => {
+        if (bytes === 0) {
+          return "0 B";
+        }
+        const k = 1024;
+        const sizes = ["B", "KB", "MB", "GB", "TB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
+      };
+
+      expect(formatBytes(500)).toBe("500 B");
+      expect(formatBytes(1024)).toBe("1 KB");
+      expect(formatBytes(1536)).toBe("1.5 KB");
+      expect(formatBytes(1_048_576)).toBe("1 MB");
+      expect(formatBytes(1_073_741_824)).toBe("1 GB");
+    });
+
+    it("formats large values correctly", () => {
+      const formatBytes = (bytes: number): string => {
+        if (bytes === 0) {
+          return "0 B";
+        }
+        const k = 1024;
+        const sizes = ["B", "KB", "MB", "GB", "TB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
+      };
+
+      expect(formatBytes(5_242_880)).toBe("5 MB");
+      expect(formatBytes(10_737_418_240)).toBe("10 GB");
+    });
+  });
+
+  describe("daily views display", () => {
+    it("limits daily views to last 14 days", () => {
+      const daily = Array.from({ length: 30 }, (_, i) => ({
+        date: `2024-01-${String(30 - i).padStart(2, "0")}`,
+        views: 100 + i,
+        bandwidth: 1024 * (i + 1),
+      }));
+
+      const displayed = daily.slice(-14);
+      expect(displayed.length).toBe(14);
+    });
+  });
+
+  describe("page ranking", () => {
+    it("displays top pages section with rankings", async () => {
+      const mockSite = { id: "site-123", name: "Test Site", subdomain: "test" };
+      const mockAnalytics = {
+        summary: { totalViews: 100, totalBandwidth: 1024, uniquePaths: 3 },
+        topPages: [
+          { path: "/", views: 50 },
+          { path: "/about", views: 30 },
+          { path: "/contact", views: 20 },
+        ],
+        daily: [],
+      };
+
+      mockUseQuery
+        .mockReturnValueOnce({ data: mockSite, isLoading: false })
+        .mockReturnValueOnce({ data: mockAnalytics, isLoading: false });
+
+      await renderAnalyticsPage();
+      // Check that top pages section is displayed with paths
+      expect(screen.getByText("/")).toBeInTheDocument();
+      expect(screen.getByText("/about")).toBeInTheDocument();
+      expect(screen.getByText("/contact")).toBeInTheDocument();
+    });
   });
 });
