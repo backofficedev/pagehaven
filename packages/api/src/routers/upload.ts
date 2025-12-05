@@ -9,6 +9,16 @@ import {
   uploadFile,
 } from "../lib/storage";
 
+/** Decode base64 string to ArrayBuffer */
+function decodeBase64(content: string): ArrayBuffer {
+  const binaryString = atob(content);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.codePointAt(i) ?? 0;
+  }
+  return bytes.buffer as ArrayBuffer;
+}
+
 export const uploadRouter = {
   // Upload a single file to a deployment
   // Note: For large files, consider using presigned URLs instead
@@ -33,12 +43,7 @@ export const uploadRouter = {
         throw new Error("Cannot upload to a finalized deployment");
       }
 
-      // Decode base64 content
-      const binaryString = atob(input.content);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.codePointAt(i) ?? 0;
-      }
+      const buffer = decodeBase64(input.content);
 
       const key = getDeploymentFileKey(
         dep.siteId,
@@ -48,7 +53,7 @@ export const uploadRouter = {
 
       const contentType = input.contentType ?? getContentType(input.filePath);
 
-      const uploaded = await uploadFile(key, bytes.buffer, contentType);
+      const uploaded = await uploadFile(key, buffer, contentType);
 
       return {
         key: uploaded.key,
@@ -87,12 +92,7 @@ export const uploadRouter = {
         [];
 
       for (const file of input.files) {
-        // Decode base64 content
-        const binaryString = atob(file.content);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.codePointAt(i) ?? 0;
-        }
+        const buffer = decodeBase64(file.content);
 
         const key = getDeploymentFileKey(
           dep.siteId,
@@ -102,7 +102,7 @@ export const uploadRouter = {
 
         const contentType = file.contentType ?? getContentType(file.filePath);
 
-        const uploadedFile = await uploadFile(key, bytes.buffer, contentType);
+        const uploadedFile = await uploadFile(key, buffer, contentType);
         uploaded.push({
           filePath: file.filePath,
           key: uploadedFile.key,
