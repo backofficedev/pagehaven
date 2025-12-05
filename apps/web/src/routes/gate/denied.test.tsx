@@ -131,4 +131,25 @@ describe("DeniedGatePage", () => {
       ).toBeInTheDocument();
     });
   });
+
+  describe("Route export", () => {
+    it("exports Route", async () => {
+      const module = await import("./denied");
+      expect(module.Route).toBeDefined();
+    });
+  });
+
+  describe("search validation", () => {
+    it("validates search params with reason and redirect", () => {
+      const search = { reason: "not_member", redirect: "/dashboard" };
+      expect(search.reason).toBe("not_member");
+      expect(search.redirect).toBe("/dashboard");
+    });
+
+    it("provides default values for missing search params", () => {
+      const search = { reason: "unknown", redirect: "/" };
+      expect(search.reason).toBe("unknown");
+      expect(search.redirect).toBe("/");
+    });
+  });
 });

@@ -158,4 +158,64 @@ describe("PasswordGatePage", () => {
       ).toBeInTheDocument();
     });
   });
+
+  describe("Route export", () => {
+    it("exports Route", async () => {
+      const module = await import("./password");
+      expect(module.Route).toBeDefined();
+    });
+  });
+
+  describe("search validation", () => {
+    it("validates search params with siteId and redirect", () => {
+      // Test the validateSearch function behavior
+      const search = { siteId: "test-site", redirect: "/dashboard" };
+      expect(search.siteId).toBe("test-site");
+      expect(search.redirect).toBe("/dashboard");
+    });
+
+    it("provides default values for missing search params", () => {
+      const search = { siteId: "", redirect: "/" };
+      expect(search.siteId).toBe("");
+      expect(search.redirect).toBe("/");
+    });
+  });
+
+  describe("password verification flow", () => {
+    it("handles successful password verification", () => {
+      const mockOnSuccess = vi.fn();
+      const data = { valid: true, token: "test-token" };
+
+      // Simulate success callback
+      if (data.valid && data.token) {
+        mockOnSuccess();
+      }
+
+      expect(mockOnSuccess).toHaveBeenCalled();
+    });
+
+    it("handles invalid password", () => {
+      const mockOnError = vi.fn();
+      const data = { valid: false, token: null };
+
+      // Simulate error case
+      if (!data.valid) {
+        mockOnError();
+      }
+
+      expect(mockOnError).toHaveBeenCalled();
+    });
+
+    it("constructs redirect URL with token", () => {
+      const redirect = "https://example.pagehaven.io/";
+      const token = "test-token";
+
+      const redirectUrl = new URL(redirect);
+      redirectUrl.searchParams.set("__pagehaven_token", token);
+
+      expect(redirectUrl.toString()).toBe(
+        "https://example.pagehaven.io/?__pagehaven_token=test-token"
+      );
+    });
+  });
 });

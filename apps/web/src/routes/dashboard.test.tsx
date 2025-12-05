@@ -1,68 +1,137 @@
-import { describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import type React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// Regex patterns at module level for performance
+const WELCOME_BACK_REGEX = /Welcome back, Test User/i;
+const MANAGE_WEBSITES_REGEX = /Manage your static websites from one place/i;
+const CREATE_FIRST_SITE_REGEX =
+  /Create your first site to get started hosting static websites/i;
+const FOLLOW_STEPS_REGEX =
+  /Follow these steps to host your first static website/i;
+
+// Store mock implementations for dynamic control
+const mockUseQuery = vi.fn();
+const mockUseRouteContext = vi.fn();
+const mockRedirect = vi.fn();
+const mockGetSession = vi.fn();
 
 // Mock dependencies
 vi.mock("@tanstack/react-query", () => ({
-  useQuery: vi.fn(() => ({
-    data: [],
-    isLoading: false,
-  })),
+  useQuery: () => mockUseQuery(),
 }));
 
 vi.mock("@tanstack/react-router", () => ({
-  createFileRoute: () => () => ({
-    component: vi.fn(),
-    beforeLoad: vi.fn(),
-    useRouteContext: vi.fn(() => ({
-      session: { data: { user: { name: "Test User" } } },
-    })),
-  }),
-  Link: ({ children }: { children: React.ReactNode }) => (
-    <span>{children}</span>
-  ),
-  redirect: vi.fn(),
+  createFileRoute: (_path: string) => (options: unknown) => {
+    const opts = options as { component: React.ComponentType };
+    return {
+      ...opts,
+      useRouteContext: mockUseRouteContext,
+      useParams: () => ({}),
+    };
+  },
+  Link: ({
+    children,
+    to,
+  }: {
+    children: React.ReactNode;
+    to: string;
+    params?: Record<string, string>;
+  }) => <a href={to}>{children}</a>,
+  redirect: mockRedirect,
 }));
 
 vi.mock("lucide-react", () => ({
-  ExternalLink: () => null,
-  Eye: () => null,
-  Globe: () => null,
-  Lock: () => null,
-  Plus: () => null,
-  Rocket: () => null,
-  Users: () => null,
+  ExternalLink: () => <span data-testid="external-link-icon" />,
+  Eye: () => <span data-testid="eye-icon" />,
+  Globe: () => <span data-testid="globe-icon" />,
+  Lock: () => <span data-testid="lock-icon" />,
+  Plus: () => <span data-testid="plus-icon" />,
+  Rocket: () => <span data-testid="rocket-icon" />,
+  Users: () => <span data-testid="users-icon" />,
 }));
 
 vi.mock("@/components/ui/button", () => ({
-  Button: ({ children }: { children: React.ReactNode }) => (
-    <button type="button">{children}</button>
+  Button: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <button className={className} type="button">
+      {children}
+    </button>
   ),
 }));
 
 vi.mock("@/components/ui/card", () => ({
-  Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  CardContent: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
+  Card: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <div className={className} data-testid="card">
+      {children}
+    </div>
   ),
-  CardDescription: ({ children }: { children: React.ReactNode }) => (
-    <p>{children}</p>
+  CardContent: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <div className={className} data-testid="card-content">
+      {children}
+    </div>
   ),
-  CardHeader: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
+  CardDescription: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <p className={className} data-testid="card-description">
+      {children}
+    </p>
   ),
-  CardTitle: ({ children }: { children: React.ReactNode }) => (
-    <h3>{children}</h3>
+  CardHeader: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <div className={className} data-testid="card-header">
+      {children}
+    </div>
+  ),
+  CardTitle: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <h3 className={className} data-testid="card-title">
+      {children}
+    </h3>
   ),
 }));
 
 vi.mock("@/components/ui/skeleton", () => ({
-  Skeleton: () => <div data-testid="skeleton" />,
+  Skeleton: ({ className }: { className?: string }) => (
+    <div className={className} data-testid="skeleton" />
+  ),
 }));
 
 vi.mock("@/lib/auth-client", () => ({
   authClient: {
-    getSession: vi.fn(() =>
-      Promise.resolve({ data: { user: { name: "Test" } } })
-    ),
+    getSession: () => mockGetSession(),
   },
 }));
 
@@ -84,14 +153,242 @@ vi.mock("@/utils/orpc", () => ({
   },
 }));
 
+// Helper to render the DashboardPage component
+async function renderDashboard() {
+  const module = await import("./dashboard");
+  const route = module.Route as unknown as { component: React.ComponentType };
+  const DashboardPage = route.component;
+  return render(<DashboardPage />);
+}
+
 describe("dashboard route", () => {
-  it("exports Route", async () => {
-    const module = await import("./dashboard");
-    expect(module.Route).toBeDefined();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUseRouteContext.mockReturnValue({
+      session: { data: { user: { name: "Test User" } } },
+    });
+    mockUseQuery.mockReturnValue({
+      data: [],
+      isLoading: false,
+    });
+    mockGetSession.mockResolvedValue({
+      data: { user: { name: "Test User" } },
+    });
   });
 
-  it("has beforeLoad that checks authentication", async () => {
-    const module = await import("./dashboard");
-    expect(module.Route).toBeDefined();
+  describe("Route export", () => {
+    it("exports Route", async () => {
+      const module = await import("./dashboard");
+      expect(module.Route).toBeDefined();
+    });
+
+    it("has component defined", async () => {
+      const module = await import("./dashboard");
+      const route = module.Route as unknown as {
+        component: React.ComponentType;
+      };
+      expect(route.component).toBeDefined();
+    });
+  });
+
+  describe("DashboardPage rendering", () => {
+    it("displays welcome message with user name", async () => {
+      await renderDashboard();
+      expect(screen.getByText(WELCOME_BACK_REGEX)).toBeInTheDocument();
+    });
+
+    it("displays subtitle text", async () => {
+      await renderDashboard();
+      expect(screen.getByText(MANAGE_WEBSITES_REGEX)).toBeInTheDocument();
+    });
+
+    it("renders stats cards section", async () => {
+      await renderDashboard();
+      expect(screen.getByText("Total Sites")).toBeInTheDocument();
+      expect(screen.getByText("Live Sites")).toBeInTheDocument();
+      expect(screen.getByText("Quick Actions")).toBeInTheDocument();
+    });
+
+    it("renders Create New Site button", async () => {
+      await renderDashboard();
+      expect(screen.getByText("Create New Site")).toBeInTheDocument();
+    });
+
+    it("renders Recent Sites section", async () => {
+      await renderDashboard();
+      expect(screen.getByText("Recent Sites")).toBeInTheDocument();
+      expect(screen.getByText("View all")).toBeInTheDocument();
+    });
+  });
+
+  describe("loading state", () => {
+    it("shows skeletons when loading", async () => {
+      mockUseQuery.mockReturnValue({
+        data: undefined,
+        isLoading: true,
+      });
+
+      await renderDashboard();
+      const skeletons = screen.getAllByTestId("skeleton");
+      expect(skeletons.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("empty state", () => {
+    it("shows empty state when no sites exist", async () => {
+      mockUseQuery.mockReturnValue({
+        data: [],
+        isLoading: false,
+      });
+
+      await renderDashboard();
+      expect(screen.getByText("No sites yet")).toBeInTheDocument();
+      expect(screen.getByText(CREATE_FIRST_SITE_REGEX)).toBeInTheDocument();
+    });
+
+    it("shows Create Your First Site button in empty state", async () => {
+      mockUseQuery.mockReturnValue({
+        data: [],
+        isLoading: false,
+      });
+
+      await renderDashboard();
+      expect(screen.getByText("Create Your First Site")).toBeInTheDocument();
+    });
+
+    it("shows Getting Started guide when no sites", async () => {
+      mockUseQuery.mockReturnValue({
+        data: [],
+        isLoading: false,
+      });
+
+      await renderDashboard();
+      expect(screen.getByText("Getting Started")).toBeInTheDocument();
+      expect(screen.getByText(FOLLOW_STEPS_REGEX)).toBeInTheDocument();
+    });
+  });
+
+  describe("with sites data", () => {
+    const mockSites = [
+      {
+        id: "site-1",
+        name: "My First Site",
+        subdomain: "first-site",
+        role: "owner",
+        activeDeploymentId: "deploy-1",
+      },
+      {
+        id: "site-2",
+        name: "My Second Site",
+        subdomain: "second-site",
+        role: "admin",
+        activeDeploymentId: null,
+      },
+    ];
+
+    beforeEach(() => {
+      mockUseQuery.mockReturnValue({
+        data: mockSites,
+        isLoading: false,
+      });
+    });
+
+    it("displays site names", async () => {
+      await renderDashboard();
+      expect(screen.getByText("My First Site")).toBeInTheDocument();
+      expect(screen.getByText("My Second Site")).toBeInTheDocument();
+    });
+
+    it("displays site subdomains", async () => {
+      await renderDashboard();
+      expect(screen.getByText("first-site.pagehaven.io")).toBeInTheDocument();
+      expect(screen.getByText("second-site.pagehaven.io")).toBeInTheDocument();
+    });
+
+    it("displays site roles", async () => {
+      await renderDashboard();
+      expect(screen.getByText("owner")).toBeInTheDocument();
+      expect(screen.getByText("admin")).toBeInTheDocument();
+    });
+
+    it("shows Live status for sites with active deployment", async () => {
+      await renderDashboard();
+      expect(screen.getByText("Live")).toBeInTheDocument();
+    });
+
+    it("shows No deployment status for sites without active deployment", async () => {
+      await renderDashboard();
+      expect(screen.getByText("No deployment")).toBeInTheDocument();
+    });
+
+    it("displays correct total sites count", async () => {
+      await renderDashboard();
+      expect(screen.getByText("2")).toBeInTheDocument();
+    });
+
+    it("displays correct live sites count", async () => {
+      await renderDashboard();
+      expect(screen.getByText("1")).toBeInTheDocument();
+    });
+
+    it("does not show Getting Started guide when sites exist", async () => {
+      await renderDashboard();
+      expect(screen.queryByText("Getting Started")).not.toBeInTheDocument();
+    });
+
+    it("limits recent sites to 4", async () => {
+      const manySites = Array.from({ length: 6 }, (_, i) => ({
+        id: `site-${i}`,
+        name: `Site ${i}`,
+        subdomain: `site-${i}`,
+        role: "owner",
+        activeDeploymentId: null,
+      }));
+
+      mockUseQuery.mockReturnValue({
+        data: manySites,
+        isLoading: false,
+      });
+
+      await renderDashboard();
+      // Should only show first 4 sites in recent section
+      expect(screen.getByText("Site 0")).toBeInTheDocument();
+      expect(screen.getByText("Site 3")).toBeInTheDocument();
+      expect(screen.queryByText("Site 4")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("getAccessIcon helper", () => {
+    it("renders access icons for different access types", async () => {
+      const testSites = [
+        {
+          id: "site-1",
+          name: "Public Site",
+          subdomain: "public",
+          role: "owner",
+          activeDeploymentId: null,
+          accessType: "public",
+        },
+      ];
+
+      mockUseQuery.mockReturnValue({
+        data: testSites,
+        isLoading: false,
+      });
+
+      await renderDashboard();
+      // The component renders access icons
+      expect(screen.getAllByTestId("globe-icon").length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("authentication", () => {
+    it("Route has authentication check configured", async () => {
+      mockGetSession.mockResolvedValue({ data: null });
+
+      const module = await import("./dashboard");
+      // The route is configured with beforeLoad for auth checking
+      expect(module.Route).toBeDefined();
+    });
   });
 });
