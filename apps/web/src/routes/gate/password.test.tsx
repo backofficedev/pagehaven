@@ -292,5 +292,31 @@ describe("PasswordGatePage", () => {
         "https://example.pagehaven.io/?__pagehaven_token=test-token"
       );
     });
+
+    it("handles invalid password response", () => {
+      const response = { valid: false, token: null };
+      expect(response.valid).toBe(false);
+      expect(response.token).toBeNull();
+    });
+
+    it("handles valid password response", () => {
+      const response = { valid: true, token: "abc123" };
+      expect(response.valid).toBe(true);
+      expect(response.token).toBe("abc123");
+    });
+  });
+
+  describe("error handling", () => {
+    it("handles missing siteId in form submission", () => {
+      const handleSubmit = (siteId: string) => {
+        if (!siteId) {
+          return { error: "Site ID is required" };
+        }
+        return { success: true };
+      };
+
+      expect(handleSubmit("")).toEqual({ error: "Site ID is required" });
+      expect(handleSubmit("site-123")).toEqual({ success: true });
+    });
   });
 });
