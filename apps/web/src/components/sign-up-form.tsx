@@ -6,6 +6,7 @@ import { authClient } from "@/lib/auth-client";
 import { ConnectedFormField } from "./connected-form-field";
 import { FormWrapper } from "./form-wrapper";
 import Loader from "./loader";
+import { SubmitButton } from "./submit-button";
 import { Button } from "./ui/button";
 
 export default function SignUpForm({
@@ -63,17 +64,9 @@ export default function SignUpForm({
           type="password"
         />
 
-        <form.Subscribe>
-          {(state) => (
-            <Button
-              className="w-full"
-              disabled={!state.canSubmit || state.isSubmitting}
-              type="submit"
-            >
-              {state.isSubmitting ? "Submitting..." : "Sign Up"}
-            </Button>
-          )}
-        </form.Subscribe>
+        <SubmitButton form={form} loadingText="Submitting...">
+          Sign Up
+        </SubmitButton>
       </FormWrapper>
 
       <div className="mt-4 text-center">
