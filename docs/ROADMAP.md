@@ -7,9 +7,10 @@
 - **Type Safety**: All type checks pass
 - **Code Duplication**: 0% (jscpd)
 - **Unused Code**: None (knip)
+- **Total Tests**: 631 passing
 - **Test Coverage**: 
-  - Web: 74.52% statements, 70.84% branches
-  - DB: 39.68% statements (schema files have low coverage due to Drizzle ORM patterns)
+  - Web: ~75% statements, ~71% branches
+  - DB: ~40% statements (schema files have low coverage due to Drizzle ORM patterns)
 
 ### Implemented Features ✅
 1. **Authentication** - Sign up, sign in, sign out, password reset
@@ -41,10 +42,15 @@
 ### Phase 1: Test Coverage Improvements 🎯
 **Goal**: Increase test coverage to 80%+
 
+#### Progress
+- ✅ Added settings.tsx tests (pending states, invite form, null values, radio selection)
+- ✅ Added password gate error handling tests
+- 🔄 In progress: deploy.tsx coverage improvement
+
 #### Priority Areas (Low Coverage)
 1. `apps/web/src/routes/sites/$siteId/deploy.tsx` - 24.28% → 80%
 2. `apps/web/src/routes/sites/$siteId/settings.tsx` - 59.42% → 80%
-3. `apps/web/src/routes/sites/index.tsx` - 73.21% → 80%
+3. `apps/web/src/routes/sites/index.tsx` - 90.9% ✅
 4. `packages/db/src/schema/*.ts` - Schema validation tests
 
 ### Phase 2: Performance Optimizations 🚀
