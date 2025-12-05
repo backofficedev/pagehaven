@@ -31,7 +31,9 @@
 7. **Deployment History** - View history, promote deployments
 8. **Analytics** - Views, visitors, bandwidth tracking
 9. **Custom Domains** - Domain verification, DNS setup
-10. **CLI** - Command-line deployment tool
+10. **CLI** - Command-line deployment tool with init, link, status commands
+11. **API Keys** - Programmatic access with scoped permissions
+12. **GitHub Integration** - OAuth connection, repository linking, auto-deploy on push
 
 ### E2E Test Coverage ✅
 - `auth.spec.ts` - Authentication flows
@@ -73,15 +75,15 @@
 2. **Caching Strategy** - Implement proper cache headers for static assets
 
 ### Phase 3: Feature Enhancements 🌟
-1. **GitHub Integration** - Deploy from GitHub repositories
+1. ✅ **GitHub Integration** - Deploy from GitHub repositories
 2. **Preview Deployments** - Create preview URLs for branches
 3. **Asset Optimization** - Minify CSS/JS, optimize images on upload
-4. **Webhooks** - Notify external services on deployment events
-5. **API Keys** - Allow programmatic access to API
+4. ✅ **Webhooks** - GitHub webhook handler for push events
+5. ✅ **API Keys** - Allow programmatic access to API
 
 ### Phase 4: Developer Experience 🛠️
 1. **API Documentation** - Generate OpenAPI docs from oRPC
-2. **CLI Improvements** - Add more commands (rollback, logs, etc.)
+2. ✅ **CLI Improvements** - Added init, link, status commands
 3. **Local Development** - Improve local dev experience with hot reload
 
 ### Phase 5: Enterprise Features 💼
