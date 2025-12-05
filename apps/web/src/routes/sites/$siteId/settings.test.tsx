@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { buttonMock, cardMock, inputMock, labelMock } from "@/test/ui-mocks";
 
 // Regex patterns at module level for performance
 const BACK_TO_REGEX = /Back to/;
@@ -91,78 +92,10 @@ vi.mock("sonner", () => ({
   },
 }));
 
-vi.mock("@/components/ui/button", () => ({
-  Button: ({
-    children,
-    onClick,
-    disabled,
-    variant,
-  }: {
-    children: React.ReactNode;
-    onClick?: () => void;
-    disabled?: boolean;
-    variant?: string;
-  }) => (
-    <button
-      data-variant={variant}
-      disabled={disabled}
-      onClick={onClick}
-      type="button"
-    >
-      {children}
-    </button>
-  ),
-}));
-
-vi.mock("@/components/ui/card", () => ({
-  Card: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <div className={className} data-testid="card">
-      {children}
-    </div>
-  ),
-  CardContent: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="card-content">{children}</div>
-  ),
-  CardDescription: ({ children }: { children: React.ReactNode }) => (
-    <p data-testid="card-description">{children}</p>
-  ),
-  CardHeader: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="card-header">{children}</div>
-  ),
-  CardTitle: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <h3 className={className} data-testid="card-title">
-      {children}
-    </h3>
-  ),
-}));
-
-vi.mock("@/components/ui/input", () => ({
-  Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => (
-    <input {...props} />
-  ),
-}));
-
-vi.mock("@/components/ui/label", () => ({
-  Label: ({
-    children,
-    htmlFor,
-  }: {
-    children: React.ReactNode;
-    htmlFor?: string;
-  }) => <label htmlFor={htmlFor}>{children}</label>,
-}));
+vi.mock("@/components/ui/button", () => buttonMock);
+vi.mock("@/components/ui/card", () => cardMock);
+vi.mock("@/components/ui/input", () => inputMock);
+vi.mock("@/components/ui/label", () => labelMock);
 
 vi.mock("@/lib/auth-client", () => ({
   authClient: {

@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { describeRouteExports } from "@/test/route-test-utils";
+import { buttonMock, cardMock, createRouterMock } from "@/test/ui-mocks";
 
 // Store mock implementations for dynamic control
 const mockUseQuery = vi.fn();
@@ -12,27 +13,7 @@ vi.mock("@tanstack/react-query", () => ({
   useQuery: () => mockUseQuery(),
 }));
 
-vi.mock("@tanstack/react-router", () => ({
-  createFileRoute: (_path: string) => (options: unknown) => {
-    const opts = options as { component: React.ComponentType };
-    return {
-      ...opts,
-      useRouteContext: () => ({
-        session: { data: { user: { name: "Test User" } } },
-      }),
-      useParams: () => mockUseParams(),
-    };
-  },
-  Link: ({
-    children,
-    to,
-  }: {
-    children: React.ReactNode;
-    to: string;
-    params?: Record<string, string>;
-  }) => <a href={to}>{children}</a>,
-  redirect: vi.fn(),
-}));
+vi.mock("@tanstack/react-router", () => createRouterMock(mockUseParams));
 
 vi.mock("lucide-react", () => ({
   ArrowLeft: () => <span data-testid="arrow-left-icon" />,
@@ -47,37 +28,8 @@ vi.mock("lucide-react", () => ({
   XCircle: () => <span data-testid="x-circle-icon" />,
 }));
 
-vi.mock("@/components/ui/button", () => ({
-  Button: ({
-    children,
-    variant,
-  }: {
-    children: React.ReactNode;
-    variant?: string;
-  }) => (
-    <button data-variant={variant} type="button">
-      {children}
-    </button>
-  ),
-}));
-
-vi.mock("@/components/ui/card", () => ({
-  Card: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="card">{children}</div>
-  ),
-  CardContent: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="card-content">{children}</div>
-  ),
-  CardDescription: ({ children }: { children: React.ReactNode }) => (
-    <p data-testid="card-description">{children}</p>
-  ),
-  CardHeader: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="card-header">{children}</div>
-  ),
-  CardTitle: ({ children }: { children: React.ReactNode }) => (
-    <h3 data-testid="card-title">{children}</h3>
-  ),
-}));
+vi.mock("@/components/ui/button", () => buttonMock);
+vi.mock("@/components/ui/card", () => cardMock);
 
 vi.mock("@/lib/auth-client", () => ({
   authClient: {

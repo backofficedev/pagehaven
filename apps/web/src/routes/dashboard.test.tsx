@@ -1,6 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { MOCK_SITES } from "@/test/fixtures";
+import { buttonMock, cardMock, skeletonMock } from "@/test/ui-mocks";
 
 // Regex patterns at module level for performance
 const WELCOME_BACK_REGEX = /Welcome back, Test User/i;
@@ -51,83 +53,9 @@ vi.mock("lucide-react", () => ({
   Users: () => <span data-testid="users-icon" />,
 }));
 
-vi.mock("@/components/ui/button", () => ({
-  Button: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <button className={className} type="button">
-      {children}
-    </button>
-  ),
-}));
-
-vi.mock("@/components/ui/card", () => ({
-  Card: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <div className={className} data-testid="card">
-      {children}
-    </div>
-  ),
-  CardContent: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <div className={className} data-testid="card-content">
-      {children}
-    </div>
-  ),
-  CardDescription: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <p className={className} data-testid="card-description">
-      {children}
-    </p>
-  ),
-  CardHeader: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <div className={className} data-testid="card-header">
-      {children}
-    </div>
-  ),
-  CardTitle: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <h3 className={className} data-testid="card-title">
-      {children}
-    </h3>
-  ),
-}));
-
-vi.mock("@/components/ui/skeleton", () => ({
-  Skeleton: ({ className }: { className?: string }) => (
-    <div className={className} data-testid="skeleton" />
-  ),
-}));
+vi.mock("@/components/ui/button", () => buttonMock);
+vi.mock("@/components/ui/card", () => cardMock);
+vi.mock("@/components/ui/skeleton", () => skeletonMock);
 
 vi.mock("@/lib/auth-client", () => ({
   authClient: {
@@ -269,26 +197,9 @@ describe("dashboard route", () => {
   });
 
   describe("with sites data", () => {
-    const mockSites = [
-      {
-        id: "site-1",
-        name: "My First Site",
-        subdomain: "first-site",
-        role: "owner",
-        activeDeploymentId: "deploy-1",
-      },
-      {
-        id: "site-2",
-        name: "My Second Site",
-        subdomain: "second-site",
-        role: "admin",
-        activeDeploymentId: null,
-      },
-    ];
-
     beforeEach(() => {
       mockUseQuery.mockReturnValue({
-        data: mockSites,
+        data: MOCK_SITES,
         isLoading: false,
       });
     });

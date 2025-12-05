@@ -73,3 +73,23 @@ export const TEST_ERRORS = {
   emailExists: "Email already exists",
   unauthorized: "Unauthorized",
 } as const;
+
+/**
+ * Mock sites data for testing
+ */
+export const MOCK_SITES = [
+  {
+    id: "site-1",
+    name: "My First Site",
+    subdomain: "first-site",
+    role: "owner",
+    activeDeploymentId: "deploy-1",
+  },
+  {
+    id: "site-2",
+    name: "My Second Site",
+    subdomain: "second-site",
+    role: "admin",
+    activeDeploymentId: null,
+  },
+] as const;

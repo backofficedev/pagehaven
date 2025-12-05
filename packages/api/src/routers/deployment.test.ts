@@ -1,37 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import { mockDb } from "../test-utils/mock-db";
 
 // Mock the database module
-vi.mock("@pagehaven/db", () => ({
-  db: {
-    select: vi.fn(() => ({
-      from: vi.fn(() => ({
-        where: vi.fn(() => ({
-          get: vi.fn(),
-        })),
-        innerJoin: vi.fn(() => ({
-          where: vi.fn(() => ({
-            get: vi.fn(),
-          })),
-        })),
-        orderBy: vi.fn(() => ({
-          limit: vi.fn(() => ({
-            offset: vi.fn(),
-          })),
-        })),
-      })),
-    })),
-    insert: vi.fn(() => ({
-      values: vi.fn(),
-    })),
-    update: vi.fn(() => ({
-      set: vi.fn(() => ({
-        where: vi.fn(),
-      })),
-    })),
-    batch: vi.fn(),
-  },
-}));
+vi.mock("@pagehaven/db", () => mockDb);
 
 // Deployment list schema
 const listDeploymentsSchema = z.object({

@@ -1,35 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import { mockDb } from "../test-utils/mock-db";
 
 // Mock the database module
-vi.mock("@pagehaven/db", () => ({
-  db: {
-    select: vi.fn(() => ({
-      from: vi.fn(() => ({
-        where: vi.fn(() => ({
-          get: vi.fn(),
-        })),
-        innerJoin: vi.fn(() => ({
-          where: vi.fn(() => ({
-            get: vi.fn(),
-          })),
-        })),
-      })),
-    })),
-    insert: vi.fn(() => ({
-      values: vi.fn(),
-    })),
-    update: vi.fn(() => ({
-      set: vi.fn(() => ({
-        where: vi.fn(),
-      })),
-    })),
-    delete: vi.fn(() => ({
-      where: vi.fn(),
-    })),
-    batch: vi.fn(),
-  },
-}));
+vi.mock("@pagehaven/db", () => mockDb);
 
 // Subdomain validation schema (extracted from site.ts)
 const subdomainSchema = z

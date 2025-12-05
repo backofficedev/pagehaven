@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { buttonMock, cardMock } from "@/test/ui-mocks";
 
 // Regex patterns at module level for performance
 const DONT_HAVE_ACCOUNT_REGEX = /Don't have an account/;
@@ -43,49 +44,8 @@ vi.mock("lucide-react", () => ({
 }));
 
 // Mock UI components
-vi.mock("@/components/ui/button", () => ({
-  Button: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <button className={className} type="button">
-      {children}
-    </button>
-  ),
-}));
-
-vi.mock("@/components/ui/card", () => ({
-  Card: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => <div className={className}>{children}</div>,
-  CardContent: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => <div className={className}>{children}</div>,
-  CardDescription: ({ children }: { children: React.ReactNode }) => (
-    <p>{children}</p>
-  ),
-  CardHeader: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => <div className={className}>{children}</div>,
-  CardTitle: ({ children }: { children: React.ReactNode }) => (
-    <h2>{children}</h2>
-  ),
-}));
+vi.mock("@/components/ui/button", () => buttonMock);
+vi.mock("@/components/ui/card", () => cardMock);
 
 // Helper to render the actual component
 async function renderLoginGatePage() {

@@ -26,6 +26,11 @@ const mockSession = createMockSession({
   user: { image: "https://example.com/avatar.jpg" },
 });
 
+/** Helper to render ProfileForm with default session */
+function renderProfileForm() {
+  return render(<ProfileForm session={mockSession} />);
+}
+
 describe("ProfileForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -33,19 +38,19 @@ describe("ProfileForm", () => {
 
   describe("smoke tests", () => {
     it("renders without crashing", () => {
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
       expect(screen.getByText("Profile Information")).toBeInTheDocument();
     });
 
     it("renders profile information card", () => {
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
       expect(
         screen.getByText("Update your personal information and profile picture")
       ).toBeInTheDocument();
     });
 
     it("renders change email card", () => {
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
       expect(
         screen.getByText(
           "Update your email address. A confirmation will be sent to your current email."
@@ -54,19 +59,19 @@ describe("ProfileForm", () => {
     });
 
     it("renders name input with default value", () => {
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
       expect(screen.getByLabelText("Name")).toHaveValue("Test User");
     });
 
     it("renders profile image URL input with default value", () => {
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
       expect(screen.getByLabelText("Profile Image URL")).toHaveValue(
         "https://example.com/avatar.jpg"
       );
     });
 
     it("displays current email", () => {
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
       expect(screen.getByText("test@example.com")).toBeInTheDocument();
     });
   });
@@ -74,7 +79,7 @@ describe("ProfileForm", () => {
   describe("profile form inputs", () => {
     it("allows editing name", async () => {
       const user = userEvent.setup();
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
 
       const nameInput = screen.getByLabelText("Name");
       await user.clear(nameInput);
@@ -84,7 +89,7 @@ describe("ProfileForm", () => {
 
     it("allows editing profile image URL", async () => {
       const user = userEvent.setup();
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
 
       const imageInput = screen.getByLabelText("Profile Image URL");
       await user.clear(imageInput);
@@ -96,7 +101,7 @@ describe("ProfileForm", () => {
   describe("email form inputs", () => {
     it("allows typing new email", async () => {
       const user = userEvent.setup();
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
 
       const emailInput = screen.getByLabelText("New Email Address");
       await user.type(emailInput, "newemail@example.com");
@@ -105,7 +110,7 @@ describe("ProfileForm", () => {
 
     it("allows typing password for email change", async () => {
       const user = userEvent.setup();
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
 
       const passwordInput = screen.getByLabelText("Confirm Password");
       await user.type(passwordInput, "password123");
@@ -119,7 +124,7 @@ describe("ProfileForm", () => {
       vi.mocked(authClient.updateUser).mockResolvedValue(undefined);
 
       const user = userEvent.setup();
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
 
       await user.click(screen.getByRole("button", { name: "Update Profile" }));
 
@@ -138,7 +143,7 @@ describe("ProfileForm", () => {
       );
 
       const user = userEvent.setup();
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
 
       await user.click(screen.getByRole("button", { name: "Update Profile" }));
 
@@ -163,7 +168,7 @@ describe("ProfileForm", () => {
       );
 
       const user = userEvent.setup();
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
 
       await user.click(screen.getByRole("button", { name: "Update Profile" }));
 
@@ -177,7 +182,7 @@ describe("ProfileForm", () => {
       vi.mocked(authClient.changeEmail).mockResolvedValue(undefined);
 
       const user = userEvent.setup();
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
 
       await user.type(
         screen.getByLabelText("New Email Address"),
@@ -203,7 +208,7 @@ describe("ProfileForm", () => {
       );
 
       const user = userEvent.setup();
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
 
       await user.type(
         screen.getByLabelText("New Email Address"),
@@ -233,7 +238,7 @@ describe("ProfileForm", () => {
       );
 
       const user = userEvent.setup();
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
 
       await user.type(
         screen.getByLabelText("New Email Address"),
@@ -251,7 +256,7 @@ describe("ProfileForm", () => {
   describe("accessibility", () => {
     it("name input is focusable", async () => {
       const user = userEvent.setup();
-      render(<ProfileForm session={mockSession} />);
+      renderProfileForm();
 
       await user.tab();
       expect(screen.getByLabelText("Name")).toHaveFocus();

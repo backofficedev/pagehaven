@@ -1,7 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { MOCK_SITES } from "@/test/fixtures";
 import { describeRouteExports } from "@/test/route-test-utils";
+import { createQueryMock } from "@/test/ui-mocks";
 
 // Regex patterns at module level for performance
 const YOUR_SITES_REGEX = /Your Sites/i;
@@ -19,26 +21,9 @@ const mockToastSuccess = vi.fn();
 const mockToastError = vi.fn();
 
 // Mock dependencies
-vi.mock("@tanstack/react-query", () => ({
-  useQuery: () => mockUseQuery(),
-  useMutation: (options: unknown) => {
-    const opts = options as {
-      onSuccess?: () => void;
-      onError?: (error: Error) => void;
-    };
-    return {
-      ...mockUseMutation(),
-      mutate: (_data: unknown) => {
-        const result = mockUseMutation();
-        if (result.shouldSucceed !== false) {
-          opts.onSuccess?.();
-        } else {
-          opts.onError?.(new Error("Test error"));
-        }
-      },
-    };
-  },
-}));
+vi.mock("@tanstack/react-query", () =>
+  createQueryMock(mockUseQuery, mockUseMutation)
+);
 
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: (_path: string) => (options: unknown) => {
@@ -332,26 +317,9 @@ describe("sites route", () => {
   });
 
   describe("with sites data", () => {
-    const mockSites = [
-      {
-        id: "site-1",
-        name: "My First Site",
-        subdomain: "first-site",
-        role: "owner",
-        activeDeploymentId: "deploy-1",
-      },
-      {
-        id: "site-2",
-        name: "My Second Site",
-        subdomain: "second-site",
-        role: "admin",
-        activeDeploymentId: null,
-      },
-    ];
-
     beforeEach(() => {
       mockUseQuery.mockReturnValue({
-        data: mockSites,
+        data: MOCK_SITES,
         isLoading: false,
       });
     });
