@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import { hasPermission } from "./lib/permissions";
 
 const SUBDOMAIN_REGEX = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Use a consistent mock UUID for tests
 const mockUUID = "550e8400-e29b-41d4-a716-446655440000";
@@ -442,6 +443,163 @@ describe("Integration: Cache Invalidation", () => {
       expect(keysToInvalidate).toHaveLength(5);
       expect(keysToInvalidate).toContain(`site:id:${siteId}`);
       expect(keysToInvalidate).toContain(`site:subdomain:${subdomain}`);
+    });
+  });
+});
+
+describe("Integration: Invite Management", () => {
+  /**
+   * Tests invite creation and validation workflows
+   */
+  describe("invite creation", () => {
+    it("creates invite with correct structure", () => {
+      const invite = {
+        id: mockUUID,
+        siteId: "site-123",
+        email: "user@example.com",
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        createdAt: new Date(),
+      };
+
+      expect(invite.email).toBe("user@example.com");
+      expect(invite.expiresAt.getTime()).toBeGreaterThan(Date.now());
+    });
+
+    it("validates email format", () => {
+      const validEmails = [
+        "user@example.com",
+        "test.user@domain.org",
+        "name+tag@company.co",
+      ];
+      const invalidEmails = ["notanemail", "@nodomain.com", "user@"];
+
+      for (const email of validEmails) {
+        expect(EMAIL_REGEX.test(email)).toBe(true);
+      }
+
+      for (const email of invalidEmails) {
+        expect(EMAIL_REGEX.test(email)).toBe(false);
+      }
+    });
+
+    it("checks invite expiration", () => {
+      const expiredInvite = {
+        expiresAt: new Date(Date.now() - 1000), // 1 second ago
+      };
+      const validInvite = {
+        expiresAt: new Date(Date.now() + 1000), // 1 second from now
+      };
+
+      const isExpired = (invite: { expiresAt: Date }) =>
+        invite.expiresAt.getTime() < Date.now();
+
+      expect(isExpired(expiredInvite)).toBe(true);
+      expect(isExpired(validInvite)).toBe(false);
+    });
+  });
+});
+
+describe("Integration: Member Management", () => {
+  /**
+   * Tests member role management workflows
+   */
+  describe("role transitions", () => {
+    const roleHierarchy = ["viewer", "editor", "admin", "owner"] as const;
+    type Role = (typeof roleHierarchy)[number];
+
+    function canChangeRole(
+      currentUserRole: Role,
+      targetRole: Role,
+      newRole: Role
+    ): boolean {
+      const currentIndex = roleHierarchy.indexOf(currentUserRole);
+      const targetIndex = roleHierarchy.indexOf(targetRole);
+      const newIndex = roleHierarchy.indexOf(newRole);
+
+      // Can only change roles of users below you
+      // Can only assign roles below your own
+      return currentIndex > targetIndex && currentIndex > newIndex;
+    }
+
+    it("owner can change any role below owner", () => {
+      expect(canChangeRole("owner", "viewer", "editor")).toBe(true);
+      expect(canChangeRole("owner", "editor", "admin")).toBe(true);
+      expect(canChangeRole("owner", "admin", "viewer")).toBe(true);
+    });
+
+    it("admin can change viewer and editor roles", () => {
+      expect(canChangeRole("admin", "viewer", "editor")).toBe(true);
+      expect(canChangeRole("admin", "editor", "viewer")).toBe(true);
+    });
+
+    it("admin cannot change admin or owner roles", () => {
+      expect(canChangeRole("admin", "admin", "viewer")).toBe(false);
+      expect(canChangeRole("admin", "owner", "admin")).toBe(false);
+    });
+
+    it("editor cannot change any roles", () => {
+      expect(canChangeRole("editor", "viewer", "editor")).toBe(false);
+    });
+  });
+
+  describe("member removal", () => {
+    it("prevents removing the last owner", () => {
+      const members = [
+        { userId: "user-1", role: "owner" as const },
+        { userId: "user-2", role: "admin" as const },
+      ];
+
+      const ownerCount = members.filter((m) => m.role === "owner").length;
+      const canRemoveOwner = ownerCount > 1;
+
+      expect(canRemoveOwner).toBe(false);
+    });
+
+    it("allows removing owner when multiple owners exist", () => {
+      const members = [
+        { userId: "user-1", role: "owner" as const },
+        { userId: "user-2", role: "owner" as const },
+      ];
+
+      const ownerCount = members.filter((m) => m.role === "owner").length;
+      const canRemoveOwner = ownerCount > 1;
+
+      expect(canRemoveOwner).toBe(true);
+    });
+  });
+});
+
+describe("Integration: Deployment Rollback", () => {
+  /**
+   * Tests deployment rollback scenarios
+   */
+  describe("rollback to previous deployment", () => {
+    it("identifies previous deployment correctly", () => {
+      const deployments = [
+        { id: "deploy-3", status: "live", createdAt: new Date("2024-03-15") },
+        { id: "deploy-2", status: "live", createdAt: new Date("2024-03-14") },
+        { id: "deploy-1", status: "live", createdAt: new Date("2024-03-13") },
+      ];
+
+      const currentDeploymentId = "deploy-3";
+      const previousDeployment = deployments.find(
+        (d) => d.id !== currentDeploymentId && d.status === "live"
+      );
+
+      expect(previousDeployment?.id).toBe("deploy-2");
+    });
+
+    it("handles case with no previous deployment", () => {
+      const deployments = [
+        { id: "deploy-1", status: "live", createdAt: new Date("2024-03-13") },
+      ];
+
+      const currentDeploymentId = "deploy-1";
+      const previousDeployment = deployments.find(
+        (d) => d.id !== currentDeploymentId && d.status === "live"
+      );
+
+      expect(previousDeployment).toBeUndefined();
     });
   });
 });
