@@ -8,16 +8,23 @@
       "packages/*"
     ],
     "catalog": {
-      "hono": "^4.10.7",
       "@cloudflare/workers-types": "^4.20251205.0",
       "@orpc/client": "^1.12.2",
-      "@orpc/server": "^1.12.2",
       "@orpc/openapi": "^1.12.2",
+      "@orpc/server": "^1.12.2",
+      "@orpc/tanstack-query": "^1.12.2",
       "@orpc/zod": "^1.12.2",
+      "@types/node": "^22.19.1",
+      "alchemy": "^0.79.0",
       "better-auth": "^1.4.5",
       "dotenv": "^17.2.3",
-      "alchemy": "^0.79.0",
-      "drizzle-orm": "^0.44.7"
+      "drizzle-orm": "^0.44.7",
+      "hono": "^4.10.7",
+      "tsdown": "^0.16.8",
+      "typescript": "^5.9.3",
+      "vitest": "^4.0.15",
+      "wrangler": "^4.52.1",
+      "zod": "^4.1.13"
     }
   },
   "scripts": {
@@ -57,7 +64,7 @@
     "@biomejs/biome": "2.3.8",
     "@cloudflare/workers-types": "catalog:",
     "@playwright/test": "^1.57.0",
-    "@types/node": "^22.19.1",
+    "@types/node": "catalog:",
     "@vitest/coverage-v8": "^4.0.15",
     "alchemy": "catalog:",
     "dotenv-cli": "^11.0.0",
@@ -67,7 +74,7 @@
     "sonar-scanner": "^3.1.0",
     "turbo": "^2.6.3",
     "ultracite": "6.3.8",
-    "vitest": "^4.0.15"
+    "vitest": "catalog:"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [

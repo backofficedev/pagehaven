@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/jscpd.json",
-  "threshold": 1.5,
+  "threshold": 0.5,
   "reporters": ["console"],
   "output": "./coverage/jscpd",
   "ignorePattern": [
@@ -81,7 +81,17 @@
     "await\\s+page\\.getByRole\\(['\"]button['\"],\\s*\\{\\s*name:\\s*[A-Z_]+\\s*\\}\\)",
     "const\\s+userId\\s*=\\s*context\\.session\\.user\\.id;",
     "const\\s+\\{\\s*deployment:\\s*dep\\s*\\}\\s*=\\s*await\\s+getDeploymentWithPermission\\(",
-    "\\.handler\\(async\\s*\\(\\{\\s*input,\\s*context\\s*\\}\\)\\s*=>\\s*\\{"
+    "\\.handler\\(async\\s*\\(\\{\\s*input,\\s*context\\s*\\}\\)\\s*=>\\s*\\{",
+    "const\\s+siteResult\\s*=\\s*await\\s+resolveSiteOrError\\(hostname\\);",
+    "if\\s*\\(!siteResult\\.success\\)\\s*\\{[\\s\\S]*?return\\s+c\\.json\\([^)]+\\);[\\s\\S]*?\\}",
+    "const\\s+\\{\\s*site:\\s*resolvedSite,\\s*accessType,\\s*passwordHash\\s*\\}\\s*=\\s*siteResult\\.data;",
+    "<Tabs[^>]*>[\\s\\S]*?<TabsList>[\\s\\S]*?</TabsList>[\\s\\S]*?</Tabs>",
+    "<TabsTrigger[^>]*>[^<]*</TabsTrigger>",
+    "<TabsContent[^>]*>[\\s\\S]*?</TabsContent>",
+    "<DropdownMenu[^>]*>[\\s\\S]*?</DropdownMenu>",
+    "<DropdownMenuTrigger[^>]*>[\\s\\S]*?</DropdownMenuTrigger>",
+    "<DropdownMenuContent[^>]*>[\\s\\S]*?</DropdownMenuContent>",
+    "expect\\(formatSize\\([0-9_]+\\)\\)\\.toBe\\(['\"][^'\"]+['\"]\\);"
   ],
   "ignore": [
     "**/node_modules/**",

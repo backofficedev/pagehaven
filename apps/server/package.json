@@ -28,15 +28,15 @@
     "@pagehaven/infra": "workspace:*",
     "dotenv": "catalog:",
     "hono": "catalog:",
-    "zod": "^4.1.13"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
     "@pagehaven/config": "workspace:*",
-    "@types/node": "^22.19.1",
+    "@types/node": "catalog:",
     "alchemy": "catalog:",
-    "tsdown": "^0.16.8",
-    "typescript": "^5.9.3",
-    "wrangler": "^4.52.1"
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "wrangler": "catalog:"
   }
 }

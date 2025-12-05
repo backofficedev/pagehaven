@@ -15,11 +15,21 @@ type ServeResult =
   | { success: true; body: ReadableStream; contentType: string; status: 200 }
   | { success: false; status: 404 | 403 | 401; message: string };
 
-type SiteResolution = {
+export type SiteResolution = {
   site: typeof site.$inferSelect;
   accessType: string | null;
   passwordHash: string | null;
 };
+
+export type ValidatedSite = {
+  site: typeof site.$inferSelect & { activeDeploymentId: string };
+  accessType: string | null;
+  passwordHash: string | null;
+};
+
+export type SiteValidationResult =
+  | { success: true; data: ValidatedSite }
+  | { success: false; error: string; status: 404 };
 
 function createSiteQuery() {
   return db
@@ -68,6 +78,32 @@ export async function resolveSite(
   return await cacheGetOrSet<SiteResolution>(cacheKey, CacheTTL.SITE, () =>
     fetchSiteFromDb(hostname)
   );
+}
+
+/**
+ * Resolve and validate a site, returning either validated data or an error
+ */
+export async function resolveSiteOrError(
+  hostname: string
+): Promise<SiteValidationResult> {
+  const siteData = await resolveSite(hostname);
+
+  if (!siteData?.site) {
+    return { success: false, error: "Site not found", status: 404 };
+  }
+
+  if (!siteData.site.activeDeploymentId) {
+    return { success: false, error: "No deployment available", status: 404 };
+  }
+
+  return {
+    success: true,
+    data: {
+      site: siteData.site as ValidatedSite["site"],
+      accessType: siteData.accessType,
+      passwordHash: siteData.passwordHash,
+    },
+  };
 }
 
 /**
@@ -177,17 +213,13 @@ export function createStaticSiteHandler() {
     const hostname = c.req.header("host") ?? "";
     const path = c.req.path;
 
-    const siteData = await resolveSite(hostname);
+    const siteResult = await resolveSiteOrError(hostname);
 
-    if (!siteData?.site) {
-      return c.json({ error: "Site not found" }, 404);
+    if (!siteResult.success) {
+      return c.json({ error: siteResult.error }, siteResult.status);
     }
 
-    const { site: resolvedSite, accessType, passwordHash } = siteData;
-
-    if (!resolvedSite.activeDeploymentId) {
-      return c.json({ error: "No deployment available" }, 404);
-    }
+    const { site: resolvedSite, accessType, passwordHash } = siteResult.data;
 
     // Get password cookie for this site
     const passwordCookie = getCookie(c, `site_password_${resolvedSite.id}`);

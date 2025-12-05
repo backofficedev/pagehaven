@@ -1,6 +1,7 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { formatSize } from "@pagehaven/utils/format";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Store mock functions for dynamic control
@@ -402,16 +403,6 @@ describe("deploy command", () => {
 
   describe("formatSize helper", () => {
     it("formats bytes correctly", () => {
-      const formatSize = (bytes: number): string => {
-        if (bytes < 1024) {
-          return `${bytes} B`;
-        }
-        if (bytes < 1024 * 1024) {
-          return `${(bytes / 1024).toFixed(1)} KB`;
-        }
-        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-      };
-
       expect(formatSize(500)).toBe("500 B");
       expect(formatSize(1024)).toBe("1.0 KB");
       expect(formatSize(2048)).toBe("2.0 KB");
@@ -420,16 +411,6 @@ describe("deploy command", () => {
     });
 
     it("formats edge cases", () => {
-      const formatSize = (bytes: number): string => {
-        if (bytes < 1024) {
-          return `${bytes} B`;
-        }
-        if (bytes < 1024 * 1024) {
-          return `${(bytes / 1024).toFixed(1)} KB`;
-        }
-        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-      };
-
       expect(formatSize(0)).toBe("0 B");
       expect(formatSize(1023)).toBe("1023 B");
       expect(formatSize(1024 * 1024 - 1)).toBe("1024.0 KB");

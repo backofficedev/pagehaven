@@ -16,9 +16,6 @@
     "./lib/serve-static": {
       "default": "./src/lib/serve-static.ts"
     },
-    "./lib/format": {
-      "default": "./src/lib/format.ts"
-    },
     "./*": {
       "default": "./src/*.ts"
     }
@@ -35,7 +32,7 @@
     "@pagehaven/db": "workspace:*",
     "drizzle-orm": "catalog:",
     "hono": "catalog:",
-    "zod": "^4.1.13"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@pagehaven/config": "workspace:*"

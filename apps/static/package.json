@@ -29,11 +29,11 @@
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
     "@pagehaven/config": "workspace:*",
-    "@types/node": "^22.19.1",
+    "@types/node": "catalog:",
     "alchemy": "catalog:",
-    "tsdown": "^0.16.8",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.15",
-    "wrangler": "^4.52.1"
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "catalog:"
   }
 }

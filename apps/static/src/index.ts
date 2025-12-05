@@ -4,7 +4,7 @@ import {
   getGateRedirectUrl,
 } from "@pagehaven/api/lib/access-control";
 import {
-  resolveSite,
+  resolveSiteOrError,
   serveFileWithFallback,
 } from "@pagehaven/api/lib/serve-static";
 import { auth } from "@pagehaven/auth";
@@ -23,18 +23,14 @@ app.all("/*", async (c) => {
   const path = c.req.path;
   const originalUrl = c.req.url;
 
-  // Resolve site from hostname (with caching)
-  const siteData = await resolveSite(hostname);
+  // Resolve and validate site from hostname
+  const siteResult = await resolveSiteOrError(hostname);
 
-  if (!siteData?.site) {
-    return c.json({ error: "Site not found" }, 404);
+  if (!siteResult.success) {
+    return c.json({ error: siteResult.error }, siteResult.status);
   }
 
-  const { site: resolvedSite, accessType, passwordHash } = siteData;
-
-  if (!resolvedSite.activeDeploymentId) {
-    return c.json({ error: "No deployment available" }, 404);
-  }
+  const { site: resolvedSite, accessType, passwordHash } = siteResult.data;
 
   // Check for password token in query params (from gate redirect)
   const url = new URL(c.req.url);

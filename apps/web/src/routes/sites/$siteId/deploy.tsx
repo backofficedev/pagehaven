@@ -1,4 +1,4 @@
-import { formatSize } from "@pagehaven/api/lib/format";
+import { formatSize } from "@pagehaven/utils/format";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { File, Loader2, Upload } from "lucide-react";

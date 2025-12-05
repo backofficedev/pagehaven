@@ -1,5 +1,6 @@
 import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { formatSize } from "@pagehaven/utils/format";
 import chalk from "chalk";
 import { Command } from "commander";
 import { glob } from "glob";
@@ -129,13 +130,3 @@ export const deployCommand = new Command("deploy")
       }
     }
   );
-
-function formatSize(bytes: number): string {
-  if (bytes < 1024) {
-    return `${bytes} B`;
-  }
-  if (bytes < 1024 * 1024) {
-    return `${(bytes / 1024).toFixed(1)} KB`;
-  }
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}

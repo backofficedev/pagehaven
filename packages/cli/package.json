@@ -15,6 +15,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@pagehaven/utils": "workspace:*",
     "commander": "^14.0.0",
     "chalk": "^5.4.1",
     "ora": "^8.2.0",
@@ -22,7 +23,7 @@
   },
   "devDependencies": {
     "@pagehaven/config": "workspace:*",
-    "@types/node": "^22.19.1"
+    "@types/node": "catalog:"
   },
   "peerDependencies": {
     "typescript": "^5"

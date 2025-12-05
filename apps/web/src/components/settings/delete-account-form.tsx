@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { FormField } from "@/components/form-field";
+import { ConnectedFormField } from "@/components/connected-form-field";
 import { FormWrapper } from "@/components/form-wrapper";
 import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
@@ -81,35 +81,17 @@ export default function DeleteAccountForm() {
           </div>
 
           <FormWrapper onSubmit={form.handleSubmit}>
-            <form.Field name="password">
-              {(field) => (
-                <FormField
-                  errors={field.state.meta.errors}
-                  label="Enter your password to confirm"
-                  name={field.name}
-                  onBlur={field.handleBlur}
-                  onChange={field.handleChange}
-                  type="password"
-                  value={field.state.value}
-                />
-              )}
-            </form.Field>
-
-            <div className="space-y-2">
-              <form.Field name="deletePhrase">
-                {(field) => (
-                  <FormField
-                    errors={field.state.meta.errors}
-                    label="Type 'DELETE MY ACCOUNT' to confirm"
-                    name={field.name}
-                    onBlur={field.handleBlur}
-                    onChange={field.handleChange}
-                    type="text"
-                    value={field.state.value}
-                  />
-                )}
-              </form.Field>
-            </div>
+            <ConnectedFormField
+              form={form}
+              label="Enter your password to confirm"
+              name="password"
+              type="password"
+            />
+            <ConnectedFormField
+              form={form}
+              label="Type 'DELETE MY ACCOUNT' to confirm"
+              name="deletePhrase"
+            />
 
             <form.Field name="confirmation">
               {(field) => (
