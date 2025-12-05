@@ -75,7 +75,7 @@ erDiagram
 
     SITE_ACCESS {
         text id PK
-        text siteId FK_UK
+        text siteId FK
         text accessType
         text passwordHash
         timestamp createdAt
