@@ -61,6 +61,56 @@ export function createQueryMock(
   };
 }
 
+/**
+ * Creates a base orpc mock with site.get query
+ */
+export function createOrpcMock(additionalMocks?: Record<string, unknown>) {
+  const { site: additionalSite, ...otherMocks } = additionalMocks ?? {};
+  return {
+    orpc: {
+      site: {
+        get: {
+          queryOptions: () => ({
+            queryKey: ["site"],
+            queryFn: () => Promise.resolve(null),
+          }),
+        },
+        ...(additionalSite as Record<string, unknown>),
+      },
+      ...otherMocks,
+    },
+    queryClient: {
+      invalidateQueries: vi.fn(),
+    },
+  };
+}
+
+/**
+ * Creates a sonner toast mock
+ */
+export function createToastMock(
+  mockToastSuccess: (msg: string) => void,
+  mockToastError: (msg: string) => void
+) {
+  return {
+    toast: {
+      success: (msg: string) => mockToastSuccess(msg),
+      error: (msg: string) => mockToastError(msg),
+    },
+  };
+}
+
+/**
+ * Auth client mock for tests
+ */
+export const authClientMock = {
+  authClient: {
+    getSession: vi.fn(() =>
+      Promise.resolve({ data: { user: { name: "Test" } } })
+    ),
+  },
+};
+
 type MockComponentProps = {
   children?: ReactNode;
   className?: string;

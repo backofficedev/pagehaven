@@ -2,6 +2,16 @@ import { formatSize } from "@pagehaven/utils/format";
 import { render, screen } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  authClientMock,
+  buttonMock,
+  cardMock,
+  createOrpcMock,
+  createRouterMock,
+  createToastMock,
+  inputMock,
+  labelMock,
+} from "@/test/ui-mocks";
 
 // Regex patterns at module level for performance
 const BACK_TO_REGEX = /Back to/;
@@ -22,25 +32,7 @@ vi.mock("@tanstack/react-query", () => ({
 }));
 
 vi.mock("@tanstack/react-router", () => ({
-  createFileRoute: (_path: string) => (options: unknown) => {
-    const opts = options as { component: React.ComponentType };
-    return {
-      ...opts,
-      useRouteContext: () => ({
-        session: { data: { user: { name: "Test User" } } },
-      }),
-      useParams: () => mockUseParams(),
-    };
-  },
-  Link: ({
-    children,
-    to,
-  }: {
-    children: React.ReactNode;
-    to: string;
-    params?: Record<string, string>;
-  }) => <a href={to}>{children}</a>,
-  redirect: vi.fn(),
+  ...createRouterMock(mockUseParams),
   useNavigate: () => mockNavigate,
 }));
 
@@ -51,81 +43,15 @@ vi.mock("lucide-react", () => ({
   Upload: () => <span data-testid="upload-icon" />,
 }));
 
-vi.mock("sonner", () => ({
-  toast: {
-    success: (msg: string) => mockToastSuccess(msg),
-    error: (msg: string) => mockToastError(msg),
-  },
-}));
+vi.mock("sonner", () => createToastMock(mockToastSuccess, mockToastError));
+vi.mock("@/components/ui/button", () => buttonMock);
+vi.mock("@/components/ui/card", () => cardMock);
+vi.mock("@/components/ui/input", () => inputMock);
+vi.mock("@/components/ui/label", () => labelMock);
+vi.mock("@/lib/auth-client", () => authClientMock);
 
-vi.mock("@/components/ui/button", () => ({
-  Button: ({
-    children,
-    onClick,
-    disabled,
-  }: {
-    children: React.ReactNode;
-    onClick?: () => void;
-    disabled?: boolean;
-  }) => (
-    <button disabled={disabled} onClick={onClick} type="button">
-      {children}
-    </button>
-  ),
-}));
-
-vi.mock("@/components/ui/card", () => ({
-  Card: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="card">{children}</div>
-  ),
-  CardContent: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="card-content">{children}</div>
-  ),
-  CardDescription: ({ children }: { children: React.ReactNode }) => (
-    <p data-testid="card-description">{children}</p>
-  ),
-  CardHeader: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="card-header">{children}</div>
-  ),
-  CardTitle: ({ children }: { children: React.ReactNode }) => (
-    <h3 data-testid="card-title">{children}</h3>
-  ),
-}));
-
-vi.mock("@/components/ui/input", () => ({
-  Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => (
-    <input {...props} />
-  ),
-}));
-
-vi.mock("@/components/ui/label", () => ({
-  Label: ({
-    children,
-    htmlFor,
-  }: {
-    children: React.ReactNode;
-    htmlFor?: string;
-  }) => <label htmlFor={htmlFor}>{children}</label>,
-}));
-
-vi.mock("@/lib/auth-client", () => ({
-  authClient: {
-    getSession: vi.fn(() =>
-      Promise.resolve({ data: { user: { name: "Test" } } })
-    ),
-  },
-}));
-
-vi.mock("@/utils/orpc", () => ({
-  orpc: {
-    site: {
-      get: {
-        queryOptions: () => ({
-          queryKey: ["site"],
-          queryFn: () => Promise.resolve(null),
-        }),
-      },
-    },
+vi.mock("@/utils/orpc", () =>
+  createOrpcMock({
     deployment: {
       create: { mutationOptions: () => ({}) },
       markProcessing: { mutationOptions: () => ({}) },
@@ -134,11 +60,8 @@ vi.mock("@/utils/orpc", () => ({
     upload: {
       uploadFiles: { mutationOptions: () => ({}) },
     },
-  },
-  queryClient: {
-    invalidateQueries: vi.fn(),
-  },
-}));
+  })
+);
 
 // Helper to render the DeployPage component
 async function renderDeployPage() {

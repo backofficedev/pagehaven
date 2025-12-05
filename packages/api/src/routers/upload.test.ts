@@ -1,25 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import { mockDb } from "../test-utils/mock-db";
 
 const LEADING_SLASHES_REGEX = /^\/+/;
 
 // Mock the database module
-vi.mock("@pagehaven/db", () => ({
-  db: {
-    select: vi.fn(() => ({
-      from: vi.fn(() => ({
-        where: vi.fn(() => ({
-          get: vi.fn(),
-        })),
-        innerJoin: vi.fn(() => ({
-          where: vi.fn(() => ({
-            get: vi.fn(),
-          })),
-        })),
-      })),
-    })),
-  },
-}));
+vi.mock("@pagehaven/db", () => mockDb);
 
 // Upload file schema
 const uploadFileSchema = z.object({

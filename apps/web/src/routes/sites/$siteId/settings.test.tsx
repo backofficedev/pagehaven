@@ -1,7 +1,15 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { buttonMock, cardMock, inputMock, labelMock } from "@/test/ui-mocks";
+import {
+  authClientMock,
+  buttonMock,
+  cardMock,
+  createOrpcMock,
+  createToastMock,
+  inputMock,
+  labelMock,
+} from "@/test/ui-mocks";
 
 // Regex patterns at module level for performance
 const BACK_TO_REGEX = /Back to/;
@@ -85,35 +93,16 @@ vi.mock("lucide-react", () => ({
   X: () => <span data-testid="x-icon" />,
 }));
 
-vi.mock("sonner", () => ({
-  toast: {
-    success: (msg: string) => mockToastSuccess(msg),
-    error: (msg: string) => mockToastError(msg),
-  },
-}));
-
+vi.mock("sonner", () => createToastMock(mockToastSuccess, mockToastError));
 vi.mock("@/components/ui/button", () => buttonMock);
 vi.mock("@/components/ui/card", () => cardMock);
 vi.mock("@/components/ui/input", () => inputMock);
 vi.mock("@/components/ui/label", () => labelMock);
+vi.mock("@/lib/auth-client", () => authClientMock);
 
-vi.mock("@/lib/auth-client", () => ({
-  authClient: {
-    getSession: vi.fn(() =>
-      Promise.resolve({ data: { user: { name: "Test" } } })
-    ),
-  },
-}));
-
-vi.mock("@/utils/orpc", () => ({
-  orpc: {
+vi.mock("@/utils/orpc", () =>
+  createOrpcMock({
     site: {
-      get: {
-        queryOptions: () => ({
-          queryKey: ["site"],
-          queryFn: () => Promise.resolve(null),
-        }),
-      },
       update: { mutationOptions: () => ({}) },
       delete: { mutationOptions: () => ({}) },
     },
@@ -134,11 +123,8 @@ vi.mock("@/utils/orpc", () => ({
       createInvite: { mutationOptions: () => ({}) },
       deleteInvite: { mutationOptions: () => ({}) },
     },
-  },
-  queryClient: {
-    invalidateQueries: vi.fn(),
-  },
-}));
+  })
+);
 
 // Helper to render the SettingsPage component
 async function renderSettingsPage() {

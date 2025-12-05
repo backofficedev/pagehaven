@@ -1,32 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { hashPassword, verifyPassword } from "../lib/password";
+import { mockDb } from "../test-utils/mock-db";
 
 const HEX_HASH_REGEX = /^[0-9a-f]+$/;
 
 // Mock the database module
-vi.mock("@pagehaven/db", () => ({
-  db: {
-    select: vi.fn(() => ({
-      from: vi.fn(() => ({
-        where: vi.fn(() => ({
-          get: vi.fn(),
-        })),
-      })),
-    })),
-    insert: vi.fn(() => ({
-      values: vi.fn(),
-    })),
-    update: vi.fn(() => ({
-      set: vi.fn(() => ({
-        where: vi.fn(),
-      })),
-    })),
-    delete: vi.fn(() => ({
-      where: vi.fn(),
-    })),
-  },
-}));
+vi.mock("@pagehaven/db", () => mockDb);
 
 // Access type validation schema (extracted from access.ts)
 const accessTypeSchema = z.enum([
