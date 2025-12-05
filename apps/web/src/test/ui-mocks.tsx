@@ -130,6 +130,25 @@ export const configMock = {
   getSiteDisplayDomain: (subdomain: string) => `${subdomain}.pagehaven.io`,
 };
 
+/**
+ * Simple Link mock for TanStack Router (no params)
+ */
+export const simpleLinkMock = {
+  Link: ({ children, to }: { children: ReactNode; to: string }) => (
+    <a href={to}>{children}</a>
+  ),
+};
+
+/**
+ * Simple toast mock with vi.fn() for success/error
+ */
+export const simpleToastMock = {
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+};
+
 type MockComponentProps = {
   children?: ReactNode;
   className?: string;
