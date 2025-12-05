@@ -21,7 +21,15 @@
     "setQueryResults\\(\\[[\\s\\S]*?\\]\\);",
     "mockUseQuery\\.mockReturnValue\\([\\s\\S]*?\\);",
     "describe\\(['\"][^'\"]+['\"],\\s*\\(\\)\\s*=>\\s*\\{",
-    "it\\(['\"][^'\"]+['\"],\\s*(?:async\\s*)?\\(\\)\\s*=>\\s*\\{"
+    "it\\(['\"][^'\"]+['\"],\\s*(?:async\\s*)?\\(\\)\\s*=>\\s*\\{",
+    "test\\.step\\(['\"][^'\"]+['\"],\\s*async\\s*\\(\\)\\s*=>\\s*\\{",
+    "await\\s+page\\.goto\\([^)]+\\);",
+    "await\\s+page\\.click\\([^)]+\\);",
+    "await\\s+page\\.fill\\([^)]+\\);",
+    "await\\s+expect\\(page[^)]+\\)\\.toBeVisible\\(\\);",
+    "<Card[^>]*>[\\s\\S]*?</Card>",
+    "<CardHeader>[\\s\\S]*?</CardHeader>",
+    "toast\\.(success|error)\\([^)]+\\);"
   ],
   "ignore": [
     "**/node_modules/**",

@@ -1,14 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  ExternalLink,
-  Eye,
-  Globe,
-  Lock,
-  Plus,
-  Rocket,
-  Users,
-} from "lucide-react";
+import { ExternalLink, Globe, Plus, Rocket } from "lucide-react";
+import { AccessIcon } from "@/components/access-icon";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,21 +23,6 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardPage() {
   const { session } = Route.useRouteContext();
   const sitesQuery = useQuery(orpc.site.list.queryOptions());
-
-  const getAccessIcon = (accessType?: string) => {
-    switch (accessType) {
-      case "public":
-        return <Globe className="h-4 w-4 text-green-500" />;
-      case "password":
-        return <Lock className="h-4 w-4 text-yellow-500" />;
-      case "private":
-        return <Users className="h-4 w-4 text-blue-500" />;
-      case "owner_only":
-        return <Eye className="h-4 w-4 text-red-500" />;
-      default:
-        return <Globe className="h-4 w-4 text-muted-foreground" />;
-    }
-  };
 
   const recentSites = sitesQuery.data?.slice(0, 4) ?? [];
   const totalSites = sitesQuery.data?.length ?? 0;
@@ -166,7 +144,7 @@ function DashboardPage() {
                       <div>
                         <CardTitle className="flex items-center gap-2 text-lg">
                           {site.name}
-                          {getAccessIcon()}
+                          {<AccessIcon />}
                         </CardTitle>
                         <CardDescription className="flex items-center gap-1">
                           {getSiteDisplayDomain(site.subdomain)}

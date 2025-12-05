@@ -1,8 +1,9 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Eye, Globe, Lock, Plus, Users } from "lucide-react";
+import { Globe, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { AccessIcon } from "@/components/access-icon";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -49,21 +50,6 @@ function SitesPage() {
       name: newSiteName,
       subdomain: newSiteSubdomain,
     });
-  };
-
-  const getAccessIcon = (accessType?: string) => {
-    switch (accessType) {
-      case "public":
-        return <Globe className="h-4 w-4 text-green-500" />;
-      case "password":
-        return <Lock className="h-4 w-4 text-yellow-500" />;
-      case "private":
-        return <Users className="h-4 w-4 text-blue-500" />;
-      case "owner_only":
-        return <Eye className="h-4 w-4 text-red-500" />;
-      default:
-        return <Globe className="h-4 w-4 text-muted-foreground" />;
-    }
   };
 
   return (
@@ -165,7 +151,7 @@ function SitesPage() {
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       {site.name}
-                      {getAccessIcon()}
+                      <AccessIcon />
                     </CardTitle>
                     <CardDescription>
                       {getSiteDisplayDomain(site.subdomain)}
