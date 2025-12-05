@@ -207,5 +207,93 @@ describe("SignInForm", () => {
       expect(screen.getByLabelText("Email")).toHaveValue("test@example.com");
       expect(screen.getByLabelText("Password")).toHaveValue("password123");
     });
+
+    it("calls authClient.signIn.email on form submit", async () => {
+      const { authClient } = await import("@/lib/auth-client");
+      vi.mocked(authClient.useSession).mockReturnValue({
+        data: null,
+        isPending: false,
+      } as ReturnType<typeof authClient.useSession>);
+
+      const mockSignIn = vi.fn();
+      vi.mocked(authClient.signIn.email).mockImplementation(mockSignIn);
+
+      const user = userEvent.setup();
+      render(<SignInForm onSwitchToSignUp={mockOnSwitchToSignUp} />);
+
+      await user.type(screen.getByLabelText("Email"), "test@example.com");
+      await user.type(screen.getByLabelText("Password"), "password123");
+      await user.click(screen.getByRole("button", { name: "Sign In" }));
+
+      // Wait for form submission
+      await vi.waitFor(() => {
+        expect(mockSignIn).toHaveBeenCalled();
+      });
+    });
+
+    it("handles successful sign in", async () => {
+      const { authClient } = await import("@/lib/auth-client");
+      const { toast } = await import("sonner");
+      const { useNavigate } = await import("@tanstack/react-router");
+
+      vi.mocked(authClient.useSession).mockReturnValue({
+        data: null,
+        isPending: false,
+      } as ReturnType<typeof authClient.useSession>);
+
+      const mockNavigate = vi.fn();
+      vi.mocked(useNavigate).mockReturnValue(mockNavigate);
+
+      vi.mocked(authClient.signIn.email).mockImplementation(
+        (_credentials, callbacks) => {
+          callbacks?.onSuccess?.({} as never);
+          return Promise.resolve();
+        }
+      );
+
+      const user = userEvent.setup();
+      render(<SignInForm onSwitchToSignUp={mockOnSwitchToSignUp} />);
+
+      await user.type(screen.getByLabelText("Email"), "test@example.com");
+      await user.type(screen.getByLabelText("Password"), "password123");
+      await user.click(screen.getByRole("button", { name: "Sign In" }));
+
+      await vi.waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith("Sign in successful");
+      });
+    });
+
+    it("handles sign in error", async () => {
+      const { authClient } = await import("@/lib/auth-client");
+      const { toast } = await import("sonner");
+
+      vi.mocked(authClient.useSession).mockReturnValue({
+        data: null,
+        isPending: false,
+      } as ReturnType<typeof authClient.useSession>);
+
+      vi.mocked(authClient.signIn.email).mockImplementation(
+        (_credentials, callbacks) => {
+          callbacks?.onError?.({
+            error: {
+              message: "Invalid credentials",
+              statusText: "Unauthorized",
+            },
+          } as never);
+          return Promise.resolve();
+        }
+      );
+
+      const user = userEvent.setup();
+      render(<SignInForm onSwitchToSignUp={mockOnSwitchToSignUp} />);
+
+      await user.type(screen.getByLabelText("Email"), "test@example.com");
+      await user.type(screen.getByLabelText("Password"), "password123");
+      await user.click(screen.getByRole("button", { name: "Sign In" }));
+
+      await vi.waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Invalid credentials");
+      });
+    });
   });
 });
