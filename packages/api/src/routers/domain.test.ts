@@ -1,34 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import { createMockDb } from "../test-utils/mock-db";
 
 const DOMAIN_REGEX =
   /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i;
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
-// Mock the database module
-vi.mock("@pagehaven/db", () => ({
-  db: {
-    select: vi.fn(() => ({
-      from: vi.fn(() => ({
-        where: vi.fn(() => ({
-          get: vi.fn(),
-        })),
-      })),
-    })),
-    insert: vi.fn(() => ({
-      values: vi.fn(),
-    })),
-    update: vi.fn(() => ({
-      set: vi.fn(() => ({
-        where: vi.fn(),
-      })),
-    })),
-    delete: vi.fn(() => ({
-      where: vi.fn(),
-    })),
-  },
-}));
+// Mock the database module using shared mock-db utility
+vi.mock("@pagehaven/db", () => createMockDb());
 
 // Add domain schema
 const addDomainSchema = z.object({
