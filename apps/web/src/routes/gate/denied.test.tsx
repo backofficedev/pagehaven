@@ -1,34 +1,14 @@
 import { render, screen } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { buttonMock, cardMock } from "@/test/ui-mocks";
+import { buttonMock, cardMock, createGateRouterMock } from "@/test/ui-mocks";
 
 // Mock state for dynamic control
 let mockSearchParams = { reason: "unknown", redirect: "/" };
+const mockUseSearch = () => mockSearchParams;
 
 // Mock TanStack Router
-vi.mock("@tanstack/react-router", () => ({
-  createFileRoute: (_path: string) => (options: unknown) => {
-    const opts = options as { component: React.ComponentType };
-    return {
-      ...opts,
-      useSearch: () => mockSearchParams,
-    };
-  },
-  Link: ({
-    children,
-    to,
-    className,
-  }: {
-    children: React.ReactNode;
-    to: string;
-    className?: string;
-  }) => (
-    <a className={className} href={to}>
-      {children}
-    </a>
-  ),
-}));
+vi.mock("@tanstack/react-router", () => createGateRouterMock(mockUseSearch));
 
 // Mock lucide-react
 vi.mock("lucide-react", () => ({

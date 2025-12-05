@@ -4,9 +4,29 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
 import { generateApiKey, getKeyPrefix, hashApiKey } from "../lib/api-key-auth";
+import { calculateExpiresAt, expiresInDaysSchema } from "../lib/expiration";
 
 function generateId(): string {
   return crypto.randomUUID();
+}
+
+/**
+ * Verifies that an API key belongs to the specified user.
+ * Throws an error if the key is not found or doesn't belong to the user.
+ */
+async function verifyKeyOwnership(
+  keyId: string,
+  userId: string
+): Promise<void> {
+  const existing = await db
+    .select({ id: apiKey.id })
+    .from(apiKey)
+    .where(and(eq(apiKey.id, keyId), eq(apiKey.userId, userId)))
+    .get();
+
+  if (!existing) {
+    throw new Error("API key not found");
+  }
 }
 
 // Available scopes for API keys
@@ -44,7 +64,7 @@ export const apiKeyRouter = {
       z.object({
         name: z.string().min(1).max(100),
         scopes: z.array(z.enum(apiKeyScopes)).default(["*"]),
-        expiresInDays: z.number().min(1).max(365).optional(),
+        expiresInDays: expiresInDaysSchema,
       })
     )
     .handler(async ({ input, context }) => {
@@ -54,9 +74,7 @@ export const apiKeyRouter = {
       const keyHash = await hashApiKey(rawKey);
       const keyPrefix = getKeyPrefix(rawKey);
 
-      const expiresAt = input.expiresInDays
-        ? new Date(Date.now() + input.expiresInDays * 24 * 60 * 60 * 1000)
-        : undefined;
+      const expiresAt = calculateExpiresAt(input.expiresInDays);
 
       const id = generateId();
 
@@ -86,20 +104,8 @@ export const apiKeyRouter = {
     .input(z.object({ keyId: z.string() }))
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
-
-      // Ensure the key belongs to the user
-      const existing = await db
-        .select({ id: apiKey.id })
-        .from(apiKey)
-        .where(and(eq(apiKey.id, input.keyId), eq(apiKey.userId, userId)))
-        .get();
-
-      if (!existing) {
-        throw new Error("API key not found");
-      }
-
+      await verifyKeyOwnership(input.keyId, userId);
       await db.delete(apiKey).where(eq(apiKey.id, input.keyId));
-
       return { success: true };
     }),
 
@@ -114,17 +120,7 @@ export const apiKeyRouter = {
     )
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
-
-      // Ensure the key belongs to the user
-      const existing = await db
-        .select({ id: apiKey.id })
-        .from(apiKey)
-        .where(and(eq(apiKey.id, input.keyId), eq(apiKey.userId, userId)))
-        .get();
-
-      if (!existing) {
-        throw new Error("API key not found");
-      }
+      await verifyKeyOwnership(input.keyId, userId);
 
       const updates: Partial<typeof apiKey.$inferInsert> = {};
       if (input.name !== undefined) {

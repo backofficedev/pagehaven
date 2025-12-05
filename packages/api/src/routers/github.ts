@@ -50,6 +50,23 @@ type GitHubBranch = {
   };
 };
 
+/**
+ * Gets the GitHub connection for a user, throwing if not connected
+ */
+async function getGithubConnectionOrThrow(userId: string) {
+  const connection = await db
+    .select()
+    .from(githubConnection)
+    .where(eq(githubConnection.userId, userId))
+    .get();
+
+  if (!connection) {
+    throw new Error("GitHub not connected");
+  }
+
+  return connection;
+}
+
 // GitHub API helper
 async function githubFetch<T>(
   endpoint: string,
@@ -222,17 +239,9 @@ export const githubRouter = {
       })
     )
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-
-      const connection = await db
-        .select()
-        .from(githubConnection)
-        .where(eq(githubConnection.userId, userId))
-        .get();
-
-      if (!connection) {
-        throw new Error("GitHub not connected");
-      }
+      const connection = await getGithubConnectionOrThrow(
+        context.session.user.id
+      );
 
       const repos = await githubFetch<GitHubRepo[]>(
         `/user/repos?page=${input.page}&per_page=${input.perPage}&sort=updated&affiliation=owner,collaborator`,
@@ -262,17 +271,9 @@ export const githubRouter = {
       })
     )
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-
-      const connection = await db
-        .select()
-        .from(githubConnection)
-        .where(eq(githubConnection.userId, userId))
-        .get();
-
-      if (!connection) {
-        throw new Error("GitHub not connected");
-      }
+      const connection = await getGithubConnectionOrThrow(
+        context.session.user.id
+      );
 
       const branches = await githubFetch<GitHubBranch[]>(
         `/repos/${input.owner}/${input.repo}/branches`,
@@ -303,18 +304,8 @@ export const githubRouter = {
       // Check permission (admin+ can link repos)
       await requireSitePermissionFromContext(context, input.siteId, "admin");
 
-      const userId = context.session.user.id;
-
       // Verify GitHub connection exists
-      const connection = await db
-        .select()
-        .from(githubConnection)
-        .where(eq(githubConnection.userId, userId))
-        .get();
-
-      if (!connection) {
-        throw new Error("GitHub not connected");
-      }
+      await getGithubConnectionOrThrow(context.session.user.id);
 
       // Check if already linked
       const existing = await db

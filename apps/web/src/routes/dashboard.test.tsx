@@ -1,12 +1,16 @@
-import { render, screen } from "@testing-library/react";
-import type React from "react";
+import { screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MOCK_SITES } from "@/test/fixtures";
+import {
+  createRouteRenderer,
+  describeRouteExports,
+} from "@/test/route-test-utils";
 import {
   buttonMock,
   cardMock,
   configMock,
   createAuthClientMock,
+  createRouterMock,
   skeletonMock,
 } from "@/test/ui-mocks";
 
@@ -20,8 +24,7 @@ const FOLLOW_STEPS_REGEX =
 
 // Store mock implementations for dynamic control
 const mockUseQuery = vi.fn();
-const mockUseRouteContext = vi.fn();
-const mockRedirect = vi.fn();
+const mockUseParams = vi.fn();
 const mockGetSession = vi.fn();
 
 // Mock dependencies
@@ -29,25 +32,7 @@ vi.mock("@tanstack/react-query", () => ({
   useQuery: () => mockUseQuery(),
 }));
 
-vi.mock("@tanstack/react-router", () => ({
-  createFileRoute: (_path: string) => (options: unknown) => {
-    const opts = options as { component: React.ComponentType };
-    return {
-      ...opts,
-      useRouteContext: mockUseRouteContext,
-      useParams: () => ({}),
-    };
-  },
-  Link: ({
-    children,
-    to,
-  }: {
-    children: React.ReactNode;
-    to: string;
-    params?: Record<string, string>;
-  }) => <a href={to}>{children}</a>,
-  redirect: mockRedirect,
-}));
+vi.mock("@tanstack/react-router", () => createRouterMock(mockUseParams));
 
 vi.mock("lucide-react", () => ({
   ExternalLink: () => <span data-testid="external-link-icon" />,
@@ -80,19 +65,12 @@ vi.mock("@/utils/orpc", () => ({
 }));
 
 // Helper to render the DashboardPage component
-async function renderDashboard() {
-  const module = await import("./dashboard");
-  const route = module.Route as unknown as { component: React.ComponentType };
-  const DashboardPage = route.component;
-  return render(<DashboardPage />);
-}
+const renderDashboard = createRouteRenderer(() => import("./dashboard"));
 
 describe("dashboard route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseRouteContext.mockReturnValue({
-      session: { data: { user: { name: "Test User" } } },
-    });
+    mockUseParams.mockReturnValue({});
     mockUseQuery.mockReturnValue({
       data: [],
       isLoading: false,
@@ -102,20 +80,7 @@ describe("dashboard route", () => {
     });
   });
 
-  describe("Route export", () => {
-    it("exports Route", async () => {
-      const module = await import("./dashboard");
-      expect(module.Route).toBeDefined();
-    });
-
-    it("has component defined", async () => {
-      const module = await import("./dashboard");
-      const route = module.Route as unknown as {
-        component: React.ComponentType;
-      };
-      expect(route.component).toBeDefined();
-    });
-  });
+  describeRouteExports(() => import("./dashboard"));
 
   describe("DashboardPage rendering", () => {
     it("displays welcome message with user name", async () => {

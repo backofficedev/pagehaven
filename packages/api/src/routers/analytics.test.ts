@@ -1,33 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import { createMockDb } from "../test-utils/mock-db";
 
 const DATE_FORMAT_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
-// Mock the database module
-vi.mock("@pagehaven/db", () => ({
-  db: {
-    select: vi.fn(() => ({
-      from: vi.fn(() => ({
-        where: vi.fn(() => ({
-          get: vi.fn(),
-          groupBy: vi.fn(() => ({
-            orderBy: vi.fn(() => ({
-              limit: vi.fn(),
-            })),
-          })),
-        })),
-      })),
-    })),
-    insert: vi.fn(() => ({
-      values: vi.fn(),
-    })),
-    update: vi.fn(() => ({
-      set: vi.fn(() => ({
-        where: vi.fn(),
-      })),
-    })),
-  },
-}));
+// Mock the database module using shared utility
+vi.mock("@pagehaven/db", () => createMockDb());
 
 // Record view schema
 const recordViewSchema = z.object({
@@ -291,6 +269,21 @@ describe("analytics aggregation logic", () => {
     bandwidth: number;
   };
 
+  /** Factory to create test analytics records with defaults */
+  function createAnalyticsRecord(
+    overrides: Partial<AnalyticsRecord> & { id: string }
+  ): AnalyticsRecord {
+    return {
+      siteId: "s1",
+      date: "2024-01-01",
+      path: "/",
+      views: 10,
+      uniqueVisitors: 5,
+      bandwidth: 1000,
+      ...overrides,
+    };
+  }
+
   function aggregateByDate(
     records: AnalyticsRecord[]
   ): Map<string, { views: number; bandwidth: number }> {
@@ -326,33 +319,21 @@ describe("analytics aggregation logic", () => {
   describe("aggregation by date", () => {
     it("aggregates views and bandwidth by date", () => {
       const records: AnalyticsRecord[] = [
-        {
-          id: "1",
-          siteId: "s1",
-          date: "2024-01-01",
-          path: "/",
-          views: 10,
-          uniqueVisitors: 5,
-          bandwidth: 1000,
-        },
-        {
+        createAnalyticsRecord({ id: "1" }),
+        createAnalyticsRecord({
           id: "2",
-          siteId: "s1",
-          date: "2024-01-01",
           path: "/about",
           views: 5,
           uniqueVisitors: 3,
           bandwidth: 500,
-        },
-        {
+        }),
+        createAnalyticsRecord({
           id: "3",
-          siteId: "s1",
           date: "2024-01-02",
-          path: "/",
           views: 20,
           uniqueVisitors: 10,
           bandwidth: 2000,
-        },
+        }),
       ];
 
       const result = aggregateByDate(records);
@@ -370,33 +351,21 @@ describe("analytics aggregation logic", () => {
   describe("aggregation by path", () => {
     it("aggregates views by path", () => {
       const records: AnalyticsRecord[] = [
-        {
-          id: "1",
-          siteId: "s1",
-          date: "2024-01-01",
-          path: "/",
-          views: 10,
-          uniqueVisitors: 5,
-          bandwidth: 1000,
-        },
-        {
+        createAnalyticsRecord({ id: "1" }),
+        createAnalyticsRecord({
           id: "2",
-          siteId: "s1",
           date: "2024-01-02",
-          path: "/",
           views: 15,
           uniqueVisitors: 8,
           bandwidth: 1500,
-        },
-        {
+        }),
+        createAnalyticsRecord({
           id: "3",
-          siteId: "s1",
-          date: "2024-01-01",
           path: "/about",
           views: 5,
           uniqueVisitors: 3,
           bandwidth: 500,
-        },
+        }),
       ];
 
       const result = aggregateByPath(records);

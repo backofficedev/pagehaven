@@ -1,11 +1,13 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createRouteRenderer } from "@/test/route-test-utils";
 import {
   authClientMock,
   buttonMock,
   cardMock,
   createOrpcMock,
+  createRouterMock,
   createToastMock,
   inputMock,
   labelMock,
@@ -59,27 +61,7 @@ vi.mock("@tanstack/react-query", () => ({
   },
 }));
 
-vi.mock("@tanstack/react-router", () => ({
-  createFileRoute: (_path: string) => (options: unknown) => {
-    const opts = options as { component: React.ComponentType };
-    return {
-      ...opts,
-      useRouteContext: () => ({
-        session: { data: { user: { name: "Test User" } } },
-      }),
-      useParams: () => mockUseParams(),
-    };
-  },
-  Link: ({
-    children,
-    to,
-  }: {
-    children: React.ReactNode;
-    to: string;
-    params?: Record<string, string>;
-  }) => <a href={to}>{children}</a>,
-  redirect: vi.fn(),
-}));
+vi.mock("@tanstack/react-router", () => createRouterMock(mockUseParams));
 
 vi.mock("lucide-react", () => ({
   ArrowLeft: () => <span data-testid="arrow-left-icon" />,
@@ -130,12 +112,7 @@ vi.mock("@/utils/orpc", () =>
 );
 
 // Helper to render the SettingsPage component
-async function renderSettingsPage() {
-  const module = await import("./settings");
-  const route = module.Route as unknown as { component: React.ComponentType };
-  const SettingsPage = route.component;
-  return render(<SettingsPage />);
-}
+const renderSettingsPage = createRouteRenderer(() => import("./settings"));
 
 // Default mock data
 const defaultSite = {
@@ -147,6 +124,15 @@ const defaultSite = {
 };
 const defaultAccess = { accessType: "public" };
 const defaultInvites: unknown[] = [];
+
+/** Helper to setup default query results */
+function setupDefaultQueries() {
+  setQueryResults([
+    { data: defaultSite, isLoading: false },
+    { data: defaultAccess, isLoading: false },
+    { data: defaultInvites, isLoading: false },
+  ]);
+}
 
 describe("sites/$siteId/settings route", () => {
   beforeEach(() => {
@@ -178,11 +164,7 @@ describe("sites/$siteId/settings route", () => {
 
   describe("page rendering", () => {
     beforeEach(() => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: defaultAccess, isLoading: false },
-        { data: defaultInvites, isLoading: false },
-      ]);
+      setupDefaultQueries();
     });
 
     it("displays page title", async () => {
@@ -227,11 +209,7 @@ describe("sites/$siteId/settings route", () => {
 
   describe("General settings form", () => {
     beforeEach(() => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: defaultAccess, isLoading: false },
-        { data: defaultInvites, isLoading: false },
-      ]);
+      setupDefaultQueries();
     });
 
     it("displays Site Name input", async () => {
@@ -263,11 +241,7 @@ describe("sites/$siteId/settings route", () => {
 
   describe("Access Control options", () => {
     beforeEach(() => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: defaultAccess, isLoading: false },
-        { data: defaultInvites, isLoading: false },
-      ]);
+      setupDefaultQueries();
     });
 
     it("displays Public option", async () => {
@@ -328,6 +302,21 @@ describe("sites/$siteId/settings route", () => {
       await renderSettingsPage();
       expect(screen.queryByLabelText("Site Password")).not.toBeInTheDocument();
     });
+
+    it("allows entering password", async () => {
+      setQueryResults([
+        { data: defaultSite, isLoading: false },
+        { data: { accessType: "password" }, isLoading: false },
+        { data: defaultInvites, isLoading: false },
+      ]);
+
+      await renderSettingsPage();
+
+      const passwordInput = screen.getByLabelText("Site Password");
+      fireEvent.change(passwordInput, { target: { value: "secret123" } });
+
+      expect(passwordInput).toHaveValue("secret123");
+    });
   });
 
   describe("Invite management for private sites", () => {
@@ -369,6 +358,21 @@ describe("sites/$siteId/settings route", () => {
       ).toBeInTheDocument();
       expect(screen.getByText("Invite")).toBeInTheDocument();
     });
+
+    it("allows entering email in invite form", async () => {
+      setQueryResults([
+        { data: defaultSite, isLoading: false },
+        { data: { accessType: "private" }, isLoading: false },
+        { data: [], isLoading: false },
+      ]);
+
+      await renderSettingsPage();
+
+      const emailInput = screen.getByPlaceholderText("user@example.com");
+      fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+
+      expect(emailInput).toHaveValue("test@example.com");
+    });
   });
 
   describe("invite data structure", () => {
@@ -387,11 +391,7 @@ describe("sites/$siteId/settings route", () => {
 
   describe("Danger Zone", () => {
     beforeEach(() => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: defaultAccess, isLoading: false },
-        { data: defaultInvites, isLoading: false },
-      ]);
+      setupDefaultQueries();
     });
 
     it("displays Delete Site button", async () => {
@@ -464,11 +464,7 @@ describe("sites/$siteId/settings route", () => {
 
   describe("form interactions", () => {
     beforeEach(() => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: defaultAccess, isLoading: false },
-        { data: defaultInvites, isLoading: false },
-      ]);
+      setupDefaultQueries();
     });
 
     it("allows changing site name input", async () => {
@@ -522,11 +518,7 @@ describe("sites/$siteId/settings route", () => {
 
   describe("delete site UI", () => {
     beforeEach(() => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: defaultAccess, isLoading: false },
-        { data: defaultInvites, isLoading: false },
-      ]);
+      setupDefaultQueries();
     });
 
     it("shows delete confirmation when Delete Site clicked", async () => {
@@ -547,66 +539,8 @@ describe("sites/$siteId/settings route", () => {
     });
   });
 
-  describe("invite section for private sites", () => {
-    it("shows invite section for private access type", async () => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: { accessType: "private" }, isLoading: false },
-        { data: [], isLoading: false },
-      ]);
-
-      await renderSettingsPage();
-
-      expect(screen.getByText("Invited Users")).toBeInTheDocument();
-      expect(
-        screen.getByPlaceholderText("user@example.com")
-      ).toBeInTheDocument();
-    });
-
-    it("allows entering email in invite form", async () => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: { accessType: "private" }, isLoading: false },
-        { data: [], isLoading: false },
-      ]);
-
-      await renderSettingsPage();
-
-      const emailInput = screen.getByPlaceholderText("user@example.com");
-      fireEvent.change(emailInput, { target: { value: "test@example.com" } });
-
-      expect(emailInput).toHaveValue("test@example.com");
-    });
-  });
-
-  describe("password field for password-protected sites", () => {
-    it("shows password field when password access type selected", async () => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: { accessType: "password" }, isLoading: false },
-        { data: defaultInvites, isLoading: false },
-      ]);
-
-      await renderSettingsPage();
-
-      expect(screen.getByLabelText("Site Password")).toBeInTheDocument();
-    });
-
-    it("allows entering password", async () => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: { accessType: "password" }, isLoading: false },
-        { data: defaultInvites, isLoading: false },
-      ]);
-
-      await renderSettingsPage();
-
-      const passwordInput = screen.getByLabelText("Site Password");
-      fireEvent.change(passwordInput, { target: { value: "secret123" } });
-
-      expect(passwordInput).toHaveValue("secret123");
-    });
-  });
+  // Note: "invite section for private sites" tests consolidated into "Invite management for private sites"
+  // Note: "password field for password-protected sites" tests consolidated into "Password field visibility";
 
   describe("invite list data structure", () => {
     it("has correct invite structure with expiration", () => {
@@ -634,11 +568,7 @@ describe("sites/$siteId/settings route", () => {
 
   describe("pending states", () => {
     beforeEach(() => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: defaultAccess, isLoading: false },
-        { data: defaultInvites, isLoading: false },
-      ]);
+      setupDefaultQueries();
     });
 
     it("shows Saving... when update is pending", async () => {
@@ -731,11 +661,7 @@ describe("sites/$siteId/settings route", () => {
 
   describe("access type radio selection", () => {
     beforeEach(() => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: defaultAccess, isLoading: false },
-        { data: defaultInvites, isLoading: false },
-      ]);
+      setupDefaultQueries();
     });
 
     it("selects public by default", async () => {

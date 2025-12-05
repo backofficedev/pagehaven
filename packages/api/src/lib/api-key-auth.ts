@@ -2,6 +2,7 @@ import { db } from "@pagehaven/db";
 import { apiKey } from "@pagehaven/db/schema/api-key";
 import { user } from "@pagehaven/db/schema/auth";
 import { eq } from "drizzle-orm";
+import { hashSHA256 } from "./crypto";
 
 /**
  * Generate a new API key with prefix for identification
@@ -21,12 +22,8 @@ export function generateApiKey(): string {
  * Hash an API key for secure storage
  * Uses SHA-256 via Web Crypto API (available in Cloudflare Workers)
  */
-export async function hashApiKey(key: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(key);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+export function hashApiKey(key: string): Promise<string> {
+  return hashSHA256(key);
 }
 
 /**

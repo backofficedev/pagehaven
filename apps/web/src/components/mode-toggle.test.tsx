@@ -17,9 +17,24 @@ vi.mock("next-themes", async () => {
   };
 });
 
-// Helper to render with ThemeProvider
+/** Render helper that wraps component with next-themes ThemeProvider */
 function renderWithTheme(ui: React.ReactElement) {
   return render(<ThemeProvider attribute="class">{ui}</ThemeProvider>);
+}
+
+/** Setup theme mock with setTheme spy */
+async function setupThemeMock(currentTheme: string) {
+  const mockSetTheme = vi.fn();
+  const { useTheme } = await import("next-themes");
+  vi.mocked(useTheme).mockReturnValue({
+    theme: currentTheme,
+    setTheme: mockSetTheme,
+    themes: ["light", "dark", "system"],
+    systemTheme: "light",
+    resolvedTheme: currentTheme,
+    forcedTheme: undefined,
+  });
+  return mockSetTheme;
 }
 
 describe("ModeToggle", () => {
@@ -66,17 +81,7 @@ describe("ModeToggle", () => {
 
   describe("theme selection", () => {
     it("calls setTheme with light when Light is clicked", async () => {
-      const mockSetTheme = vi.fn();
-      const { useTheme } = await import("next-themes");
-      vi.mocked(useTheme).mockReturnValue({
-        theme: "dark",
-        setTheme: mockSetTheme,
-        themes: ["light", "dark", "system"],
-        systemTheme: "light",
-        resolvedTheme: "dark",
-        forcedTheme: undefined,
-      });
-
+      const mockSetTheme = await setupThemeMock("dark");
       const user = userEvent.setup();
       renderWithTheme(<ModeToggle />);
 
@@ -89,17 +94,7 @@ describe("ModeToggle", () => {
     });
 
     it("calls setTheme with dark when Dark is clicked", async () => {
-      const mockSetTheme = vi.fn();
-      const { useTheme } = await import("next-themes");
-      vi.mocked(useTheme).mockReturnValue({
-        theme: "light",
-        setTheme: mockSetTheme,
-        themes: ["light", "dark", "system"],
-        systemTheme: "light",
-        resolvedTheme: "light",
-        forcedTheme: undefined,
-      });
-
+      const mockSetTheme = await setupThemeMock("light");
       const user = userEvent.setup();
       renderWithTheme(<ModeToggle />);
 
@@ -112,17 +107,7 @@ describe("ModeToggle", () => {
     });
 
     it("calls setTheme with system when System is clicked", async () => {
-      const mockSetTheme = vi.fn();
-      const { useTheme } = await import("next-themes");
-      vi.mocked(useTheme).mockReturnValue({
-        theme: "light",
-        setTheme: mockSetTheme,
-        themes: ["light", "dark", "system"],
-        systemTheme: "light",
-        resolvedTheme: "light",
-        forcedTheme: undefined,
-      });
-
+      const mockSetTheme = await setupThemeMock("light");
       const user = userEvent.setup();
       renderWithTheme(<ModeToggle />);
 

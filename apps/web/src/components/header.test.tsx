@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@/test/test-utils";
 
-// Mock TanStack Router
+// Mock TanStack Router - inline to avoid hoisting issues
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
     children,

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import { expiresInDaysSchema } from "../lib/expiration";
 import { hashPassword, verifyPassword } from "../lib/password";
 import { mockDb } from "../test-utils/mock-db";
 
@@ -27,7 +28,7 @@ const updateAccessSchema = z.object({
 const createInviteSchema = z.object({
   siteId: z.string(),
   email: z.string().email(),
-  expiresInDays: z.number().min(1).max(365).optional(),
+  expiresInDays: expiresInDaysSchema,
 });
 
 // Check access schema

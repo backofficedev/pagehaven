@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { buttonMock, cardMock } from "@/test/ui-mocks";
+import { buttonMock, cardMock, createGateRouterMock } from "@/test/ui-mocks";
 
 // Regex patterns at module level for performance
 const DONT_HAVE_ACCOUNT_REGEX = /Don't have an account/;
@@ -10,33 +10,9 @@ const DONT_HAVE_ACCOUNT_REGEX = /Don't have an account/;
 let mockSearchParams = { redirect: "/" };
 
 // Mock TanStack Router
-vi.mock("@tanstack/react-router", () => ({
-  createFileRoute: (_path: string) => (options: unknown) => {
-    const opts = options as { component: React.ComponentType };
-    return {
-      ...opts,
-      useSearch: () => mockSearchParams,
-    };
-  },
-  Link: ({
-    children,
-    to,
-    className,
-    search,
-  }: {
-    children: React.ReactNode;
-    to: string;
-    className?: string;
-    search?: Record<string, string>;
-  }) => {
-    const searchStr = search ? `?redirect=${search.redirect}` : "";
-    return (
-      <a className={className} href={`${to}${searchStr}`}>
-        {children}
-      </a>
-    );
-  },
-}));
+vi.mock("@tanstack/react-router", () =>
+  createGateRouterMock(() => mockSearchParams)
+);
 
 // Mock lucide-react
 vi.mock("lucide-react", () => ({

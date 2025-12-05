@@ -8,6 +8,7 @@ import {
   isSiteMember,
   requireSitePermission,
 } from "../lib/check-site-permission";
+import { calculateExpiresAt, expiresInDaysSchema } from "../lib/expiration";
 import { hashPassword, verifyPassword } from "../lib/password";
 
 function generateId(): string {
@@ -167,7 +168,7 @@ export const accessRouter = {
       z.object({
         siteId: z.string(),
         email: z.email(),
-        expiresInDays: z.number().min(1).max(365).optional(),
+        expiresInDays: expiresInDaysSchema,
       })
     )
     .handler(async ({ input, context }) => {
@@ -193,9 +194,7 @@ export const accessRouter = {
       }
 
       const inviteId = generateId();
-      const expiresAt = input.expiresInDays
-        ? new Date(Date.now() + input.expiresInDays * 24 * 60 * 60 * 1000)
-        : undefined;
+      const expiresAt = calculateExpiresAt(input.expiresInDays);
 
       await db.insert(siteInvite).values({
         id: inviteId,

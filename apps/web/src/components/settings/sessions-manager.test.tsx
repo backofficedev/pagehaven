@@ -41,6 +41,15 @@ const mockOtherSession = {
   },
 };
 
+/** Helper to setup auth client mock with sessions */
+async function setupSessionsMock(
+  sessions: Array<typeof mockCurrentSession | typeof mockOtherSession>
+) {
+  const { authClient } = await import("@/lib/auth-client");
+  vi.mocked(authClient.listSessions).mockResolvedValue({ data: sessions });
+  return authClient;
+}
+
 describe("SessionsManager", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -64,11 +73,7 @@ describe("SessionsManager", () => {
 
   describe("smoke tests", () => {
     it("renders without crashing after loading", async () => {
-      const { authClient } = await import("@/lib/auth-client");
-      vi.mocked(authClient.listSessions).mockResolvedValue({
-        data: [mockCurrentSession],
-      });
-
+      await setupSessionsMock([mockCurrentSession]);
       render(<SessionsManager />);
 
       await waitFor(() => {
@@ -77,11 +82,7 @@ describe("SessionsManager", () => {
     });
 
     it("renders current session card", async () => {
-      const { authClient } = await import("@/lib/auth-client");
-      vi.mocked(authClient.listSessions).mockResolvedValue({
-        data: [mockCurrentSession],
-      });
-
+      await setupSessionsMock([mockCurrentSession]);
       render(<SessionsManager />);
 
       await waitFor(() => {
@@ -92,11 +93,7 @@ describe("SessionsManager", () => {
     });
 
     it("renders other sessions card", async () => {
-      const { authClient } = await import("@/lib/auth-client");
-      vi.mocked(authClient.listSessions).mockResolvedValue({
-        data: [mockCurrentSession],
-      });
-
+      await setupSessionsMock([mockCurrentSession]);
       render(<SessionsManager />);
 
       await waitFor(() => {
@@ -107,11 +104,7 @@ describe("SessionsManager", () => {
 
   describe("session display", () => {
     it("displays current session info", async () => {
-      const { authClient } = await import("@/lib/auth-client");
-      vi.mocked(authClient.listSessions).mockResolvedValue({
-        data: [mockCurrentSession],
-      });
-
+      await setupSessionsMock([mockCurrentSession]);
       render(<SessionsManager />);
 
       await waitFor(() => {
@@ -122,11 +115,7 @@ describe("SessionsManager", () => {
     });
 
     it("shows no other sessions message when only current session exists", async () => {
-      const { authClient } = await import("@/lib/auth-client");
-      vi.mocked(authClient.listSessions).mockResolvedValue({
-        data: [mockCurrentSession],
-      });
-
+      await setupSessionsMock([mockCurrentSession]);
       render(<SessionsManager />);
 
       await waitFor(() => {
@@ -137,10 +126,7 @@ describe("SessionsManager", () => {
     });
 
     it("displays other sessions when they exist", async () => {
-      const { authClient } = await import("@/lib/auth-client");
-      vi.mocked(authClient.listSessions).mockResolvedValue({
-        data: [mockCurrentSession, mockOtherSession],
-      });
+      await setupSessionsMock([mockCurrentSession, mockOtherSession]);
 
       render(<SessionsManager />);
 
@@ -152,10 +138,7 @@ describe("SessionsManager", () => {
     });
 
     it("shows sign out all button when other sessions exist", async () => {
-      const { authClient } = await import("@/lib/auth-client");
-      vi.mocked(authClient.listSessions).mockResolvedValue({
-        data: [mockCurrentSession, mockOtherSession],
-      });
+      await setupSessionsMock([mockCurrentSession, mockOtherSession]);
 
       render(<SessionsManager />);
 
@@ -169,10 +152,10 @@ describe("SessionsManager", () => {
 
   describe("session revocation", () => {
     it("calls revokeSession when revoke button is clicked", async () => {
-      const { authClient } = await import("@/lib/auth-client");
-      vi.mocked(authClient.listSessions).mockResolvedValue({
-        data: [mockCurrentSession, mockOtherSession],
-      });
+      const authClient = await setupSessionsMock([
+        mockCurrentSession,
+        mockOtherSession,
+      ]);
       vi.mocked(authClient.revokeSession).mockResolvedValue(undefined);
 
       const user = userEvent.setup();

@@ -1,8 +1,11 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MOCK_SITES } from "@/test/fixtures";
-import { describeRouteExports } from "@/test/route-test-utils";
+import {
+  createRouteRenderer,
+  describeRouteExports,
+} from "@/test/route-test-utils";
 import {
   buttonMock,
   cardMock,
@@ -98,12 +101,7 @@ vi.mock("@/utils/orpc", () => ({
 }));
 
 // Helper to render the SitesPage component
-async function renderSitesPage() {
-  const module = await import("./index");
-  const route = module.Route as unknown as { component: React.ComponentType };
-  const SitesPage = route.component;
-  return render(<SitesPage />);
-}
+const renderSitesPage = createRouteRenderer(() => import("./index"));
 
 describe("sites route", () => {
   beforeEach(() => {

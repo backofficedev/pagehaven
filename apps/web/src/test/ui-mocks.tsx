@@ -6,7 +6,8 @@ import type { ComponentType, ReactNode } from "react";
 import { vi } from "vitest";
 
 /**
- * Creates a TanStack Router mock with configurable useParams
+ * Creates a TanStack Router mock with configurable useParams.
+ * The mockUseParams function is wrapped so it's called fresh each time.
  */
 export function createRouterMock(mockUseParams: () => unknown) {
   return {
@@ -17,7 +18,7 @@ export function createRouterMock(mockUseParams: () => unknown) {
         useRouteContext: () => ({
           session: { data: { user: { name: "Test User" } } },
         }),
-        useParams: mockUseParams,
+        useParams: () => mockUseParams(),
       };
     },
     Link: ({
@@ -156,6 +157,42 @@ export const useNavigateMock = {
   useNavigate: vi.fn(() => vi.fn()),
 };
 
+/**
+ * Creates a complete TanStack Router mock with Link and useNavigate.
+ * Use for components that need both Link and navigation.
+ */
+export function createFullRouterMock() {
+  return {
+    Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
+      <a href={to} {...props}>
+        {children}
+      </a>
+    ),
+    useNavigate: vi.fn(() => vi.fn()),
+    useRouter: vi.fn(() => ({
+      navigate: vi.fn(),
+    })),
+  };
+}
+
+/**
+ * Creates a component router mock for components that use Link and useNavigate
+ * Used by header.test.tsx and user-menu.test.tsx
+ */
+export function createComponentRouterMock() {
+  return {
+    Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
+      <a href={to} {...props}>
+        {children}
+      </a>
+    ),
+    useNavigate: vi.fn(() => vi.fn()),
+    useRouter: vi.fn(() => ({
+      navigate: vi.fn(),
+    })),
+  };
+}
+
 type MockComponentProps = {
   children?: ReactNode;
   className?: string;
@@ -256,3 +293,120 @@ export const labelMock = {
     htmlFor?: string;
   }) => <label htmlFor={htmlFor}>{children}</label>,
 };
+
+/**
+ * Creates a TanStack Router mock for gate pages (login/denied) that use useSearch
+ */
+export function createGateRouterMock(mockUseSearch: () => unknown) {
+  return {
+    createFileRoute: (_path: string) => (options: unknown) => {
+      const opts = options as { component: ComponentType };
+      return {
+        ...opts,
+        useSearch: mockUseSearch,
+      };
+    },
+    Link: ({
+      children,
+      to,
+      className,
+      search,
+    }: {
+      children: ReactNode;
+      to: string;
+      className?: string;
+      search?: Record<string, string>;
+    }) => {
+      const searchStr = search ? `?redirect=${search.redirect}` : "";
+      return (
+        <a className={className} href={`${to}${searchStr}`}>
+          {children}
+        </a>
+      );
+    },
+  };
+}
+
+/**
+ * Creates an auth session mock for components that use authClient.useSession
+ */
+export function createAuthSessionMock(
+  mockUseSession: () => { data: unknown; isPending: boolean },
+  mockSignOut?: () => void
+) {
+  return {
+    authClient: {
+      useSession: mockUseSession,
+      signOut: mockSignOut ?? vi.fn(),
+    },
+  };
+}
+
+/**
+ * Creates a next-themes mock with configurable useTheme
+ */
+export function createNextThemesMock(
+  themeOverrides?: Partial<{
+    theme: string;
+    setTheme: () => void;
+    themes: string[];
+    systemTheme: string;
+    resolvedTheme: string;
+    forcedTheme: string | undefined;
+  }>
+) {
+  return {
+    useTheme: vi.fn(() => ({
+      theme: "light",
+      setTheme: vi.fn(),
+      themes: ["light", "dark", "system"],
+      systemTheme: "light",
+      resolvedTheme: "light",
+      forcedTheme: undefined,
+      ...themeOverrides,
+    })),
+    ThemeProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
+  };
+}
+
+/**
+ * Default next-themes mock for tests
+ */
+export const nextThemesMock = createNextThemesMock();
+
+/**
+ * Creates a mock for auth client with updateUser and changeEmail for profile tests
+ */
+export function createProfileAuthMock() {
+  return {
+    authClient: {
+      updateUser: vi.fn(),
+      changeEmail: vi.fn(),
+    },
+  };
+}
+
+/**
+ * Helper to create auth callback mock implementation
+ * @param shouldSucceed - Whether the callback should trigger onSuccess or onError
+ * @param errorMessage - Error message to use when shouldSucceed is false
+ */
+export function createAuthCallbackMock(
+  shouldSucceed: boolean,
+  errorMessage = "Test error"
+) {
+  return (
+    _data: unknown,
+    callbacks?: {
+      onSuccess?: (data: never) => void;
+      onError?: (ctx: { error: { message: string } }) => void;
+    }
+  ) => {
+    if (shouldSucceed) {
+      callbacks?.onSuccess?.({} as never);
+    } else {
+      callbacks?.onError?.({ error: { message: errorMessage } } as never);
+    }
+    return Promise.resolve();
+  };
+}

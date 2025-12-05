@@ -64,6 +64,24 @@ async function renderAnalyticsPage() {
   return render(<AnalyticsPage />);
 }
 
+// Helper to setup site and analytics mocks
+function setupAnalyticsMocks(
+  site: { id: string; name: string; subdomain: string },
+  analytics: {
+    summary: {
+      totalViews: number;
+      totalBandwidth: number;
+      uniquePaths: number;
+    };
+    topPages: Array<{ path: string; views: number }>;
+    daily: Array<{ date: string; views: number; bandwidth: number }>;
+  }
+) {
+  mockUseQuery
+    .mockReturnValueOnce({ data: site, isLoading: false })
+    .mockReturnValueOnce({ data: analytics, isLoading: false });
+}
+
 describe("sites/$siteId/analytics route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -191,18 +209,14 @@ describe("sites/$siteId/analytics route", () => {
 
   describe("empty states", () => {
     const mockSite = { id: "site-123", name: "Test Site", subdomain: "test" };
+    const emptyAnalytics = {
+      summary: { totalViews: 0, totalBandwidth: 0, uniquePaths: 0 },
+      topPages: [],
+      daily: [],
+    };
 
     it("shows empty state for top pages when no views", async () => {
-      const mockAnalytics = {
-        summary: { totalViews: 0, totalBandwidth: 0, uniquePaths: 0 },
-        topPages: [],
-        daily: [],
-      };
-
-      mockUseQuery
-        .mockReturnValueOnce({ data: mockSite, isLoading: false })
-        .mockReturnValueOnce({ data: mockAnalytics, isLoading: false });
-
+      setupAnalyticsMocks(mockSite, emptyAnalytics);
       await renderAnalyticsPage();
       expect(
         screen.getByText("No page views recorded yet")
@@ -210,16 +224,7 @@ describe("sites/$siteId/analytics route", () => {
     });
 
     it("shows empty state for daily views when no data", async () => {
-      const mockAnalytics = {
-        summary: { totalViews: 0, totalBandwidth: 0, uniquePaths: 0 },
-        topPages: [],
-        daily: [],
-      };
-
-      mockUseQuery
-        .mockReturnValueOnce({ data: mockSite, isLoading: false })
-        .mockReturnValueOnce({ data: mockAnalytics, isLoading: false });
-
+      setupAnalyticsMocks(mockSite, emptyAnalytics);
       await renderAnalyticsPage();
       expect(screen.getByText("No data available")).toBeInTheDocument();
     });
@@ -259,20 +264,18 @@ describe("sites/$siteId/analytics route", () => {
 
   describe("page ranking", () => {
     it("displays top pages section with rankings", async () => {
-      const mockSite = { id: "site-123", name: "Test Site", subdomain: "test" };
-      const mockAnalytics = {
-        summary: { totalViews: 100, totalBandwidth: 1024, uniquePaths: 3 },
-        topPages: [
-          { path: "/", views: 50 },
-          { path: "/about", views: 30 },
-          { path: "/contact", views: 20 },
-        ],
-        daily: [],
-      };
-
-      mockUseQuery
-        .mockReturnValueOnce({ data: mockSite, isLoading: false })
-        .mockReturnValueOnce({ data: mockAnalytics, isLoading: false });
+      setupAnalyticsMocks(
+        { id: "site-123", name: "Test Site", subdomain: "test" },
+        {
+          summary: { totalViews: 100, totalBandwidth: 1024, uniquePaths: 3 },
+          topPages: [
+            { path: "/", views: 50 },
+            { path: "/about", views: 30 },
+            { path: "/contact", views: 20 },
+          ],
+          daily: [],
+        }
+      );
 
       await renderAnalyticsPage();
       // Check that top pages section is displayed with paths
