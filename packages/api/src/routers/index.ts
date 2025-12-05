@@ -5,6 +5,7 @@ import { analyticsRouter } from "./analytics";
 import { apiKeyRouter } from "./api-key";
 import { deploymentRouter } from "./deployment";
 import { domainRouter } from "./domain";
+import { githubRouter } from "./github";
 import { siteRouter } from "./site";
 import { uploadRouter } from "./upload";
 
@@ -21,6 +22,7 @@ export const appRouter = {
   analytics: analyticsRouter,
   domain: domainRouter,
   apiKey: apiKeyRouter,
+  github: githubRouter,
 };
 export type AppRouter = typeof appRouter;
 export type AppRouterClient = RouterClient<typeof appRouter>;

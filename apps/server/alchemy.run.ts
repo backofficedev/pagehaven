@@ -23,6 +23,8 @@ export const server = await Worker("server", {
     BETTER_AUTH_SECRET: alchemy.secret(alchemy.env.BETTER_AUTH_SECRET),
     BETTER_AUTH_URL: alchemy.env.BETTER_AUTH_URL || "",
     STATIC_DOMAIN: alchemy.env.STATIC_DOMAIN || "",
+    GITHUB_CLIENT_ID: alchemy.env.GITHUB_CLIENT_ID || "",
+    GITHUB_CLIENT_SECRET: alchemy.secret(alchemy.env.GITHUB_CLIENT_SECRET),
   },
   dev: {
     port: PORT,

@@ -1,6 +1,7 @@
 import ApiKeysManager from "@/components/settings/api-keys-manager";
 import ChangePasswordForm from "@/components/settings/change-password-form";
 import DeleteAccountForm from "@/components/settings/delete-account-form";
+import GitHubConnection from "@/components/settings/github-connection";
 import ProfileForm from "@/components/settings/profile-form";
 import SessionsManager from "@/components/settings/sessions-manager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,10 +22,11 @@ export default function SettingsPage({ session }: Readonly<SettingsPageProps>) {
       </div>
 
       <Tabs className="space-y-6" defaultValue="profile">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="api-keys">API Keys</TabsTrigger>
+          <TabsTrigger value="github">GitHub</TabsTrigger>
           <TabsTrigger value="sessions">Sessions</TabsTrigger>
           <TabsTrigger value="danger">Danger Zone</TabsTrigger>
         </TabsList>
@@ -39,6 +41,10 @@ export default function SettingsPage({ session }: Readonly<SettingsPageProps>) {
 
         <TabsContent value="api-keys">
           <ApiKeysManager />
+        </TabsContent>
+
+        <TabsContent value="github">
+          <GitHubConnection />
         </TabsContent>
 
         <TabsContent value="sessions">
