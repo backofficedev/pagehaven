@@ -9,12 +9,12 @@
     ],
     "catalog": {
       "hono": "^4.10.7",
-      "@cloudflare/workers-types": "^4.20251202.0",
+      "@cloudflare/workers-types": "^4.20251205.0",
       "@orpc/client": "^1.12.2",
       "@orpc/server": "^1.12.2",
       "@orpc/openapi": "^1.12.2",
       "@orpc/zod": "^1.12.2",
-      "better-auth": "^1.4.4",
+      "better-auth": "^1.4.5",
       "dotenv": "^17.2.3",
       "alchemy": "^0.79.0",
       "drizzle-orm": "^0.44.7"
@@ -51,21 +51,21 @@
     "sonar": "dotenv -- sonar-scanner -Dsonar.host.url=http://localhost:9000 -Dsonar.token=$SONAR_TOKEN"
   },
   "dependencies": {
-    "dotenv": "^17.2.3"
+    "dotenv": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.8",
-    "@cloudflare/workers-types": "^4.20251202.0",
+    "@cloudflare/workers-types": "catalog:",
     "@playwright/test": "^1.57.0",
     "@types/node": "^22.19.1",
     "@vitest/coverage-v8": "^4.0.15",
-    "alchemy": "^0.79.0",
+    "alchemy": "catalog:",
     "dotenv-cli": "^11.0.0",
     "husky": "^9.1.7",
     "jscpd": "^4.0.5",
     "lint-staged": "^16.2.7",
     "sonar-scanner": "^3.1.0",
-    "turbo": "^2.6.2",
+    "turbo": "^2.6.3",
     "ultracite": "6.3.8",
     "vitest": "^4.0.15"
   },
