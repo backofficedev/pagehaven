@@ -1,7 +1,9 @@
 /**
- * Access control utilities for static site serving
- * Exported for use in both the main app and tests
+ * Pure access control utility functions
+ * No database dependencies - safe for testing
  */
+
+// ============ Types ============
 
 export type AccessCheckResult =
   | { allowed: true }
@@ -13,6 +15,17 @@ export type AccessCheckResult =
         | "not_invited"
         | "not_member";
     };
+
+export type AccessCheckOptions = {
+  siteId: string;
+  accessType: string | null;
+  passwordHash: string | null;
+  passwordCookie: string | undefined;
+  userId: string | undefined;
+  userEmail: string | undefined;
+};
+
+// ============ Password Verification ============
 
 /**
  * Verify a password cookie against a stored hash
@@ -40,6 +53,8 @@ export function checkPasswordAccess(
     : { allowed: false, reason: "password_required" };
 }
 
+// ============ Gate Redirects ============
+
 /**
  * Generate a redirect URL for access gates
  */
@@ -61,5 +76,26 @@ export function getGateRedirectUrl(
       return `${webUrl}/gate/denied?reason=${reason}&redirect=${redirectParam}`;
     default:
       return `${webUrl}/gate/denied?reason=unknown`;
+  }
+}
+
+/**
+ * Get error response for access denial
+ */
+export function getAccessDeniedResponse(reason: string): {
+  status: 401 | 403;
+  error: string;
+} {
+  switch (reason) {
+    case "password_required":
+      return { status: 401, error: "Password required" };
+    case "login_required":
+      return { status: 401, error: "Login required" };
+    case "not_member":
+      return { status: 403, error: "You are not a member of this site" };
+    case "not_invited":
+      return { status: 403, error: "You are not invited to this site" };
+    default:
+      return { status: 403, error: "Access denied" };
   }
 }

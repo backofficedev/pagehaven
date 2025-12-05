@@ -1,14 +1,13 @@
 import { env } from "cloudflare:workers";
 import { db } from "@pagehaven/db";
-import {
-  site,
-  siteAccess,
-  siteInvite,
-  siteMember,
-} from "@pagehaven/db/schema/site";
-import { and, eq } from "drizzle-orm";
+import { site, siteAccess } from "@pagehaven/db/schema/site";
+import { eq } from "drizzle-orm";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
+import {
+  checkAccessPermissions,
+  getAccessDeniedResponse,
+} from "./access-control";
 import { CacheKey, CacheTTL, cacheGetOrSet } from "./cache";
 import { getContentType, getFile } from "./storage";
 
@@ -65,7 +64,7 @@ export async function resolveSite(
 ): Promise<SiteResolution | null> {
   // Extract subdomain for cache key
   const subdomain = hostname.split(".")[0] ?? "";
-  const staticDomain = env.STATIC_DOMAIN || "";
+  const staticDomain = (env as { STATIC_DOMAIN?: string }).STATIC_DOMAIN || "";
   const isCustomDomain =
     hostname.includes(".") && !hostname.endsWith(`.${staticDomain}`);
 
@@ -142,149 +141,7 @@ export async function serveStaticFile(
   };
 }
 
-type AccessCheckResult =
-  | { allowed: true }
-  | {
-      allowed: false;
-      reason:
-        | "password_required"
-        | "login_required"
-        | "not_invited"
-        | "not_member";
-    };
-
-function verifyPasswordCookie(
-  passwordCookie: string | undefined,
-  storedHash: string | null
-): boolean {
-  if (!(passwordCookie && storedHash)) {
-    return false;
-  }
-  // Cookie contains the hashed password - compare directly
-  return passwordCookie === storedHash;
-}
-
-async function checkMemberAccess(
-  siteId: string,
-  userId: string | undefined
-): Promise<boolean> {
-  if (!userId) {
-    return false;
-  }
-  const membership = await db
-    .select({ id: siteMember.id })
-    .from(siteMember)
-    .where(and(eq(siteMember.siteId, siteId), eq(siteMember.userId, userId)))
-    .get();
-  return !!membership;
-}
-
-async function checkInviteAccess(
-  siteId: string,
-  email: string | undefined
-): Promise<boolean> {
-  if (!email) {
-    return false;
-  }
-  const invite = await db
-    .select({ id: siteInvite.id, expiresAt: siteInvite.expiresAt })
-    .from(siteInvite)
-    .where(and(eq(siteInvite.siteId, siteId), eq(siteInvite.email, email)))
-    .get();
-
-  if (!invite) {
-    return false;
-  }
-  if (invite.expiresAt && invite.expiresAt < new Date()) {
-    return false;
-  }
-  return true;
-}
-
-type AccessCheckOptions = {
-  siteId: string;
-  accessType: string | null;
-  passwordHash: string | null;
-  passwordCookie: string | undefined;
-  userId: string | undefined;
-  userEmail: string | undefined;
-};
-
-function checkPasswordAccess(
-  passwordCookie: string | undefined,
-  passwordHash: string | null
-): AccessCheckResult {
-  const valid = verifyPasswordCookie(passwordCookie, passwordHash);
-  return valid
-    ? { allowed: true }
-    : { allowed: false, reason: "password_required" };
-}
-
-async function checkOwnerOnlyAccess(
-  siteId: string,
-  userId: string | undefined
-): Promise<AccessCheckResult> {
-  if (!userId) {
-    return { allowed: false, reason: "login_required" };
-  }
-  const isMember = await checkMemberAccess(siteId, userId);
-  return isMember
-    ? { allowed: true }
-    : { allowed: false, reason: "not_member" };
-}
-
-async function checkPrivateAccess(
-  siteId: string,
-  userId: string | undefined,
-  userEmail: string | undefined
-): Promise<AccessCheckResult> {
-  if (userId) {
-    const isMember = await checkMemberAccess(siteId, userId);
-    if (isMember) {
-      return { allowed: true };
-    }
-  }
-  if (userEmail) {
-    const isInvited = await checkInviteAccess(siteId, userEmail);
-    if (isInvited) {
-      return { allowed: true };
-    }
-  }
-  return { allowed: false, reason: userId ? "not_invited" : "login_required" };
-}
-
-async function checkAccessPermissions(
-  opts: AccessCheckOptions
-): Promise<AccessCheckResult> {
-  const {
-    siteId,
-    accessType,
-    passwordHash,
-    passwordCookie,
-    userId,
-    userEmail,
-  } = opts;
-
-  if (!accessType || accessType === "public") {
-    return { allowed: true };
-  }
-
-  if (accessType === "password") {
-    return checkPasswordAccess(passwordCookie, passwordHash);
-  }
-
-  if (accessType === "owner_only") {
-    return await checkOwnerOnlyAccess(siteId, userId);
-  }
-
-  if (accessType === "private") {
-    return await checkPrivateAccess(siteId, userId, userEmail);
-  }
-
-  return { allowed: true };
-}
-
-async function serveFileWithFallback(
+export async function serveFileWithFallback(
   siteId: string,
   deploymentId: string,
   path: string
@@ -318,24 +175,6 @@ async function serveFileWithFallback(
     status: result.status,
     headers: { "Content-Type": "application/json" },
   });
-}
-
-function getAccessDeniedResponse(reason: string): {
-  status: 401 | 403;
-  error: string;
-} {
-  switch (reason) {
-    case "password_required":
-      return { status: 401, error: "Password required" };
-    case "login_required":
-      return { status: 401, error: "Login required" };
-    case "not_member":
-      return { status: 403, error: "You are not a member of this site" };
-    case "not_invited":
-      return { status: 403, error: "You are not invited to this site" };
-    default:
-      return { status: 403, error: "Access denied" };
-  }
 }
 
 /**

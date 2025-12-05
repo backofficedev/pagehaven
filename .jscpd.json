@@ -131,7 +131,11 @@
     "const\\s+user\\s*=\\s*userEvent\\.setup\\(\\);\\s*render\\(<[A-Za-z]+[^>]*/>\\);",
 
     "await\\s+user\\.type\\(screen\\.getByLabelText\\([^)]+\\),\\s*['\"][^'\"]+['\"]\\);",
-    "await\\s+user\\.click\\(screen\\.getByRole\\(['\"]button['\"],\\s*\\{[^}]+\\}\\)\\);"
+    "await\\s+user\\.click\\(screen\\.getByRole\\(['\"]button['\"],\\s*\\{[^}]+\\}\\)\\);",
+
+    "import\\s+path\\s+from\\s+['\"]node:path['\"];\\s*import\\s+\\{\\s*createSharedResources\\s*\\}\\s+from\\s+['\"]@pagehaven/infra/resources['\"];\\s*import\\s+alchemy\\s+from\\s+['\"]alchemy['\"];\\s*import\\s+\\{\\s*Worker\\s*\\}\\s+from\\s+['\"]alchemy/cloudflare['\"];\\s*import\\s+\\{\\s*config\\s*\\}\\s+from\\s+['\"]dotenv['\"];\\s*config\\(\\{\\s*path:\\s*path\\.join\\(import\\.meta\\.dirname,\\s*['\"]\\.\\.[\\/]\\.\\.[\\/]\\.env['\"]\\)\\s*\\}\\);\\s*config\\(\\{\\s*path:\\s*path\\.join\\(import\\.meta\\.dirname,\\s*['\"]\\.env['\"]\\)\\s*\\}\\);\\s*const\\s+app\\s*=\\s*await\\s+alchemy\\(['\"][^'\"]+['\"]\\);",
+
+    "if\\s*\\(!siteData\\?\\.site\\)\\s*\\{\\s*return\\s+c\\.json\\(\\{\\s*error:\\s*['\"]Site not found['\"]\\s*\\},\\s*404\\);\\s*\\}\\s*const\\s+\\{\\s*site:\\s*resolvedSite,\\s*accessType,\\s*passwordHash\\s*\\}\\s*=\\s*siteData;\\s*if\\s*\\(!resolvedSite\\.activeDeploymentId\\)\\s*\\{\\s*return\\s+c\\.json\\(\\{\\s*error:\\s*['\"]No deployment available['\"]\\s*\\},\\s*404\\);\\s*\\}"
   ],
   "ignore": [
     "**/node_modules/**",
@@ -143,8 +147,7 @@
     "**/*.d.ts",
     "**/migrations/**",
     "**/routeTree.gen.ts",
-    "**/alchemy.run.*",
-    "**/packages/api/src/lib/serve-static.ts"
+    "**/alchemy.run.ts"
   ],
   "format": ["typescript", "tsx", "javascript", "jsx"],
   "absolute": true,

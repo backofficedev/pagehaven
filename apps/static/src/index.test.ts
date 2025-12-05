@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
 import {
   checkPasswordAccess,
   getGateRedirectUrl,
   verifyPasswordCookie,
-} from "./access-utils";
+} from "@pagehaven/api/lib/access-utils";
+import { describe, expect, it } from "vitest";
 
 // Note: Content-type tests are in @pagehaven/db/utils/content-type.test.ts
 

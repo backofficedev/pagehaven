@@ -7,6 +7,15 @@
     ".": {
       "default": "./src/index.ts"
     },
+    "./lib/access-control": {
+      "default": "./src/lib/access-control.ts"
+    },
+    "./lib/access-utils": {
+      "default": "./src/lib/access-utils.ts"
+    },
+    "./lib/serve-static": {
+      "default": "./src/lib/serve-static.ts"
+    },
     "./*": {
       "default": "./src/*.ts"
     }
