@@ -190,13 +190,13 @@ function DashboardPage() {
                   <CardContent>
                     {site.activeDeploymentId ? (
                       <span className="flex items-center gap-1 text-green-600 text-sm">
-                        <span className="h-2 w-2 rounded-full bg-green-500" />{" "}
-                        Live
+                        <span className="h-2 w-2 rounded-full bg-green-500" />
+                        <span>Live</span>
                       </span>
                     ) : (
                       <span className="flex items-center gap-1 text-muted-foreground text-sm">
-                        <span className="h-2 w-2 rounded-full bg-yellow-500" />{" "}
-                        No deployment
+                        <span className="h-2 w-2 rounded-full bg-yellow-500" />
+                        <span>No deployment</span>
                       </span>
                     )}
                   </CardContent>
