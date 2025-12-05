@@ -3,6 +3,9 @@
   "threshold": 14,
   "reporters": ["console"],
   "output": "./coverage/jscpd",
+  "ignorePattern": [
+    "vi\\.mock\\(\"[^\"]+\",\\s*(?:async\\s*)?\\(\\)\\s*=>\\s*(?:\\(\\{|\\{)[\\s\\S]*?(?:\\}\\)|\\})\\);"
+  ],
   "ignore": [
     "**/node_modules/**",
     "**/dist/**",
