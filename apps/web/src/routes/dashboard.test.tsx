@@ -2,7 +2,13 @@ import { render, screen } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MOCK_SITES } from "@/test/fixtures";
-import { buttonMock, cardMock, skeletonMock } from "@/test/ui-mocks";
+import {
+  buttonMock,
+  cardMock,
+  configMock,
+  createAuthClientMock,
+  skeletonMock,
+} from "@/test/ui-mocks";
 
 // Regex patterns at module level for performance
 const WELCOME_BACK_REGEX = /Welcome back, Test User/i;
@@ -57,16 +63,8 @@ vi.mock("@/components/ui/button", () => buttonMock);
 vi.mock("@/components/ui/card", () => cardMock);
 vi.mock("@/components/ui/skeleton", () => skeletonMock);
 
-vi.mock("@/lib/auth-client", () => ({
-  authClient: {
-    getSession: () => mockGetSession(),
-  },
-}));
-
-vi.mock("@/utils/config", () => ({
-  config: { staticDomain: "pagehaven.io" },
-  getSiteDisplayDomain: (subdomain: string) => `${subdomain}.pagehaven.io`,
-}));
+vi.mock("@/lib/auth-client", () => createAuthClientMock(mockGetSession));
+vi.mock("@/utils/config", () => configMock);
 
 vi.mock("@/utils/orpc", () => ({
   orpc: {

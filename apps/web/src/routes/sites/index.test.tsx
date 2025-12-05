@@ -6,6 +6,8 @@ import { describeRouteExports } from "@/test/route-test-utils";
 import {
   buttonMock,
   cardMock,
+  configMock,
+  createAuthClientMock,
   createQueryMock,
   inputMock,
   labelMock,
@@ -73,16 +75,8 @@ vi.mock("@/components/ui/card", () => cardMock);
 vi.mock("@/components/ui/input", () => inputMock);
 vi.mock("@/components/ui/label", () => labelMock);
 
-vi.mock("@/lib/auth-client", () => ({
-  authClient: {
-    getSession: () => mockGetSession(),
-  },
-}));
-
-vi.mock("@/utils/config", () => ({
-  config: { staticDomain: "pagehaven.io" },
-  getSiteDisplayDomain: (subdomain: string) => `${subdomain}.pagehaven.io`,
-}));
+vi.mock("@/lib/auth-client", () => createAuthClientMock(mockGetSession));
+vi.mock("@/utils/config", () => configMock);
 
 vi.mock("@/utils/orpc", () => ({
   orpc: {

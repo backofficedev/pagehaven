@@ -111,6 +111,25 @@ export const authClientMock = {
   },
 };
 
+/**
+ * Creates an auth client mock with a custom getSession function
+ */
+export function createAuthClientMock(mockGetSession: () => unknown) {
+  return {
+    authClient: {
+      getSession: () => mockGetSession(),
+    },
+  };
+}
+
+/**
+ * Config mock for tests
+ */
+export const configMock = {
+  config: { staticDomain: "pagehaven.io" },
+  getSiteDisplayDomain: (subdomain: string) => `${subdomain}.pagehaven.io`,
+};
+
 type MockComponentProps = {
   children?: ReactNode;
   className?: string;
