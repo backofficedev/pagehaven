@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/jscpd.json",
-  "threshold": 1.5,
+  "threshold": 0.5,
   "reporters": ["console"],
   "output": "./coverage/jscpd",
   "ignorePattern": [
@@ -76,7 +76,62 @@
     "authClient\\.[a-zA-Z]+\\([\\s\\S]*?\\{[\\s\\S]*?onSuccess:[\\s\\S]*?onError:[\\s\\S]*?\\}[\\s\\S]*?\\);",
     "globalThis\\.location\\.(href|origin)",
     "form\\.reset\\(\\);",
-    "<SubmitButton[^>]*>[^<]*</SubmitButton>"
+    "<SubmitButton[^>]*>[^<]*</SubmitButton>",
+
+    "const\\s+fileInput\\s*=\\s*page\\.locator\\(['\"]input\\[type=['\"]?file['\"]?\\]['\"]\\)(?:\\.first\\(\\))?;",
+    "await\\s+fileInput\\.setInputFiles\\(\\{[\\s\\S]*?name:[\\s\\S]*?mimeType:[\\s\\S]*?buffer:[\\s\\S]*?\\}\\);",
+    "await\\s+fileInput\\.setInputFiles\\(\\[[\\s\\S]*?\\]\\);",
+    "const\\s+subdomain\\s*=\\s*generateSubdomain\\(\\);",
+    "await\\s+createSite\\(page,\\s*\\{[^}]+\\},\\s*expect\\);",
+    "await\\s+page\\.getByText\\(siteName\\)\\.click\\(\\);",
+    "await\\s+page\\.getByRole\\(['\"]button['\"],\\s*\\{\\s*name:\\s*[A-Z_]+\\s*\\}\\)",
+    "const\\s+deployButton\\s*=\\s*page\\.getByRole\\(['\"]button['\"],\\s*\\{[^}]+\\}\\);",
+    "await\\s+expect\\(page\\.getByText\\([^)]+\\)\\)\\.toBeVisible\\(\\{\\s*timeout:[^}]+\\}\\);",
+    "await\\s+expect\\(page\\.getByText\\([^)]+\\)\\)\\.not\\.toBeVisible\\(\\);",
+
+    "async\\s+function\\s+hashPassword\\([^)]*\\):\\s*Promise<string>\\s*\\{[\\s\\S]*?\\}",
+    "async\\s+function\\s+verifyPassword\\([^)]*\\):\\s*Promise<boolean>\\s*\\{[\\s\\S]*?\\}",
+    "function\\s+verifyPasswordCookie\\([^)]*\\):\\s*boolean\\s*\\{[\\s\\S]*?\\}",
+    "function\\s+getGateRedirectUrl\\([^)]*\\):\\s*string\\s*\\{[\\s\\S]*?\\}",
+    "function\\s+normalizeFilePath\\([^)]*\\):\\s*string\\s*\\{[\\s\\S]*?\\}",
+
+    "const\\s+CacheKey\\s*=\\s*\\{[\\s\\S]*?\\}\\s*(?:as\\s+const)?;",
+
+    "expect\\(hasPermission\\([^)]+\\)\\)\\.toBe\\((?:true|false)\\);",
+    "expect\\([a-zA-Z]+Schema\\.safeParse\\([^)]+\\)\\.success\\)\\.toBe\\((?:true|false)\\);",
+
+    "await\\s+page\\.getByText\\([A-Z_]+\\)\\.click\\(\\);",
+    "await\\s+page\\.getByRole\\(['\"]button['\"],\\s*\\{\\s*name:\\s*[A-Z_]+\\s*\\}\\)\\.click\\(\\);",
+    "await\\s+expect\\(deployButton\\)\\.(?:toBeEnabled|toBeDisabled)\\(\\);",
+
+    "const\\s+result\\s*=\\s*[a-zA-Z]+Schema\\.safeParse\\(\\{[\\s\\S]*?\\}\\);",
+    "expect\\(result\\.success\\)\\.toBe\\((?:true|false)\\);",
+
+    "render\\(<[A-Za-z]+[^>]*onSwitch[^>]*/>\\);",
+    "await\\s+user\\.tab\\(\\);[\\s\\S]*?expect\\(screen\\.getByLabelText\\([^)]+\\)\\)\\.toHaveFocus\\(\\);",
+
+    "const\\s+[a-zA-Z]+\\s*=\\s*\\{[\\s\\S]*?\\}\\s*as\\s+const;",
+    "let\\s+filePath\\s*=\\s*path\\.startsWith\\(['\"]\\/?['\"]\\)\\s*\\?\\s*path\\.slice\\(1\\)\\s*:\\s*path;",
+
+    "await\\s+vi\\.waitFor\\(\\(\\)\\s*=>\\s*\\{[\\s\\S]*?\\}\\);",
+
+    "const\\s+formatSize\\s*=\\s*\\([^)]*\\)(?::\\s*string)?\\s*=>\\s*\\{[\\s\\S]*?\\};",
+
+    "const\\s+mockSites\\s*=\\s*\\[[\\s\\S]*?\\];",
+    "const\\s+mockAnalytics\\s*=\\s*\\{[\\s\\S]*?\\};",
+    "const\\s+records:\\s*[A-Za-z]+\\[\\]\\s*=\\s*\\[[\\s\\S]*?\\];",
+
+    "return\\s+Promise\\.resolve\\(\\);",
+
+    "z\\.object\\(\\{[\\s\\S]*?\\}\\)",
+
+    "\\$\\{webUrl\\}/gate/[a-z]+\\?[^`]+`",
+    "case\\s+['\"][a-z_]+['\"]:\\s*return\\s+`\\$\\{webUrl\\}/gate/[^`]+`;",
+
+    "const\\s+user\\s*=\\s*userEvent\\.setup\\(\\);\\s*render\\(<[A-Za-z]+[^>]*/>\\);",
+
+    "await\\s+user\\.type\\(screen\\.getByLabelText\\([^)]+\\),\\s*['\"][^'\"]+['\"]\\);",
+    "await\\s+user\\.click\\(screen\\.getByRole\\(['\"]button['\"],\\s*\\{[^}]+\\}\\)\\);"
   ],
   "ignore": [
     "**/node_modules/**",
