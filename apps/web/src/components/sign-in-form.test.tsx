@@ -9,20 +9,14 @@ import {
   setupAuthError,
   setupAuthSuccess,
 } from "@/test/test-utils";
+import { simpleToastMock, useNavigateMock } from "@/test/ui-mocks";
 import SignInForm from "./sign-in-form";
 
 // Mock TanStack Router
-vi.mock("@tanstack/react-router", () => ({
-  useNavigate: vi.fn(() => vi.fn()),
-}));
+vi.mock("@tanstack/react-router", () => useNavigateMock);
 
 // Mock sonner toast
-vi.mock("sonner", () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
-}));
+vi.mock("sonner", () => simpleToastMock);
 
 // Mock auth client
 vi.mock("@/lib/auth-client", () => ({

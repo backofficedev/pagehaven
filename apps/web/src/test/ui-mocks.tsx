@@ -149,6 +149,13 @@ export const simpleToastMock = {
   },
 };
 
+/**
+ * Router mock with useNavigate for TanStack Router
+ */
+export const useNavigateMock = {
+  useNavigate: vi.fn(() => vi.fn()),
+};
+
 type MockComponentProps = {
   children?: ReactNode;
   className?: string;

@@ -1,19 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { simpleToastMock, useNavigateMock } from "@/test/ui-mocks";
 
 // Mock TanStack Router
-vi.mock("@tanstack/react-router", () => ({
-  useNavigate: vi.fn(() => vi.fn()),
-}));
+vi.mock("@tanstack/react-router", () => useNavigateMock);
 
 // Mock sonner toast
-vi.mock("sonner", () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
-}));
+vi.mock("sonner", () => simpleToastMock);
 
 // Mock auth client
 vi.mock("@/lib/auth-client", () => ({
