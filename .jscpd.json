@@ -4,7 +4,10 @@
   "reporters": ["console"],
   "output": "./coverage/jscpd",
   "ignorePattern": [
-    "vi\\.mock\\(\"[^\"]+\",\\s*(?:async\\s*)?\\(\\)\\s*=>\\s*(?:\\(\\{|\\{)[\\s\\S]*?(?:\\}\\)|\\})\\);"
+    "vi\\.mock\\(\"[^\"]+\",\\s*(?:async\\s*)?\\(\\)\\s*=>\\s*(?:\\(\\{|\\{)[\\s\\S]*?(?:\\}\\)|\\})\\);",
+    "vi\\.mocked\\([^)]+\\)\\.mockReturnValue\\(\\{[\\s\\S]*?\\}\\s*(?:as\\s+[^)]+)?\\);",
+    "vi\\.mocked\\([^)]+\\)\\.mockImplementation\\([\\s\\S]*?\\);",
+    "const\\s+\\{[^}]+\\}\\s*=\\s*await\\s+import\\([^)]+\\);"
   ],
   "ignore": [
     "**/node_modules/**",
