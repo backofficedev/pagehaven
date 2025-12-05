@@ -51,19 +51,7 @@ describe("ModeToggle", () => {
   });
 
   describe("dropdown menu", () => {
-    it("opens dropdown on click", async () => {
-      const user = userEvent.setup();
-      renderWithTheme(<ModeToggle />);
-
-      await user.click(screen.getByRole("button"));
-      await waitFor(() => {
-        expect(screen.getByText("Light")).toBeInTheDocument();
-        expect(screen.getByText("Dark")).toBeInTheDocument();
-        expect(screen.getByText("System")).toBeInTheDocument();
-      });
-    });
-
-    it("shows all theme options", async () => {
+    it("opens dropdown and shows all theme options on click", async () => {
       const user = userEvent.setup();
       renderWithTheme(<ModeToggle />);
 

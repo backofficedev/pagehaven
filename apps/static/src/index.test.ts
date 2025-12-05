@@ -3,6 +3,7 @@ import {
   getGateRedirectUrl,
   verifyPasswordCookie,
 } from "@pagehaven/api/lib/access-utils";
+import { normalizeFilePath } from "@pagehaven/api/lib/file-path";
 import { describe, expect, it } from "vitest";
 
 // Note: Content-type tests are in @pagehaven/db/utils/content-type.test.ts
@@ -123,16 +124,7 @@ describe("checkPasswordAccess", () => {
 });
 
 // ============ File Path Normalization Tests ============
-
-function normalizeFilePath(path: string): string {
-  let filePath = path.startsWith("/") ? path.slice(1) : path;
-
-  if (!filePath || filePath.endsWith("/")) {
-    filePath = `${filePath}index.html`;
-  }
-
-  return filePath;
-}
+// Uses shared normalizeFilePath from @pagehaven/api/lib/file-path
 
 describe("normalizeFilePath", () => {
   it("removes leading slash", () => {

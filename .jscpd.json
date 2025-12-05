@@ -91,7 +91,9 @@
     "<DropdownMenu[^>]*>[\\s\\S]*?</DropdownMenu>",
     "<DropdownMenuTrigger[^>]*>[\\s\\S]*?</DropdownMenuTrigger>",
     "<DropdownMenuContent[^>]*>[\\s\\S]*?</DropdownMenuContent>",
-    "expect\\(formatSize\\([0-9_]+\\)\\)\\.toBe\\(['\"][^'\"]+['\"]\\);"
+    "expect\\(formatSize\\([0-9_]+\\)\\)\\.toBe\\(['\"][^'\"]+['\"]\\);",
+    "<div\\s+className=['\"]space-y-2['\"]>[\\s\\S]*?<Label[^>]*>[^<]*</Label>[\\s\\S]*?<Input[^/]*/>[\\s\\S]*?</div>",
+    "const\\s+[a-zA-Z]+Schema\\s*=\\s*z\\.object\\(\\{[\\s\\S]*?\\}\\);"
   ],
   "ignore": [
     "**/node_modules/**",

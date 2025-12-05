@@ -1,28 +1,20 @@
 import { db } from "@pagehaven/db";
-import { siteAccess, siteInvite, siteMember } from "@pagehaven/db/schema/site";
+import { siteAccess, siteInvite } from "@pagehaven/db/schema/site";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure } from "../index";
 import { CacheKey, cacheDelete } from "../lib/cache";
-import { requireSitePermission } from "../lib/check-site-permission";
+import {
+  isSiteMember,
+  requireSitePermission,
+} from "../lib/check-site-permission";
+import { hashPassword, verifyPassword } from "../lib/password";
 
 function generateId(): string {
   return crypto.randomUUID();
 }
 
 type AccessResult = { allowed: boolean; reason?: string };
-
-async function checkMembership(
-  siteId: string,
-  userId: string
-): Promise<boolean> {
-  const membership = await db
-    .select({ role: siteMember.role })
-    .from(siteMember)
-    .where(and(eq(siteMember.siteId, siteId), eq(siteMember.userId, userId)))
-    .get();
-  return !!membership;
-}
 
 async function checkInvite(
   siteId: string,
@@ -44,23 +36,6 @@ async function checkInvite(
     return { allowed: false, reason: "invite_expired" };
   }
   return { allowed: true };
-}
-
-// Simple password hashing (in production, use bcrypt or argon2)
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-async function verifyPassword(
-  password: string,
-  hash: string
-): Promise<boolean> {
-  const inputHash = await hashPassword(password);
-  return inputHash === hash;
 }
 
 export const accessRouter = {
@@ -306,8 +281,8 @@ async function checkOwnerOnlyAccess(
   siteId: string,
   userId: string
 ): Promise<AccessResult> {
-  const isMember = await checkMembership(siteId, userId);
-  return isMember
+  const memberStatus = await isSiteMember(siteId, userId);
+  return memberStatus
     ? { allowed: true }
     : { allowed: false, reason: "not_a_member" };
 }
@@ -318,8 +293,8 @@ async function checkPrivateAccess(
   email?: string
 ): Promise<AccessResult> {
   if (userId) {
-    const isMember = await checkMembership(siteId, userId);
-    if (isMember) {
+    const memberStatus = await isSiteMember(siteId, userId);
+    if (memberStatus) {
       return { allowed: true };
     }
   }

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { requireAuth } from "@/lib/auth-types";
 import { getSiteDisplayDomain, getSiteUrl } from "@/utils/config";
+import { formatDate } from "@/utils/format";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/sites/$siteId/")({
@@ -63,18 +64,6 @@ function SiteDetailPage() {
       default:
         return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300";
     }
-  };
-
-  const formatDate = (date: Date | null | undefined) => {
-    if (!date) {
-      return "N/A";
-    }
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   if (siteQuery.isLoading) {

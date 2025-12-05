@@ -3,6 +3,8 @@
  * Tests cross-module interactions and full workflows
  */
 import { describe, expect, it } from "vitest";
+import { CacheKey } from "./lib/cache";
+import { normalizeFilePath } from "./lib/file-path";
 import { hasPermission } from "./lib/permissions";
 
 const SUBDOMAIN_REGEX = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
@@ -259,32 +261,22 @@ describe("Integration: Permission Hierarchy", () => {
 
 describe("Integration: Static File Serving", () => {
   /**
-   * Tests the static file serving logic
+   * Tests the static file serving logic using shared normalizeFilePath
    */
   describe("file path resolution", () => {
-    function resolveFilePath(path: string): string {
-      let filePath = path.startsWith("/") ? path.slice(1) : path;
-
-      if (!filePath || filePath.endsWith("/")) {
-        filePath = `${filePath}index.html`;
-      }
-
-      return filePath;
-    }
-
     it("resolves root path to index.html", () => {
-      expect(resolveFilePath("/")).toBe("index.html");
-      expect(resolveFilePath("")).toBe("index.html");
+      expect(normalizeFilePath("/")).toBe("index.html");
+      expect(normalizeFilePath("")).toBe("index.html");
     });
 
     it("resolves directory paths to index.html", () => {
-      expect(resolveFilePath("/about/")).toBe("about/index.html");
-      expect(resolveFilePath("/blog/posts/")).toBe("blog/posts/index.html");
+      expect(normalizeFilePath("/about/")).toBe("about/index.html");
+      expect(normalizeFilePath("/blog/posts/")).toBe("blog/posts/index.html");
     });
 
     it("preserves file paths", () => {
-      expect(resolveFilePath("/styles.css")).toBe("styles.css");
-      expect(resolveFilePath("/assets/logo.png")).toBe("assets/logo.png");
+      expect(normalizeFilePath("/styles.css")).toBe("styles.css");
+      expect(normalizeFilePath("/assets/logo.png")).toBe("assets/logo.png");
     });
   });
 
@@ -397,19 +389,9 @@ describe("Integration: Analytics Recording", () => {
 
 describe("Integration: Cache Invalidation", () => {
   /**
-   * Tests cache invalidation patterns
+   * Tests cache invalidation patterns using shared CacheKey from lib/cache
    */
   describe("cache key generation", () => {
-    const CacheKey = {
-      siteBySubdomain: (subdomain: string) => `site:subdomain:${subdomain}`,
-      siteByDomain: (domain: string) => `site:domain:${domain}`,
-      siteById: (siteId: string) => `site:id:${siteId}`,
-      access: (siteId: string) => `access:${siteId}`,
-      deployment: (siteId: string) => `deployment:active:${siteId}`,
-      membership: (userId: string, siteId: string) =>
-        `member:${userId}:${siteId}`,
-    };
-
     it("generates correct cache keys", () => {
       expect(CacheKey.siteBySubdomain("mysite")).toBe("site:subdomain:mysite");
       expect(CacheKey.siteByDomain("example.com")).toBe(

@@ -7,6 +7,33 @@ import {
 import { and, eq } from "drizzle-orm";
 import { hasPermission } from "./permissions";
 
+/**
+ * Get user's membership for a site
+ * @returns The membership with role, or null if not a member
+ */
+export async function getMembership(
+  siteId: string,
+  userId: string
+): Promise<{ role: SiteRole } | null> {
+  const result = await db
+    .select({ role: siteMember.role })
+    .from(siteMember)
+    .where(and(eq(siteMember.siteId, siteId), eq(siteMember.userId, userId)))
+    .get();
+  return result ?? null;
+}
+
+/**
+ * Check if a user is a member of a site
+ */
+export async function isSiteMember(
+  siteId: string,
+  userId: string
+): Promise<boolean> {
+  const membership = await getMembership(siteId, userId);
+  return !!membership;
+}
+
 type DeploymentWithRole = {
   deployment: typeof deployment.$inferSelect;
   role: SiteRole;

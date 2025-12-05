@@ -374,41 +374,4 @@ describe("sites/$siteId route", () => {
       expect(screen.getByTestId("loader-icon")).toBeInTheDocument();
     });
   });
-
-  describe("helper functions", () => {
-    it("formatDate handles null date", () => {
-      const formatDate = (date: Date | null | undefined) => {
-        if (!date) {
-          return "N/A";
-        }
-        return new Date(date).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      };
-
-      expect(formatDate(null)).toBe("N/A");
-      expect(formatDate(undefined)).toBe("N/A");
-    });
-
-    it("formatDate formats valid date", () => {
-      const formatDate = (date: Date | null | undefined) => {
-        if (!date) {
-          return "N/A";
-        }
-        return new Date(date).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      };
-
-      const result = formatDate(new Date("2024-01-15T10:30:00"));
-      expect(result).toContain("Jan");
-      expect(result).toContain("15");
-    });
-  });
 });

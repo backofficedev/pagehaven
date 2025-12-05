@@ -3,6 +3,7 @@
  * Tests for known edge cases and previously fixed issues
  */
 import { describe, expect, it } from "vitest";
+import { normalizeFilePath } from "./lib/file-path";
 import { hasPermission } from "./lib/permissions";
 
 const SUBDOMAIN_REGEX = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
@@ -81,15 +82,8 @@ describe("Regression: Permission Edge Cases", () => {
 describe("Regression: File Path Handling", () => {
   /**
    * Ensures file path handling works correctly for all cases
+   * Uses shared normalizeFilePath from lib/file-path
    */
-  function normalizeFilePath(path: string): string {
-    let filePath = path.startsWith("/") ? path.slice(1) : path;
-    if (!filePath || filePath.endsWith("/")) {
-      filePath = `${filePath}index.html`;
-    }
-    return filePath;
-  }
-
   describe("root path handling", () => {
     it("handles single slash", () => {
       expect(normalizeFilePath("/")).toBe("index.html");

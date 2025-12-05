@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import { hashPassword, verifyPassword } from "../lib/password";
 
 const HEX_HASH_REGEX = /^[0-9a-f]+$/;
 
@@ -334,23 +335,7 @@ describe("check access schema", () => {
 });
 
 describe("password hashing logic", () => {
-  // Simple password hashing (matching the implementation in access.ts)
-  async function hashPassword(password: string): Promise<string> {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-  }
-
-  async function verifyPassword(
-    password: string,
-    hash: string
-  ): Promise<boolean> {
-    const inputHash = await hashPassword(password);
-    return inputHash === hash;
-  }
-
+  // Uses shared password utilities from lib/password
   describe("happy path", () => {
     it("hashes password to consistent value", async () => {
       const hash1 = await hashPassword("testpassword");
