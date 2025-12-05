@@ -42,7 +42,7 @@ export default function ResetPasswordPage({ token }: ResetPasswordPageProps) {
           onSuccess: () => {
             toast.success("Password reset successfully");
             // Redirect to login after successful reset
-            window.location.href = "/login";
+            globalThis.location.href = "/login";
           },
           onError: (error) => {
             toast.error(error.error.message || "Failed to reset password");

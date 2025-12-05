@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
       await authClient.requestPasswordReset(
         {
           email: value.email,
-          redirectTo: `${window.location.origin}/reset-password`,
+          redirectTo: `${globalThis.location.origin}/reset-password`,
         },
         {
           onSuccess: () => {

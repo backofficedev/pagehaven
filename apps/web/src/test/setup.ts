@@ -8,7 +8,7 @@ afterEach(() => {
 });
 
 // Mock matchMedia for components that use media queries
-Object.defineProperty(window, "matchMedia", {
+Object.defineProperty(globalThis, "matchMedia", {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
@@ -28,7 +28,7 @@ class MockResizeObserver {
   unobserve = vi.fn();
   disconnect = vi.fn();
 }
-global.ResizeObserver = MockResizeObserver;
+globalThis.ResizeObserver = MockResizeObserver;
 
 // Mock IntersectionObserver as a proper class
 class MockIntersectionObserver {
@@ -39,13 +39,13 @@ class MockIntersectionObserver {
   rootMargin = "";
   thresholds: number[] = [];
 }
-global.IntersectionObserver =
+globalThis.IntersectionObserver =
   MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
 // Mock scrollIntoView for Radix components
 Element.prototype.scrollIntoView = vi.fn();
 
 // Mock getComputedStyle for Radix components
-const originalGetComputedStyle = window.getComputedStyle;
-window.getComputedStyle = (element: Element) =>
+const originalGetComputedStyle = globalThis.getComputedStyle;
+globalThis.getComputedStyle = (element: Element) =>
   originalGetComputedStyle(element);

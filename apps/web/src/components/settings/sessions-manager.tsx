@@ -89,8 +89,8 @@ export default function SessionsManager() {
 
     // Simple device detection
     const isMobile = MOBILE_REGEX.test(userAgent);
-    const browser = userAgent.match(BROWSER_REGEX)?.[1] ?? "Unknown Browser";
-    const os = userAgent.match(OS_REGEX)?.[1] ?? "Unknown OS";
+    const browser = BROWSER_REGEX.exec(userAgent)?.[1] ?? "Unknown Browser";
+    const os = OS_REGEX.exec(userAgent)?.[1] ?? "Unknown OS";
 
     return `${browser} on ${os}${isMobile ? " (Mobile)" : ""}`;
   };
