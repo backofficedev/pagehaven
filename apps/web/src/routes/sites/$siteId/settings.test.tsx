@@ -539,4 +539,150 @@ describe("sites/$siteId/settings route", () => {
       ]);
     });
   });
+
+  describe("form interactions", () => {
+    beforeEach(() => {
+      setQueryResults([
+        { data: defaultSite, isLoading: false },
+        { data: defaultAccess, isLoading: false },
+        { data: defaultInvites, isLoading: false },
+      ]);
+    });
+
+    it("allows changing site name input", async () => {
+      await renderSettingsPage();
+
+      const nameInput = screen.getByLabelText("Site Name");
+      fireEvent.change(nameInput, { target: { value: "Updated Site Name" } });
+
+      expect(nameInput).toHaveValue("Updated Site Name");
+    });
+
+    it("allows changing description input", async () => {
+      await renderSettingsPage();
+
+      const descInput = screen.getByLabelText("Description");
+      fireEvent.change(descInput, { target: { value: "New description" } });
+
+      expect(descInput).toHaveValue("New description");
+    });
+
+    it("allows changing custom domain input", async () => {
+      await renderSettingsPage();
+
+      const domainInput = screen.getByLabelText("Custom Domain");
+      fireEvent.change(domainInput, { target: { value: "newdomain.com" } });
+
+      expect(domainInput).toHaveValue("newdomain.com");
+    });
+
+    it("has Save Changes button", async () => {
+      await renderSettingsPage();
+
+      expect(screen.getByText("Save Changes")).toBeInTheDocument();
+    });
+
+    it("has Update Access button", async () => {
+      await renderSettingsPage();
+
+      expect(screen.getByText("Update Access")).toBeInTheDocument();
+    });
+
+    it("can click on access type options", async () => {
+      await renderSettingsPage();
+
+      const passwordOption = screen.getByText("Password Protected");
+      fireEvent.click(passwordOption);
+
+      expect(passwordOption).toBeInTheDocument();
+    });
+  });
+
+  describe("delete site UI", () => {
+    beforeEach(() => {
+      setQueryResults([
+        { data: defaultSite, isLoading: false },
+        { data: defaultAccess, isLoading: false },
+        { data: defaultInvites, isLoading: false },
+      ]);
+    });
+
+    it("shows delete confirmation when Delete Site clicked", async () => {
+      await renderSettingsPage();
+
+      fireEvent.click(screen.getByText("Delete Site"));
+
+      expect(screen.getByText("Yes, Delete Site")).toBeInTheDocument();
+    });
+
+    it("hides confirmation when Cancel clicked", async () => {
+      await renderSettingsPage();
+
+      fireEvent.click(screen.getByText("Delete Site"));
+      fireEvent.click(screen.getByText("Cancel"));
+
+      expect(screen.queryByText("Yes, Delete Site")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("invite section for private sites", () => {
+    it("shows invite section for private access type", async () => {
+      setQueryResults([
+        { data: defaultSite, isLoading: false },
+        { data: { accessType: "private" }, isLoading: false },
+        { data: [], isLoading: false },
+      ]);
+
+      await renderSettingsPage();
+
+      expect(screen.getByText("Invited Users")).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("user@example.com")
+      ).toBeInTheDocument();
+    });
+
+    it("allows entering email in invite form", async () => {
+      setQueryResults([
+        { data: defaultSite, isLoading: false },
+        { data: { accessType: "private" }, isLoading: false },
+        { data: [], isLoading: false },
+      ]);
+
+      await renderSettingsPage();
+
+      const emailInput = screen.getByPlaceholderText("user@example.com");
+      fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+
+      expect(emailInput).toHaveValue("test@example.com");
+    });
+  });
+
+  describe("password field for password-protected sites", () => {
+    it("shows password field when password access type selected", async () => {
+      setQueryResults([
+        { data: defaultSite, isLoading: false },
+        { data: { accessType: "password" }, isLoading: false },
+        { data: defaultInvites, isLoading: false },
+      ]);
+
+      await renderSettingsPage();
+
+      expect(screen.getByLabelText("Site Password")).toBeInTheDocument();
+    });
+
+    it("allows entering password", async () => {
+      setQueryResults([
+        { data: defaultSite, isLoading: false },
+        { data: { accessType: "password" }, isLoading: false },
+        { data: defaultInvites, isLoading: false },
+      ]);
+
+      await renderSettingsPage();
+
+      const passwordInput = screen.getByLabelText("Site Password");
+      fireEvent.change(passwordInput, { target: { value: "secret123" } });
+
+      expect(passwordInput).toHaveValue("secret123");
+    });
+  });
 });
