@@ -44,6 +44,26 @@ if [ $FORMAT_EXIT_CODE -eq 0 ]; then
   fi
 fi
 
+# Run knip for unused code detection
+if [ $FORMAT_EXIT_CODE -eq 0 ]; then
+  echo "🔎 Running knip..."
+  bunx knip
+  KNIP_EXIT_CODE=$?
+  if [ $KNIP_EXIT_CODE -ne 0 ]; then
+    FORMAT_EXIT_CODE=$KNIP_EXIT_CODE
+  fi
+fi
+
+# Run copy-paste detection
+if [ $FORMAT_EXIT_CODE -eq 0 ]; then
+  echo "📋 Running copy-paste detection..."
+  bun run cpd
+  CPD_EXIT_CODE=$?
+  if [ $CPD_EXIT_CODE -ne 0 ]; then
+    FORMAT_EXIT_CODE=$CPD_EXIT_CODE
+  fi
+fi
+
 # Restore working directory state
 if [ $STASHED -eq 0 ]; then
   # Re-stage the formatted files
