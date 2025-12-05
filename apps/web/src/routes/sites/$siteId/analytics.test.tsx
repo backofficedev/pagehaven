@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { formatBytes } from "@/lib/utils";
 
 // Regex patterns at module level for performance
 const BACK_TO_REGEX = /Back to/;
@@ -261,30 +262,10 @@ describe("sites/$siteId/analytics route", () => {
 
   describe("formatBytes helper", () => {
     it("formats 0 bytes correctly", () => {
-      const formatBytes = (bytes: number): string => {
-        if (bytes === 0) {
-          return "0 B";
-        }
-        const k = 1024;
-        const sizes = ["B", "KB", "MB", "GB", "TB"];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
-      };
-
       expect(formatBytes(0)).toBe("0 B");
     });
 
     it("formats bytes correctly", () => {
-      const formatBytes = (bytes: number): string => {
-        if (bytes === 0) {
-          return "0 B";
-        }
-        const k = 1024;
-        const sizes = ["B", "KB", "MB", "GB", "TB"];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
-      };
-
       expect(formatBytes(500)).toBe("500 B");
       expect(formatBytes(1024)).toBe("1 KB");
       expect(formatBytes(1536)).toBe("1.5 KB");
@@ -293,16 +274,6 @@ describe("sites/$siteId/analytics route", () => {
     });
 
     it("formats large values correctly", () => {
-      const formatBytes = (bytes: number): string => {
-        if (bytes === 0) {
-          return "0 B";
-        }
-        const k = 1024;
-        const sizes = ["B", "KB", "MB", "GB", "TB"];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
-      };
-
       expect(formatBytes(5_242_880)).toBe("5 MB");
       expect(formatBytes(10_737_418_240)).toBe("10 GB");
     });

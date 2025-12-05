@@ -11,7 +11,12 @@
     "const\\s+user\\s*=\\s*userEvent\\.setup\\(\\);",
     "await\\s+waitFor\\(\\(\\)\\s*=>\\s*\\{[\\s\\S]*?\\}\\);",
     "import\\s+\\{[^}]+\\}\\s+from\\s+['\"][^'\"]+['\"];",
-    "import\\s+[A-Za-z]+\\s+from\\s+['\"][^'\"]+['\"];"
+    "import\\s+[A-Za-z]+\\s+from\\s+['\"][^'\"]+['\"];",
+    "render\\(<[A-Za-z]+[^>]*/>\\);",
+    "expect\\(screen\\.getBy[A-Za-z]+\\([^)]+\\)\\)\\.toBeInTheDocument\\(\\);",
+    "expect\\(screen\\.getBy[A-Za-z]+\\([^)]+\\)\\)\\.toHaveValue\\([^)]+\\);",
+    "\\.default\\(sql`\\(cast\\(unixepoch\\('subsecond'\\)\\s*\\*\\s*1000\\s+as\\s+integer\\)\\)`\\)",
+    "\\.\\$onUpdate\\(\\(\\)\\s*=>\\s*(?:/\\*\\s*@__PURE__\\s*\\*/\\s*)?new\\s+Date\\(\\)\\)"
   ],
   "ignore": [
     "**/node_modules/**",
