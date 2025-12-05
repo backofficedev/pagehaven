@@ -1,135 +1,100 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import type React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// Mock state for dynamic control
+let mockSearchParams = { reason: "unknown", redirect: "/" };
 
 // Mock TanStack Router
 vi.mock("@tanstack/react-router", () => ({
-  createFileRoute: () => () => ({ component: () => null }),
+  createFileRoute: (_path: string) => (options: unknown) => {
+    const opts = options as { component: React.ComponentType };
+    return {
+      ...opts,
+      useSearch: () => mockSearchParams,
+    };
+  },
   Link: ({
     children,
     to,
-    ...props
+    className,
   }: {
     children: React.ReactNode;
     to: string;
+    className?: string;
   }) => (
-    <a href={to} {...props}>
+    <a className={className} href={to}>
       {children}
     </a>
   ),
 }));
 
-// Create a test component that mimics the DeniedGatePage behavior
-function TestDeniedGatePage({ reason = "unknown" }: { reason?: string }) {
-  const getContent = () => {
-    switch (reason) {
-      case "not_member":
-        return {
-          title: "Not a Member",
-          description:
-            "You are not a member of this site. Only team members can access this content.",
-        };
-      case "not_invited":
-        return {
-          title: "Not Invited",
-          description:
-            "You have not been invited to view this site. Contact the site owner to request access.",
-        };
-      default:
-        return {
-          title: "Access Denied",
-          description: "You do not have permission to access this site.",
-        };
-    }
-  };
+// Mock lucide-react
+vi.mock("lucide-react", () => ({
+  Home: () => <span data-testid="home-icon" />,
+  ShieldX: () => <span data-testid="shield-x-icon" />,
+  UserX: () => <span data-testid="user-x-icon" />,
+}));
 
-  const content = getContent();
+// Mock UI components
+vi.mock("@/components/ui/button", () => ({
+  Button: ({
+    children,
+    variant,
+    className,
+  }: {
+    children: React.ReactNode;
+    variant?: string;
+    className?: string;
+  }) => (
+    <button className={className} data-variant={variant} type="button">
+      {children}
+    </button>
+  ),
+}));
 
-  return (
-    <div className="flex min-h-[80vh] items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <h1>{content.title}</h1>
-        <p>{content.description}</p>
-        <a href="/">Go to Homepage</a>
-        <p>
-          If you believe this is an error, please contact the site
-          administrator.
-        </p>
-      </div>
-    </div>
-  );
+vi.mock("@/components/ui/card", () => ({
+  Card: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => <div className={className}>{children}</div>,
+  CardContent: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => <div className={className}>{children}</div>,
+  CardDescription: ({ children }: { children: React.ReactNode }) => (
+    <p>{children}</p>
+  ),
+  CardHeader: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => <div className={className}>{children}</div>,
+  CardTitle: ({ children }: { children: React.ReactNode }) => (
+    <h2>{children}</h2>
+  ),
+}));
+
+// Helper to render the actual component
+async function renderDeniedGatePage() {
+  const module = await import("./denied");
+  const route = module.Route as unknown as { component: React.ComponentType };
+  const DeniedGatePage = route.component;
+  return render(<DeniedGatePage />);
 }
 
 describe("DeniedGatePage", () => {
-  describe("smoke tests", () => {
-    it("renders without crashing", () => {
-      render(<TestDeniedGatePage />);
-      expect(screen.getByText("Access Denied")).toBeInTheDocument();
-    });
-  });
-
-  describe("reason: unknown (default)", () => {
-    it("shows Access Denied title", () => {
-      render(<TestDeniedGatePage reason="unknown" />);
-      expect(screen.getByText("Access Denied")).toBeInTheDocument();
-    });
-
-    it("shows generic description", () => {
-      render(<TestDeniedGatePage reason="unknown" />);
-      expect(
-        screen.getByText("You do not have permission to access this site.")
-      ).toBeInTheDocument();
-    });
-  });
-
-  describe("reason: not_member", () => {
-    it("shows Not a Member title", () => {
-      render(<TestDeniedGatePage reason="not_member" />);
-      expect(screen.getByText("Not a Member")).toBeInTheDocument();
-    });
-
-    it("shows member-specific description", () => {
-      render(<TestDeniedGatePage reason="not_member" />);
-      expect(
-        screen.getByText(
-          "You are not a member of this site. Only team members can access this content."
-        )
-      ).toBeInTheDocument();
-    });
-  });
-
-  describe("reason: not_invited", () => {
-    it("shows Not Invited title", () => {
-      render(<TestDeniedGatePage reason="not_invited" />);
-      expect(screen.getByText("Not Invited")).toBeInTheDocument();
-    });
-
-    it("shows invite-specific description", () => {
-      render(<TestDeniedGatePage reason="not_invited" />);
-      expect(
-        screen.getByText(
-          "You have not been invited to view this site. Contact the site owner to request access."
-        )
-      ).toBeInTheDocument();
-    });
-  });
-
-  describe("navigation", () => {
-    it("has link to homepage", () => {
-      render(<TestDeniedGatePage />);
-      const link = screen.getByText("Go to Homepage");
-      expect(link).toHaveAttribute("href", "/");
-    });
-  });
-
-  describe("help text", () => {
-    it("shows contact administrator message", () => {
-      render(<TestDeniedGatePage />);
-      expect(
-        screen.getByText((content) =>
-          content.includes("If you believe this is an error")
-        )
-      ).toBeInTheDocument();
-    });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSearchParams = { reason: "unknown", redirect: "/" };
   });
 
   describe("Route export", () => {
@@ -139,17 +104,132 @@ describe("DeniedGatePage", () => {
     });
   });
 
+  describe("reason: unknown (default)", () => {
+    beforeEach(() => {
+      mockSearchParams = { reason: "unknown", redirect: "/" };
+    });
+
+    it("shows Access Denied title", async () => {
+      await renderDeniedGatePage();
+      expect(screen.getByText("Access Denied")).toBeInTheDocument();
+    });
+
+    it("shows generic description", async () => {
+      await renderDeniedGatePage();
+      expect(
+        screen.getByText("You do not have permission to access this site.")
+      ).toBeInTheDocument();
+    });
+
+    it("shows ShieldX icon", async () => {
+      await renderDeniedGatePage();
+      expect(screen.getByTestId("shield-x-icon")).toBeInTheDocument();
+    });
+  });
+
+  describe("reason: not_member", () => {
+    beforeEach(() => {
+      mockSearchParams = { reason: "not_member", redirect: "/" };
+    });
+
+    it("shows Not a Member title", async () => {
+      await renderDeniedGatePage();
+      expect(screen.getByText("Not a Member")).toBeInTheDocument();
+    });
+
+    it("shows member-specific description", async () => {
+      await renderDeniedGatePage();
+      expect(
+        screen.getByText(
+          "You are not a member of this site. Only team members can access this content."
+        )
+      ).toBeInTheDocument();
+    });
+
+    it("shows UserX icon", async () => {
+      await renderDeniedGatePage();
+      expect(screen.getByTestId("user-x-icon")).toBeInTheDocument();
+    });
+  });
+
+  describe("reason: not_invited", () => {
+    beforeEach(() => {
+      mockSearchParams = { reason: "not_invited", redirect: "/" };
+    });
+
+    it("shows Not Invited title", async () => {
+      await renderDeniedGatePage();
+      expect(screen.getByText("Not Invited")).toBeInTheDocument();
+    });
+
+    it("shows invite-specific description", async () => {
+      await renderDeniedGatePage();
+      expect(
+        screen.getByText(
+          "You have not been invited to view this site. Contact the site owner to request access."
+        )
+      ).toBeInTheDocument();
+    });
+
+    it("shows ShieldX icon for not_invited", async () => {
+      await renderDeniedGatePage();
+      expect(screen.getByTestId("shield-x-icon")).toBeInTheDocument();
+    });
+  });
+
+  describe("navigation", () => {
+    it("has link to homepage", async () => {
+      await renderDeniedGatePage();
+      const link = screen.getByRole("link");
+      expect(link).toHaveAttribute("href", "/");
+    });
+
+    it("shows Go to Homepage button", async () => {
+      await renderDeniedGatePage();
+      expect(screen.getByText("Go to Homepage")).toBeInTheDocument();
+    });
+
+    it("shows Home icon in button", async () => {
+      await renderDeniedGatePage();
+      expect(screen.getByTestId("home-icon")).toBeInTheDocument();
+    });
+  });
+
+  describe("help text", () => {
+    it("shows contact administrator message", async () => {
+      await renderDeniedGatePage();
+      expect(
+        screen.getByText((content) =>
+          content.includes("If you believe this is an error")
+        )
+      ).toBeInTheDocument();
+    });
+  });
+
   describe("search validation", () => {
     it("validates search params with reason and redirect", () => {
-      const search = { reason: "not_member", redirect: "/dashboard" };
-      expect(search.reason).toBe("not_member");
-      expect(search.redirect).toBe("/dashboard");
+      const validateSearch = (search: Record<string, unknown>) => ({
+        reason: (search.reason as string) || "unknown",
+        redirect: (search.redirect as string) || "/",
+      });
+
+      const result = validateSearch({
+        reason: "not_member",
+        redirect: "/dashboard",
+      });
+      expect(result.reason).toBe("not_member");
+      expect(result.redirect).toBe("/dashboard");
     });
 
     it("provides default values for missing search params", () => {
-      const search = { reason: "unknown", redirect: "/" };
-      expect(search.reason).toBe("unknown");
-      expect(search.redirect).toBe("/");
+      const validateSearch = (search: Record<string, unknown>) => ({
+        reason: (search.reason as string) || "unknown",
+        redirect: (search.redirect as string) || "/",
+      });
+
+      const result = validateSearch({});
+      expect(result.reason).toBe("unknown");
+      expect(result.redirect).toBe("/");
     });
   });
 });
