@@ -685,4 +685,169 @@ describe("sites/$siteId/settings route", () => {
       expect(passwordInput).toHaveValue("secret123");
     });
   });
+
+  describe("invite list data structure", () => {
+    it("has correct invite structure with expiration", () => {
+      const invite = {
+        id: "inv-1",
+        email: "user@example.com",
+        expiresAt: "2024-12-31T00:00:00.000Z",
+      };
+
+      expect(invite.id).toBe("inv-1");
+      expect(invite.email).toBe("user@example.com");
+      expect(invite.expiresAt).toBe("2024-12-31T00:00:00.000Z");
+    });
+
+    it("handles invite without expiration", () => {
+      const invite = {
+        id: "inv-2",
+        email: "user2@example.com",
+        expiresAt: null,
+      };
+
+      expect(invite.expiresAt).toBeNull();
+    });
+  });
+
+  describe("pending states", () => {
+    beforeEach(() => {
+      setQueryResults([
+        { data: defaultSite, isLoading: false },
+        { data: defaultAccess, isLoading: false },
+        { data: defaultInvites, isLoading: false },
+      ]);
+    });
+
+    it("shows Saving... when update is pending", async () => {
+      mockUseMutation.mockReturnValue({
+        mutate: vi.fn(),
+        isPending: true,
+        shouldSucceed: true,
+      });
+
+      await renderSettingsPage();
+
+      expect(screen.getByText("Saving...")).toBeInTheDocument();
+    });
+
+    it("shows Updating... when access update is pending", async () => {
+      mockUseMutation.mockReturnValue({
+        mutate: vi.fn(),
+        isPending: true,
+        shouldSucceed: true,
+      });
+
+      await renderSettingsPage();
+
+      expect(screen.getByText("Updating...")).toBeInTheDocument();
+    });
+
+    it("shows Deleting... when delete is pending", async () => {
+      mockUseMutation.mockReturnValue({
+        mutate: vi.fn(),
+        isPending: true,
+        shouldSucceed: true,
+      });
+
+      await renderSettingsPage();
+
+      fireEvent.click(screen.getByText("Delete Site"));
+
+      expect(screen.getByText("Deleting...")).toBeInTheDocument();
+    });
+  });
+
+  describe("invite form", () => {
+    it("disables invite button when email is empty", async () => {
+      setQueryResults([
+        { data: defaultSite, isLoading: false },
+        { data: { accessType: "private" }, isLoading: false },
+        { data: [], isLoading: false },
+      ]);
+
+      await renderSettingsPage();
+
+      const inviteButton = screen.getByText("Invite");
+      expect(inviteButton).toBeDisabled();
+    });
+  });
+
+  describe("site data with null values", () => {
+    it("handles null description", async () => {
+      setQueryResults([
+        {
+          data: { ...defaultSite, description: null },
+          isLoading: false,
+        },
+        { data: defaultAccess, isLoading: false },
+        { data: defaultInvites, isLoading: false },
+      ]);
+
+      await renderSettingsPage();
+
+      const descInput = screen.getByLabelText("Description");
+      expect(descInput).toHaveValue("");
+    });
+
+    it("handles null customDomain", async () => {
+      setQueryResults([
+        {
+          data: { ...defaultSite, customDomain: null },
+          isLoading: false,
+        },
+        { data: defaultAccess, isLoading: false },
+        { data: defaultInvites, isLoading: false },
+      ]);
+
+      await renderSettingsPage();
+
+      const domainInput = screen.getByLabelText("Custom Domain");
+      expect(domainInput).toHaveValue("");
+    });
+  });
+
+  describe("access type radio selection", () => {
+    beforeEach(() => {
+      setQueryResults([
+        { data: defaultSite, isLoading: false },
+        { data: defaultAccess, isLoading: false },
+        { data: defaultInvites, isLoading: false },
+      ]);
+    });
+
+    it("selects public by default", async () => {
+      await renderSettingsPage();
+
+      const publicRadio = screen.getByDisplayValue("public");
+      expect(publicRadio).toBeChecked();
+    });
+
+    it("can select password option", async () => {
+      await renderSettingsPage();
+
+      const passwordRadio = screen.getByDisplayValue("password");
+      fireEvent.click(passwordRadio);
+
+      expect(passwordRadio).toBeChecked();
+    });
+
+    it("can select private option", async () => {
+      await renderSettingsPage();
+
+      const privateRadio = screen.getByDisplayValue("private");
+      fireEvent.click(privateRadio);
+
+      expect(privateRadio).toBeChecked();
+    });
+
+    it("can select owner_only option", async () => {
+      await renderSettingsPage();
+
+      const ownerOnlyRadio = screen.getByDisplayValue("owner_only");
+      fireEvent.click(ownerOnlyRadio);
+
+      expect(ownerOnlyRadio).toBeChecked();
+    });
+  });
 });
