@@ -2,6 +2,7 @@ import type { RouterClient } from "@orpc/server";
 import { protectedProcedure, publicProcedure } from "../index";
 import { accessRouter } from "./access";
 import { analyticsRouter } from "./analytics";
+import { apiKeyRouter } from "./api-key";
 import { deploymentRouter } from "./deployment";
 import { domainRouter } from "./domain";
 import { siteRouter } from "./site";
@@ -19,6 +20,7 @@ export const appRouter = {
   upload: uploadRouter,
   analytics: analyticsRouter,
   domain: domainRouter,
+  apiKey: apiKeyRouter,
 };
 export type AppRouter = typeof appRouter;
 export type AppRouterClient = RouterClient<typeof appRouter>;

@@ -24,6 +24,10 @@ vi.mock("@/components/settings/delete-account-form", () => ({
   ),
 }));
 
+vi.mock("@/components/settings/api-keys-manager", () => ({
+  default: () => <div data-testid="api-keys-manager">API Keys Manager</div>,
+}));
+
 // Import after mocks
 import SettingsPage from "./settings-page";
 
@@ -55,6 +59,7 @@ describe("SettingsPage", () => {
       render(<SettingsPage session={mockSession} />);
       expect(screen.getByRole("tab", { name: "Profile" })).toBeInTheDocument();
       expect(screen.getByRole("tab", { name: "Security" })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: "API Keys" })).toBeInTheDocument();
       expect(screen.getByRole("tab", { name: "Sessions" })).toBeInTheDocument();
       expect(
         screen.getByRole("tab", { name: "Danger Zone" })
@@ -97,7 +102,7 @@ describe("SettingsPage", () => {
     it("has correct ARIA roles", () => {
       render(<SettingsPage session={mockSession} />);
       expect(screen.getByRole("tablist")).toBeInTheDocument();
-      expect(screen.getAllByRole("tab")).toHaveLength(4);
+      expect(screen.getAllByRole("tab")).toHaveLength(5);
     });
 
     it("supports keyboard navigation between tabs", async () => {
