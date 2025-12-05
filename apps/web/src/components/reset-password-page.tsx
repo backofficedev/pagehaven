@@ -5,7 +5,7 @@ import { z } from "zod";
 import { AuthPageLayout } from "@/components/auth-page-layout";
 import { ConnectedFormField } from "@/components/connected-form-field";
 import { FormWrapper } from "@/components/form-wrapper";
-import Loader from "@/components/loader";
+import { SubmitButton } from "@/components/submit-button";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
@@ -85,17 +85,7 @@ export default function ResetPasswordPage({
           type="password"
         />
 
-        <form.Subscribe>
-          {(state) => (
-            <Button
-              className="w-full"
-              disabled={!state.canSubmit || state.isSubmitting}
-              type="submit"
-            >
-              {state.isSubmitting ? <Loader /> : "Reset Password"}
-            </Button>
-          )}
-        </form.Subscribe>
+        <SubmitButton form={form}>Reset Password</SubmitButton>
       </FormWrapper>
     </AuthPageLayout>
   );

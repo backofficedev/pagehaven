@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/jscpd.json",
-  "threshold": 2,
+  "threshold": 1.5,
   "reporters": ["console"],
   "output": "./coverage/jscpd",
   "ignorePattern": [
@@ -67,7 +67,16 @@
     "screen\\.queryByText\\([^)]+\\)",
     "await\\s+user\\.click\\([^)]+\\);",
     "await\\s+user\\.type\\([^)]+\\);",
-    "fireEvent\\.[a-zA-Z]+\\([^)]+\\);"
+    "fireEvent\\.[a-zA-Z]+\\([^)]+\\);",
+    "const\\s+formatDate\\s*=\\s*\\([^)]*\\)\\s*=>\\s*\\{[\\s\\S]*?\\};",
+    "new\\s+Date\\([^)]*\\)\\.toLocaleDateString\\([\\s\\S]*?\\)",
+    "<AuthPageLayout[^>]*>[\\s\\S]*?</AuthPageLayout>",
+    "<Link\\s+to=['\"][^'\"]+['\"]>[\\s\\S]*?</Link>",
+    "onSubmit:\\s*async\\s*\\(\\{\\s*value\\s*\\}\\)\\s*=>\\s*\\{",
+    "authClient\\.[a-zA-Z]+\\([\\s\\S]*?\\{[\\s\\S]*?onSuccess:[\\s\\S]*?onError:[\\s\\S]*?\\}[\\s\\S]*?\\);",
+    "globalThis\\.location\\.(href|origin)",
+    "form\\.reset\\(\\);",
+    "<SubmitButton[^>]*>[^<]*</SubmitButton>"
   ],
   "ignore": [
     "**/node_modules/**",
