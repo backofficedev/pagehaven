@@ -68,7 +68,7 @@ erDiagram
         text id PK
         text siteId FK
         text userId FK
-        enum role "owner|admin|editor|viewer"
+        text role "owner admin editor viewer"
         text invitedBy FK
         timestamp createdAt
     }
@@ -76,7 +76,7 @@ erDiagram
     SITE_ACCESS {
         text id PK
         text siteId FK_UK
-        enum accessType "public|password|private|owner_only"
+        text accessType "public password private owner_only"
         text passwordHash
         timestamp createdAt
         timestamp updatedAt
@@ -97,7 +97,7 @@ erDiagram
         text id PK
         text siteId FK
         text storagePath
-        enum status "pending|processing|live|failed"
+        text status "pending processing live failed"
         integer fileCount
         integer totalSize
         text commitHash
@@ -123,7 +123,7 @@ erDiagram
         text siteId FK
         text domain UK
         text verificationToken
-        enum status "pending|verified|failed"
+        text status "pending verified failed"
         timestamp lastCheckedAt
         timestamp verifiedAt
         timestamp createdAt
@@ -175,18 +175,18 @@ erDiagram
     SITE_MEMBER {
         text siteId FK
         text userId FK
-        enum role
+        text role
     }
 
     SITE_ACCESS {
         text siteId FK
-        enum accessType
+        text accessType
     }
 
     DEPLOYMENT {
         text id PK
         text siteId FK
-        enum status
+        text status
         text storagePath
     }
 
@@ -199,7 +199,7 @@ erDiagram
     DOMAIN_VERIFICATION {
         text siteId FK
         text domain UK
-        enum status
+        text status
     }
 ```
 
