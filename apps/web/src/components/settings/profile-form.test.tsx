@@ -142,6 +142,127 @@ describe("ProfileForm", () => {
 
       expect(authClient.updateUser).toHaveBeenCalled();
     });
+
+    it("handles successful profile update", async () => {
+      const { authClient } = await import("@/lib/auth-client");
+      const { toast } = await import("sonner");
+
+      vi.mocked(authClient.updateUser).mockImplementation(
+        (_data, callbacks) => {
+          callbacks?.onSuccess?.({} as never);
+          return Promise.resolve();
+        }
+      );
+
+      const user = userEvent.setup();
+      render(<ProfileForm session={mockSession} />);
+
+      await user.click(screen.getByRole("button", { name: "Update Profile" }));
+
+      await vi.waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith(
+          "Profile updated successfully"
+        );
+      });
+    });
+
+    it("handles profile update error", async () => {
+      const { authClient } = await import("@/lib/auth-client");
+      const { toast } = await import("sonner");
+
+      vi.mocked(authClient.updateUser).mockImplementation(
+        (_data, callbacks) => {
+          callbacks?.onError?.({
+            error: { message: "Update failed" },
+          } as never);
+          return Promise.resolve();
+        }
+      );
+
+      const user = userEvent.setup();
+      render(<ProfileForm session={mockSession} />);
+
+      await user.click(screen.getByRole("button", { name: "Update Profile" }));
+
+      await vi.waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Update failed");
+      });
+    });
+
+    it("calls changeEmail on email form submit", async () => {
+      const { authClient } = await import("@/lib/auth-client");
+      vi.mocked(authClient.changeEmail).mockResolvedValue(undefined);
+
+      const user = userEvent.setup();
+      render(<ProfileForm session={mockSession} />);
+
+      await user.type(
+        screen.getByLabelText("New Email Address"),
+        "newemail@example.com"
+      );
+      await user.type(screen.getByLabelText("Confirm Password"), "password123");
+      await user.click(screen.getByRole("button", { name: "Change Email" }));
+
+      await vi.waitFor(() => {
+        expect(authClient.changeEmail).toHaveBeenCalled();
+      });
+    });
+
+    it("handles successful email change", async () => {
+      const { authClient } = await import("@/lib/auth-client");
+      const { toast } = await import("sonner");
+
+      vi.mocked(authClient.changeEmail).mockImplementation(
+        (_data, callbacks) => {
+          callbacks?.onSuccess?.({} as never);
+          return Promise.resolve();
+        }
+      );
+
+      const user = userEvent.setup();
+      render(<ProfileForm session={mockSession} />);
+
+      await user.type(
+        screen.getByLabelText("New Email Address"),
+        "newemail@example.com"
+      );
+      await user.type(screen.getByLabelText("Confirm Password"), "password123");
+      await user.click(screen.getByRole("button", { name: "Change Email" }));
+
+      await vi.waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith(
+          "Email change confirmation sent to your current email"
+        );
+      });
+    });
+
+    it("handles email change error", async () => {
+      const { authClient } = await import("@/lib/auth-client");
+      const { toast } = await import("sonner");
+
+      vi.mocked(authClient.changeEmail).mockImplementation(
+        (_data, callbacks) => {
+          callbacks?.onError?.({
+            error: { message: "Email change failed" },
+          } as never);
+          return Promise.resolve();
+        }
+      );
+
+      const user = userEvent.setup();
+      render(<ProfileForm session={mockSession} />);
+
+      await user.type(
+        screen.getByLabelText("New Email Address"),
+        "newemail@example.com"
+      );
+      await user.type(screen.getByLabelText("Confirm Password"), "password123");
+      await user.click(screen.getByRole("button", { name: "Change Email" }));
+
+      await vi.waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith("Email change failed");
+      });
+    });
   });
 
   describe("accessibility", () => {
