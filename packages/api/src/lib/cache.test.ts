@@ -3,10 +3,13 @@ import {
   CacheKey,
   CacheTTL,
   cacheDelete,
+  cacheDeleteByPrefix,
   cacheGet,
   cacheGetOrSet,
   cacheSet,
   initCache,
+  invalidateMembershipCache,
+  invalidateSiteCache,
   isCacheAvailable,
 } from "./cache";
 
@@ -152,5 +155,156 @@ describe("Cache operations with mock KV", () => {
 
     expect(result).toBeNull();
     expect(mockKV.put).not.toHaveBeenCalled();
+  });
+
+  describe("cacheDeleteByPrefix", () => {
+    it("deletes all keys matching prefix", async () => {
+      mockKV.list.mockResolvedValue({
+        keys: [
+          { name: "site:id:1" },
+          { name: "site:id:2" },
+          { name: "site:id:3" },
+        ],
+      });
+      mockKV.delete.mockResolvedValue(undefined);
+
+      await cacheDeleteByPrefix("site:id:");
+
+      expect(mockKV.list).toHaveBeenCalledWith({ prefix: "site:id:" });
+      expect(mockKV.delete).toHaveBeenCalledTimes(3);
+      expect(mockKV.delete).toHaveBeenCalledWith("site:id:1");
+      expect(mockKV.delete).toHaveBeenCalledWith("site:id:2");
+      expect(mockKV.delete).toHaveBeenCalledWith("site:id:3");
+    });
+
+    it("handles empty key list", async () => {
+      mockKV.list.mockResolvedValue({ keys: [] });
+
+      await cacheDeleteByPrefix("nonexistent:");
+
+      expect(mockKV.list).toHaveBeenCalledWith({ prefix: "nonexistent:" });
+      expect(mockKV.delete).not.toHaveBeenCalled();
+    });
+
+    it("silently fails on error", async () => {
+      mockKV.list.mockRejectedValue(new Error("KV error"));
+
+      await expect(cacheDeleteByPrefix("site:")).resolves.toBeUndefined();
+    });
+  });
+
+  describe("invalidateSiteCache", () => {
+    it("deletes site-related cache keys", async () => {
+      mockKV.delete.mockResolvedValue(undefined);
+
+      await invalidateSiteCache("site-123");
+
+      expect(mockKV.delete).toHaveBeenCalledWith("site:id:site-123");
+      expect(mockKV.delete).toHaveBeenCalledWith("access:site-123");
+      expect(mockKV.delete).toHaveBeenCalledWith("deployment:active:site-123");
+    });
+
+    it("deletes subdomain cache when provided", async () => {
+      mockKV.delete.mockResolvedValue(undefined);
+
+      await invalidateSiteCache("site-123", "mysite");
+
+      expect(mockKV.delete).toHaveBeenCalledWith("site:subdomain:mysite");
+    });
+
+    it("deletes custom domain cache when provided", async () => {
+      mockKV.delete.mockResolvedValue(undefined);
+
+      await invalidateSiteCache("site-123", undefined, "example.com");
+
+      expect(mockKV.delete).toHaveBeenCalledWith("site:domain:example.com");
+    });
+
+    it("deletes all caches when all params provided", async () => {
+      mockKV.delete.mockResolvedValue(undefined);
+
+      await invalidateSiteCache("site-123", "mysite", "example.com");
+
+      expect(mockKV.delete).toHaveBeenCalledTimes(5);
+      expect(mockKV.delete).toHaveBeenCalledWith("site:id:site-123");
+      expect(mockKV.delete).toHaveBeenCalledWith("access:site-123");
+      expect(mockKV.delete).toHaveBeenCalledWith("deployment:active:site-123");
+      expect(mockKV.delete).toHaveBeenCalledWith("site:subdomain:mysite");
+      expect(mockKV.delete).toHaveBeenCalledWith("site:domain:example.com");
+    });
+
+    it("skips custom domain when null", async () => {
+      mockKV.delete.mockResolvedValue(undefined);
+
+      await invalidateSiteCache("site-123", "mysite", null);
+
+      expect(mockKV.delete).toHaveBeenCalledTimes(4);
+      expect(mockKV.delete).not.toHaveBeenCalledWith(
+        expect.stringContaining("site:domain:")
+      );
+    });
+  });
+
+  describe("invalidateMembershipCache", () => {
+    it("deletes membership cache key", async () => {
+      mockKV.delete.mockResolvedValue(undefined);
+
+      await invalidateMembershipCache("user-456", "site-123");
+
+      expect(mockKV.delete).toHaveBeenCalledWith("member:user-456:site-123");
+    });
+  });
+
+  describe("cacheSet error handling", () => {
+    it("silently fails on put error", async () => {
+      mockKV.put.mockRejectedValue(new Error("KV error"));
+
+      await expect(
+        cacheSet("test-key", { data: "value" }, 300)
+      ).resolves.toBeUndefined();
+    });
+  });
+
+  describe("cacheDelete error handling", () => {
+    it("silently fails on delete error", async () => {
+      mockKV.delete.mockRejectedValue(new Error("KV error"));
+
+      await expect(cacheDelete("test-key")).resolves.toBeUndefined();
+    });
+  });
+});
+
+describe("Cache operations without KV (prefix deletion)", () => {
+  beforeEach(() => {
+    initCache(null as unknown as Parameters<typeof initCache>[0]);
+  });
+
+  it("cacheDeleteByPrefix does nothing when not initialized", async () => {
+    const result = await cacheDeleteByPrefix("site:");
+    expect(result).toBeUndefined();
+  });
+
+  it("invalidateSiteCache does nothing when not initialized", async () => {
+    const result = await invalidateSiteCache(
+      "site-123",
+      "mysite",
+      "example.com"
+    );
+    expect(result).toBeUndefined();
+  });
+
+  it("invalidateMembershipCache does nothing when not initialized", async () => {
+    const result = await invalidateMembershipCache("user-1", "site-1");
+    expect(result).toBeUndefined();
+  });
+});
+
+describe("CacheKey additional keys", () => {
+  it("generates correct site by ID key", () => {
+    expect(CacheKey.siteById("site-abc")).toBe("site:id:site-abc");
+  });
+
+  it("generates correct deployment key", () => {
+    expect(CacheKey.deployment("site-xyz")).toBe("deployment:active:site-xyz");
   });
 });
