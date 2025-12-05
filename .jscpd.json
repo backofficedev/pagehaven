@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/jscpd.json",
-  "threshold": 8,
+  "threshold": 7.5,
   "reporters": ["console"],
   "output": "./coverage/jscpd",
   "ignorePattern": [
