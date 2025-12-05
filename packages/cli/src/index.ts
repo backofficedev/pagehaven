@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { program } from "commander";
 import { deployCommand } from "./commands/deploy";
-import { loginCommand } from "./commands/login";
+import { loginCommand, logoutCommand, whoamiCommand } from "./commands/login";
 import { sitesCommand } from "./commands/sites";
 
 program
@@ -10,6 +10,8 @@ program
   .version("0.0.0");
 
 program.addCommand(loginCommand);
+program.addCommand(logoutCommand);
+program.addCommand(whoamiCommand);
 program.addCommand(sitesCommand);
 program.addCommand(deployCommand);
 

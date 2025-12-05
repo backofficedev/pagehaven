@@ -47,9 +47,14 @@ export function setToken(token: string): void {
 }
 
 export function clearToken(): void {
+  if (!existsSync(CONFIG_DIR)) {
+    return; // No config to clear
+  }
+
   const config = getConfig();
   const { token: _, ...configWithoutToken } = config;
-  saveConfig(configWithoutToken);
+  // Write directly instead of using saveConfig to avoid merging
+  writeFileSync(CONFIG_FILE, JSON.stringify(configWithoutToken, null, 2));
 }
 
 export function isAuthenticated(): boolean {

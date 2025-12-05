@@ -8,6 +8,6 @@
     "@cloudflare/workers-types"
   ],
   "ignoreBinaries": ["tsc"],
-  "ignore": ["**/routeTree.gen.ts"],
+  "ignore": ["**/routeTree.gen.ts", "e2e/**"],
   "ignoreExportsUsedInFile": true
 }

@@ -9,7 +9,10 @@
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target node",
     "dev:local": "bun run ./src/index.ts",
-    "check-types": "tsc -b"
+    "check-types": "tsc -b",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "commander": "^14.0.0",

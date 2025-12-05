@@ -27,6 +27,7 @@
     "@orpc/tanstack-query": "^1.12.2",
     "@pagehaven/api": "workspace:*",
     "@pagehaven/auth": "workspace:*",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/react-form": "^1.27.0",
     "@tanstack/react-query": "^5.90.11",
