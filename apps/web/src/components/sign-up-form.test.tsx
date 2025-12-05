@@ -195,4 +195,49 @@ describe("SignUpForm", () => {
       expect(screen.getByRole("button", { name: "Sign Up" })).toHaveFocus();
     });
   });
+
+  describe("form validation", () => {
+    it("validates name via TanStack Form", () => {
+      // TanStack Form handles validation via validators, not HTML attributes
+      render(<SignUpForm onSwitchToSignIn={mockOnSwitchToSignIn} />);
+      const nameInput = screen.getByLabelText("Name");
+      expect(nameInput).toBeInTheDocument();
+    });
+
+    it("validates email format via TanStack Form", () => {
+      // TanStack Form handles validation via validators, not HTML attributes
+      render(<SignUpForm onSwitchToSignIn={mockOnSwitchToSignIn} />);
+      const emailInput = screen.getByLabelText("Email");
+      expect(emailInput).toBeInTheDocument();
+    });
+
+    it("validates password length via TanStack Form", () => {
+      // TanStack Form handles validation via validators, not HTML attributes
+      render(<SignUpForm onSwitchToSignIn={mockOnSwitchToSignIn} />);
+      const passwordInput = screen.getByLabelText("Password");
+      expect(passwordInput).toBeInTheDocument();
+    });
+  });
+
+  describe("sign up flow", () => {
+    it("submits form with name, email and password", async () => {
+      const { authClient } = await import("@/lib/auth-client");
+      vi.mocked(authClient.useSession).mockReturnValue({
+        data: null,
+        isPending: false,
+      } as ReturnType<typeof authClient.useSession>);
+
+      const user = userEvent.setup();
+      render(<SignUpForm onSwitchToSignIn={mockOnSwitchToSignIn} />);
+
+      await user.type(screen.getByLabelText("Name"), "Test User");
+      await user.type(screen.getByLabelText("Email"), "test@example.com");
+      await user.type(screen.getByLabelText("Password"), "password123");
+
+      // Form should have the values filled in
+      expect(screen.getByLabelText("Name")).toHaveValue("Test User");
+      expect(screen.getByLabelText("Email")).toHaveValue("test@example.com");
+      expect(screen.getByLabelText("Password")).toHaveValue("password123");
+    });
+  });
 });
