@@ -22,10 +22,8 @@
   "dependencies": {
     "@pagehaven/api": "workspace:*",
     "@pagehaven/auth": "workspace:*",
-    "@pagehaven/db": "workspace:*",
     "@pagehaven/infra": "workspace:*",
     "dotenv": "catalog:",
-    "drizzle-orm": "catalog:",
     "hono": "catalog:"
   },
   "devDependencies": {

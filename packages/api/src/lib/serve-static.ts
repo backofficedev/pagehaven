@@ -21,6 +21,17 @@ type SiteResolution = {
   passwordHash: string | null;
 };
 
+function createSiteQuery() {
+  return db
+    .select({
+      site,
+      accessType: siteAccess.accessType,
+      passwordHash: siteAccess.passwordHash,
+    })
+    .from(site)
+    .leftJoin(siteAccess, eq(site.id, siteAccess.siteId));
+}
+
 /**
  * Fetch site data from database
  */
@@ -29,29 +40,10 @@ async function fetchSiteFromDb(
 ): Promise<SiteResolution | null> {
   const subdomain = hostname.split(".")[0] ?? "";
 
-  // Try subdomain first
-  let result = await db
-    .select({
-      site,
-      accessType: siteAccess.accessType,
-      passwordHash: siteAccess.passwordHash,
-    })
-    .from(site)
-    .leftJoin(siteAccess, eq(site.id, siteAccess.siteId))
-    .where(eq(site.subdomain, subdomain))
-    .get();
-
-  // If not found, try custom domain
-  result ??= await db
-    .select({
-      site,
-      accessType: siteAccess.accessType,
-      passwordHash: siteAccess.passwordHash,
-    })
-    .from(site)
-    .leftJoin(siteAccess, eq(site.id, siteAccess.siteId))
-    .where(eq(site.customDomain, hostname))
-    .get();
+  // Try subdomain first, then custom domain
+  const result =
+    (await createSiteQuery().where(eq(site.subdomain, subdomain)).get()) ??
+    (await createSiteQuery().where(eq(site.customDomain, hostname)).get());
 
   return result ?? null;
 }

@@ -4,6 +4,7 @@ import { Globe, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AccessIcon } from "@/components/access-icon";
+import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -127,19 +128,17 @@ function SitesPage() {
       ) : null}
 
       {sitesQuery.data?.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Globe className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-2 font-medium text-lg">No sites yet</h3>
-            <p className="mb-4 text-muted-foreground">
-              Create your first site to get started
-            </p>
+        <EmptyState
+          action={
             <Button onClick={() => setShowCreateForm(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Create Site
             </Button>
-          </CardContent>
-        </Card>
+          }
+          description="Create your first site to get started"
+          icon={Globe}
+          title="No sites yet"
+        />
       ) : null}
 
       <div className="grid gap-4 md:grid-cols-2">

@@ -3,11 +3,11 @@ import {
   checkAccessPermissions,
   getGateRedirectUrl,
 } from "@pagehaven/api/lib/access-control";
-import { serveFileWithFallback } from "@pagehaven/api/lib/serve-static";
+import {
+  resolveSite,
+  serveFileWithFallback,
+} from "@pagehaven/api/lib/serve-static";
 import { auth } from "@pagehaven/auth";
-import { db } from "@pagehaven/db";
-import { site, siteAccess } from "@pagehaven/db/schema/site";
-import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { logger } from "hono/logger";
@@ -16,40 +16,6 @@ const app = new Hono();
 
 app.use(logger());
 
-// ============ Types ============
-
-type SiteResolution = {
-  site: typeof site.$inferSelect;
-  accessType: string | null;
-  passwordHash: string | null;
-};
-
-// ============ Site Resolution ============
-
-function createSiteQuery() {
-  return db
-    .select({
-      site,
-      accessType: siteAccess.accessType,
-      passwordHash: siteAccess.passwordHash,
-    })
-    .from(site)
-    .leftJoin(siteAccess, eq(site.id, siteAccess.siteId));
-}
-
-async function fetchSiteFromDb(
-  hostname: string
-): Promise<SiteResolution | null> {
-  const subdomain = hostname.split(".")[0] ?? "";
-
-  // Try subdomain first, then custom domain
-  const result =
-    (await createSiteQuery().where(eq(site.subdomain, subdomain)).get()) ??
-    (await createSiteQuery().where(eq(site.customDomain, hostname)).get());
-
-  return result ?? null;
-}
-
 // ============ Main Handler ============
 
 app.all("/*", async (c) => {
@@ -57,8 +23,8 @@ app.all("/*", async (c) => {
   const path = c.req.path;
   const originalUrl = c.req.url;
 
-  // Resolve site from hostname
-  const siteData = await fetchSiteFromDb(hostname);
+  // Resolve site from hostname (with caching)
+  const siteData = await resolveSite(hostname);
 
   if (!siteData?.site) {
     return c.json({ error: "Site not found" }, 404);

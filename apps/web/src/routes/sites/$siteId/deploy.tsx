@@ -1,3 +1,4 @@
+import { formatSize } from "@pagehaven/api/lib/format";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { File, Loader2, Upload } from "lucide-react";
@@ -141,16 +142,6 @@ function DeployPage() {
 
   const removeFile = (path: string) => {
     setFiles((prev) => prev.filter((f) => f.path !== path));
-  };
-
-  const formatSize = (bytes: number) => {
-    if (bytes < 1024) {
-      return `${bytes} B`;
-    }
-    if (bytes < 1024 * 1024) {
-      return `${(bytes / 1024).toFixed(1)} KB`;
-    }
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   return (

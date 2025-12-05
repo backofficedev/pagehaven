@@ -16,6 +16,9 @@
     "./lib/serve-static": {
       "default": "./src/lib/serve-static.ts"
     },
+    "./lib/format": {
+      "default": "./src/lib/format.ts"
+    },
     "./*": {
       "default": "./src/*.ts"
     }
