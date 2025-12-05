@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Eye, Globe, Lock, Mail, Plus, Trash2, Users, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import SiteGitHubSettings from "@/components/site-github-settings";
 import { SitePageHeader } from "@/components/site-page-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -285,6 +286,8 @@ function SettingsPage() {
             </form>
           </CardContent>
         </Card>
+
+        <SiteGitHubSettings siteId={siteId} />
 
         {/* Invite Management - only show for private sites */}
         {accessType === "private" ? (

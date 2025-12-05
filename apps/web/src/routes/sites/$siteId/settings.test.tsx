@@ -99,6 +99,9 @@ vi.mock("@/components/ui/card", () => cardMock);
 vi.mock("@/components/ui/input", () => inputMock);
 vi.mock("@/components/ui/label", () => labelMock);
 vi.mock("@/lib/auth-client", () => authClientMock);
+vi.mock("@/components/site-github-settings", () => ({
+  default: () => <div data-testid="site-github-settings">GitHub Settings</div>,
+}));
 
 vi.mock("@/utils/orpc", () =>
   createOrpcMock({
