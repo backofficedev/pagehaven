@@ -9,10 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SitesIndexRouteImport } from './routes/sites/index'
+import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as GatePasswordRouteImport } from './routes/gate/password'
 import { Route as GateLoginRouteImport } from './routes/gate/login'
 import { Route as GateDeniedRouteImport } from './routes/gate/denied'
@@ -21,9 +24,19 @@ import { Route as SitesSiteIdSettingsRouteImport } from './routes/sites/$siteId/
 import { Route as SitesSiteIdDeployRouteImport } from './routes/sites/$siteId/deploy'
 import { Route as SitesSiteIdAnalyticsRouteImport } from './routes/sites/$siteId/analytics'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -39,6 +52,11 @@ const IndexRoute = IndexRouteImport.update({
 const SitesIndexRoute = SitesIndexRouteImport.update({
   id: '/sites/',
   path: '/sites/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GatePasswordRoute = GatePasswordRouteImport.update({
@@ -80,10 +98,13 @@ const SitesSiteIdAnalyticsRoute = SitesSiteIdAnalyticsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/gate/denied': typeof GateDeniedRoute
   '/gate/login': typeof GateLoginRoute
   '/gate/password': typeof GatePasswordRoute
+  '/settings': typeof SettingsIndexRoute
   '/sites': typeof SitesIndexRoute
   '/sites/$siteId/analytics': typeof SitesSiteIdAnalyticsRoute
   '/sites/$siteId/deploy': typeof SitesSiteIdDeployRoute
@@ -93,10 +114,13 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/gate/denied': typeof GateDeniedRoute
   '/gate/login': typeof GateLoginRoute
   '/gate/password': typeof GatePasswordRoute
+  '/settings': typeof SettingsIndexRoute
   '/sites': typeof SitesIndexRoute
   '/sites/$siteId/analytics': typeof SitesSiteIdAnalyticsRoute
   '/sites/$siteId/deploy': typeof SitesSiteIdDeployRoute
@@ -107,10 +131,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/gate/denied': typeof GateDeniedRoute
   '/gate/login': typeof GateLoginRoute
   '/gate/password': typeof GatePasswordRoute
+  '/settings/': typeof SettingsIndexRoute
   '/sites/': typeof SitesIndexRoute
   '/sites/$siteId/analytics': typeof SitesSiteIdAnalyticsRoute
   '/sites/$siteId/deploy': typeof SitesSiteIdDeployRoute
@@ -122,10 +149,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/gate/denied'
     | '/gate/login'
     | '/gate/password'
+    | '/settings'
     | '/sites'
     | '/sites/$siteId/analytics'
     | '/sites/$siteId/deploy'
@@ -135,10 +165,13 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/gate/denied'
     | '/gate/login'
     | '/gate/password'
+    | '/settings'
     | '/sites'
     | '/sites/$siteId/analytics'
     | '/sites/$siteId/deploy'
@@ -148,10 +181,13 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/gate/denied'
     | '/gate/login'
     | '/gate/password'
+    | '/settings/'
     | '/sites/'
     | '/sites/$siteId/analytics'
     | '/sites/$siteId/deploy'
@@ -162,10 +198,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   GateDeniedRoute: typeof GateDeniedRoute
   GateLoginRoute: typeof GateLoginRoute
   GatePasswordRoute: typeof GatePasswordRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
   SitesIndexRoute: typeof SitesIndexRoute
   SitesSiteIdAnalyticsRoute: typeof SitesSiteIdAnalyticsRoute
   SitesSiteIdDeployRoute: typeof SitesSiteIdDeployRoute
@@ -175,11 +214,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -201,6 +254,13 @@ declare module '@tanstack/react-router' {
       path: '/sites'
       fullPath: '/sites'
       preLoaderRoute: typeof SitesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/': {
+      id: '/settings/'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gate/password': {
@@ -258,10 +318,13 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   GateDeniedRoute: GateDeniedRoute,
   GateLoginRoute: GateLoginRoute,
   GatePasswordRoute: GatePasswordRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
   SitesIndexRoute: SitesIndexRoute,
   SitesSiteIdAnalyticsRoute: SitesSiteIdAnalyticsRoute,
   SitesSiteIdDeployRoute: SitesSiteIdDeployRoute,
