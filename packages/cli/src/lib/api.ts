@@ -71,8 +71,18 @@ export const api = {
         method: "POST",
         body: { siteId },
       }),
+    create: (name: string) =>
+      request<Site>("/rpc/site.create", {
+        method: "POST",
+        body: { name },
+      }),
   },
   deployments: {
+    list: (siteId: string) =>
+      request<Deployment[]>("/rpc/deployment.list", {
+        method: "POST",
+        body: { siteId },
+      }),
     create: (siteId: string, commitMessage?: string) =>
       request<Deployment>("/rpc/deployment.create", {
         method: "POST",
@@ -100,3 +110,62 @@ export const api = {
       }),
   },
 };
+
+/**
+ * Create an API client with custom URL and token
+ */
+export function createApi(apiUrl: string, token?: string) {
+  async function customRequest<T>(
+    path: string,
+    options: RequestOptions = {}
+  ): Promise<T> {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${apiUrl}${path}`, {
+      method: options.method ?? "GET",
+      headers,
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
+
+    if (!response.ok) {
+      const errorData = (await response
+        .json()
+        .catch(() => ({ message: "Unknown error" }))) as { message?: string };
+      throw new ApiError(
+        errorData.message ?? "Request failed",
+        response.status
+      );
+    }
+
+    return response.json();
+  }
+
+  return {
+    sites: {
+      list: () => customRequest<Site[]>("/rpc/site.list"),
+      get: (siteId: string) =>
+        customRequest<Site>("/rpc/site.get", {
+          method: "POST",
+          body: { siteId },
+        }),
+      create: (name: string) =>
+        customRequest<Site>("/rpc/site.create", {
+          method: "POST",
+          body: { name },
+        }),
+    },
+    deployments: {
+      list: (siteId: string) =>
+        customRequest<Deployment[]>("/rpc/deployment.list", {
+          method: "POST",
+          body: { siteId },
+        }),
+    },
+  };
+}
