@@ -1,12 +1,11 @@
 import { useForm } from "@tanstack/react-form";
-import { Link } from "@tanstack/react-router";
-import { toast } from "sonner";
 import { z } from "zod";
+import { BackToSignInLink } from "@/components/auth/back-to-sign-in-link";
 import { AuthPageLayout } from "@/components/auth-page-layout";
 import { ConnectedFormField } from "@/components/connected-form-field";
 import { FormWrapper } from "@/components/form-wrapper";
 import { SubmitButton } from "@/components/submit-button";
-import { Button } from "@/components/ui/button";
+import { createAuthCallbacks } from "@/lib/auth-callbacks";
 import { authClient } from "@/lib/auth-client";
 
 type ResetPasswordPageProps = {
@@ -42,16 +41,13 @@ export default function ResetPasswordPage({
           newPassword: value.newPassword,
           token,
         },
-        {
+        createAuthCallbacks({
+          successMessage: "Password reset successfully",
           onSuccess: () => {
-            toast.success("Password reset successfully");
-            // Redirect to login after successful reset
             globalThis.location.href = "/login";
           },
-          onError: (error) => {
-            toast.error(error.error.message || "Failed to reset password");
-          },
-        }
+          errorFallback: "Failed to reset password",
+        })
       );
     },
   });
@@ -59,16 +55,7 @@ export default function ResetPasswordPage({
   return (
     <AuthPageLayout
       description="Enter your new password below."
-      footer={
-        <Link to="/login">
-          <Button
-            className="text-indigo-600 hover:text-indigo-800"
-            variant="link"
-          >
-            Back to Sign In
-          </Button>
-        </Link>
-      }
+      footer={<BackToSignInLink />}
       title="Set New Password"
     >
       <FormWrapper onSubmit={form.handleSubmit}>

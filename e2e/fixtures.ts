@@ -10,6 +10,8 @@ const ALREADY_HAVE_ACCOUNT_REGEX = /already have an account/i;
 const NEW_SITE_REGEX = /new site/i;
 const CREATE_SITE_REGEX = /create site/i;
 const DASHBOARD_REGEX = /dashboard/;
+const DEPLOY_BUTTON_REGEX = /deploy|upload/i;
+const DEPLOY_PAGE_REGEX = /deploy/;
 
 /**
  * Generate a unique test user for each test run
@@ -131,6 +133,44 @@ export async function createSite(
     expect(page.locator("form")).not.toBeVisible({ timeout: 15_000 }),
     expect(page.getByText(site.name)).toBeVisible({ timeout: 15_000 }),
   ]);
+}
+
+/**
+ * Helper to navigate to deploy page for a site
+ */
+export async function navigateToDeployPage(
+  page: Page,
+  siteName: string,
+  expect: typeof import("@playwright/test").expect
+) {
+  await page.getByText(siteName).click();
+  await page.getByRole("button", { name: DEPLOY_BUTTON_REGEX }).first().click();
+  await expect(page).toHaveURL(DEPLOY_PAGE_REGEX);
+}
+
+/**
+ * Helper to create a site and navigate to its deploy page
+ */
+export async function createSiteAndNavigateToDeploy(
+  page: Page,
+  site: { name: string; subdomain: string },
+  expect: typeof import("@playwright/test").expect
+) {
+  await createSite(page, site, expect);
+  await navigateToDeployPage(page, site.name, expect);
+}
+
+/**
+ * Helper to upload files to the deploy page
+ */
+export async function uploadFiles(
+  page: Page,
+  files: Array<{ name: string; mimeType: string; buffer: Buffer }>,
+  expect: typeof import("@playwright/test").expect
+) {
+  const fileInput = page.locator('input[type="file"]');
+  await expect(fileInput).toBeAttached();
+  await fileInput.setInputFiles(files);
 }
 
 /**

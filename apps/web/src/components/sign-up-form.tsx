@@ -1,7 +1,7 @@
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
-import { toast } from "sonner";
 import z from "zod";
+import { createAuthCallbacks } from "@/lib/auth-callbacks";
 import { authClient } from "@/lib/auth-client";
 import { ConnectedFormField } from "./connected-form-field";
 import { FormWrapper } from "./form-wrapper";
@@ -22,15 +22,10 @@ export default function SignUpForm({
     onSubmit: async ({ value }) => {
       await authClient.signUp.email(
         { email: value.email, password: value.password, name: value.name },
-        {
-          onSuccess: () => {
-            navigate({ to: "/dashboard" });
-            toast.success("Sign up successful");
-          },
-          onError: (error) => {
-            toast.error(error.error.message || error.error.statusText);
-          },
-        }
+        createAuthCallbacks({
+          successMessage: "Sign up successful",
+          onSuccess: () => navigate({ to: "/dashboard" }),
+        })
       );
     },
     validators: {

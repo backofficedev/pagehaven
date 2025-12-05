@@ -1,14 +1,14 @@
 import { expect, test } from "@playwright/test";
 import {
   createSite,
+  createSiteAndNavigateToDeploy,
   generateSubdomain,
   generateTestUser,
+  navigateToDeployPage,
   signUp,
 } from "./fixtures";
 
 // Regex patterns at module level for performance
-const DEPLOY_PAGE_REGEX = /deploy/;
-const DEPLOY_BUTTON_REGEX = /deploy|upload/i;
 const BACK_TO_SITE_REGEX = /back to site|back/i;
 const DEPLOYMENT_SUCCESS_REGEX = /success|deployed|live/i;
 const REMOVE_BUTTON_REGEX = /remove|delete|x/i;
@@ -27,30 +27,19 @@ test.describe("Deployment", () => {
       const subdomain = generateSubdomain();
 
       await createSite(page, { name: siteName, subdomain }, expect);
-      await page.getByText(siteName).click();
-
-      // Click deploy button
-      await page
-        .getByRole("button", { name: DEPLOY_BUTTON_REGEX })
-        .first()
-        .click();
-
-      // Should be on deploy page
-      await expect(page).toHaveURL(DEPLOY_PAGE_REGEX);
+      await navigateToDeployPage(page, siteName, expect);
     });
 
     test("shows file upload interface", async ({ page }) => {
       const siteName = "Upload UI Test Site";
       const subdomain = generateSubdomain();
 
-      await createSite(page, { name: siteName, subdomain }, expect);
-      await page.getByText(siteName).click();
-      await page
-        .getByRole("button", { name: DEPLOY_BUTTON_REGEX })
-        .first()
-        .click();
+      await createSiteAndNavigateToDeploy(
+        page,
+        { name: siteName, subdomain },
+        expect
+      );
 
-      // Should show file input or upload area
       const fileInput = page.locator('input[type="file"]');
       await expect(fileInput).toBeAttached();
     });
@@ -59,12 +48,11 @@ test.describe("Deployment", () => {
       const siteName = "Back Nav Deploy Test";
       const subdomain = generateSubdomain();
 
-      await createSite(page, { name: siteName, subdomain }, expect);
-      await page.getByText(siteName).click();
-      await page
-        .getByRole("button", { name: DEPLOY_BUTTON_REGEX })
-        .first()
-        .click();
+      await createSiteAndNavigateToDeploy(
+        page,
+        { name: siteName, subdomain },
+        expect
+      );
 
       // Click back link
       await page.getByRole("link", { name: BACK_TO_SITE_REGEX }).click();
@@ -79,14 +67,12 @@ test.describe("Deployment", () => {
       const siteName = "File Select Test Site";
       const subdomain = generateSubdomain();
 
-      await createSite(page, { name: siteName, subdomain }, expect);
-      await page.getByText(siteName).click();
-      await page
-        .getByRole("button", { name: DEPLOY_BUTTON_REGEX })
-        .first()
-        .click();
+      await createSiteAndNavigateToDeploy(
+        page,
+        { name: siteName, subdomain },
+        expect
+      );
 
-      // Create a test file and upload it
       const fileInput = page.locator('input[type="file"]');
 
       // Set files using Playwright's setInputFiles
@@ -104,12 +90,11 @@ test.describe("Deployment", () => {
       const siteName = "Multi File Test Site";
       const subdomain = generateSubdomain();
 
-      await createSite(page, { name: siteName, subdomain }, expect);
-      await page.getByText(siteName).click();
-      await page
-        .getByRole("button", { name: DEPLOY_BUTTON_REGEX })
-        .first()
-        .click();
+      await createSiteAndNavigateToDeploy(
+        page,
+        { name: siteName, subdomain },
+        expect
+      );
 
       const fileInput = page.locator('input[type="file"]');
 
@@ -142,12 +127,11 @@ test.describe("Deployment", () => {
       const siteName = "Remove File Test Site";
       const subdomain = generateSubdomain();
 
-      await createSite(page, { name: siteName, subdomain }, expect);
-      await page.getByText(siteName).click();
-      await page
-        .getByRole("button", { name: DEPLOY_BUTTON_REGEX })
-        .first()
-        .click();
+      await createSiteAndNavigateToDeploy(
+        page,
+        { name: siteName, subdomain },
+        expect
+      );
 
       const fileInput = page.locator('input[type="file"]');
 
@@ -175,12 +159,11 @@ test.describe("Deployment", () => {
       const siteName = "Deploy Process Test Site";
       const subdomain = generateSubdomain();
 
-      await createSite(page, { name: siteName, subdomain }, expect);
-      await page.getByText(siteName).click();
-      await page
-        .getByRole("button", { name: DEPLOY_BUTTON_REGEX })
-        .first()
-        .click();
+      await createSiteAndNavigateToDeploy(
+        page,
+        { name: siteName, subdomain },
+        expect
+      );
 
       const fileInput = page.locator('input[type="file"]');
 
@@ -213,12 +196,11 @@ test.describe("Deployment", () => {
       const siteName = "Progress Test Site";
       const subdomain = generateSubdomain();
 
-      await createSite(page, { name: siteName, subdomain }, expect);
-      await page.getByText(siteName).click();
-      await page
-        .getByRole("button", { name: DEPLOY_BUTTON_REGEX })
-        .first()
-        .click();
+      await createSiteAndNavigateToDeploy(
+        page,
+        { name: siteName, subdomain },
+        expect
+      );
 
       const fileInput = page.locator('input[type="file"]');
 

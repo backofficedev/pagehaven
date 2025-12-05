@@ -3,6 +3,20 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
 
+/** Renders a standard two-tab component for testing */
+function renderTwoTabComponent() {
+  return render(
+    <Tabs defaultValue="tab1">
+      <TabsList>
+        <TabsTrigger value="tab1">Tab 1</TabsTrigger>
+        <TabsTrigger value="tab2">Tab 2</TabsTrigger>
+      </TabsList>
+      <TabsContent value="tab1">Content 1</TabsContent>
+      <TabsContent value="tab2">Content 2</TabsContent>
+    </Tabs>
+  );
+}
+
 describe("Tabs", () => {
   describe("smoke tests", () => {
     it("renders without crashing", () => {
@@ -18,31 +32,13 @@ describe("Tabs", () => {
     });
 
     it("renders tab triggers", () => {
-      render(
-        <Tabs defaultValue="tab1">
-          <TabsList>
-            <TabsTrigger value="tab1">Tab 1</TabsTrigger>
-            <TabsTrigger value="tab2">Tab 2</TabsTrigger>
-          </TabsList>
-          <TabsContent value="tab1">Content 1</TabsContent>
-          <TabsContent value="tab2">Content 2</TabsContent>
-        </Tabs>
-      );
+      renderTwoTabComponent();
       expect(screen.getByRole("tab", { name: "Tab 1" })).toBeInTheDocument();
       expect(screen.getByRole("tab", { name: "Tab 2" })).toBeInTheDocument();
     });
 
     it("renders default tab content", () => {
-      render(
-        <Tabs defaultValue="tab1">
-          <TabsList>
-            <TabsTrigger value="tab1">Tab 1</TabsTrigger>
-            <TabsTrigger value="tab2">Tab 2</TabsTrigger>
-          </TabsList>
-          <TabsContent value="tab1">Content 1</TabsContent>
-          <TabsContent value="tab2">Content 2</TabsContent>
-        </Tabs>
-      );
+      renderTwoTabComponent();
       expect(screen.getByText("Content 1")).toBeInTheDocument();
     });
   });
@@ -50,16 +46,7 @@ describe("Tabs", () => {
   describe("tab switching", () => {
     it("switches content when clicking tabs", async () => {
       const user = userEvent.setup();
-      render(
-        <Tabs defaultValue="tab1">
-          <TabsList>
-            <TabsTrigger value="tab1">Tab 1</TabsTrigger>
-            <TabsTrigger value="tab2">Tab 2</TabsTrigger>
-          </TabsList>
-          <TabsContent value="tab1">Content 1</TabsContent>
-          <TabsContent value="tab2">Content 2</TabsContent>
-        </Tabs>
-      );
+      renderTwoTabComponent();
 
       await user.click(screen.getByRole("tab", { name: "Tab 2" }));
       expect(screen.getByText("Content 2")).toBeInTheDocument();
@@ -67,16 +54,7 @@ describe("Tabs", () => {
 
     it("marks active tab correctly", async () => {
       const user = userEvent.setup();
-      render(
-        <Tabs defaultValue="tab1">
-          <TabsList>
-            <TabsTrigger value="tab1">Tab 1</TabsTrigger>
-            <TabsTrigger value="tab2">Tab 2</TabsTrigger>
-          </TabsList>
-          <TabsContent value="tab1">Content 1</TabsContent>
-          <TabsContent value="tab2">Content 2</TabsContent>
-        </Tabs>
-      );
+      renderTwoTabComponent();
 
       const tab1 = screen.getByRole("tab", { name: "Tab 1" });
       const tab2 = screen.getByRole("tab", { name: "Tab 2" });
@@ -152,16 +130,7 @@ describe("Tabs", () => {
 
     it("supports keyboard navigation", async () => {
       const user = userEvent.setup();
-      render(
-        <Tabs defaultValue="tab1">
-          <TabsList>
-            <TabsTrigger value="tab1">Tab 1</TabsTrigger>
-            <TabsTrigger value="tab2">Tab 2</TabsTrigger>
-          </TabsList>
-          <TabsContent value="tab1">Content 1</TabsContent>
-          <TabsContent value="tab2">Content 2</TabsContent>
-        </Tabs>
-      );
+      renderTwoTabComponent();
 
       const tab1 = screen.getByRole("tab", { name: "Tab 1" });
       tab1.focus();

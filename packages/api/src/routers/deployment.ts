@@ -4,8 +4,8 @@ import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
 import {
-  getDeploymentWithPermission,
-  requireSitePermission,
+  getDeploymentFromContext,
+  requireSitePermissionFromContext,
 } from "../lib/check-site-permission";
 
 function generateId(): string {
@@ -23,12 +23,10 @@ export const deploymentRouter = {
       })
     )
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-
       // Check access (viewer+ can list deployments)
-      await requireSitePermission(
+      await requireSitePermissionFromContext(
+        context,
         input.siteId,
-        userId,
         "viewer",
         "Access denied"
       );
@@ -48,10 +46,9 @@ export const deploymentRouter = {
   get: protectedProcedure
     .input(z.object({ deploymentId: z.string() }))
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-      const { deployment: dep } = await getDeploymentWithPermission(
+      const { deployment: dep } = await getDeploymentFromContext(
+        context,
         input.deploymentId,
-        userId,
         "viewer"
       );
       return dep;
@@ -68,10 +65,8 @@ export const deploymentRouter = {
       })
     )
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-
       // Check permission (editor+ can create deployments)
-      await requireSitePermission(input.siteId, userId, "editor");
+      await requireSitePermissionFromContext(context, input.siteId, "editor");
 
       const deploymentId = generateId();
       // Storage path follows pattern: sites/{siteId}/deployments/{deploymentId}/
@@ -84,7 +79,7 @@ export const deploymentRouter = {
         status: "pending",
         commitHash: input.commitHash,
         commitMessage: input.commitMessage,
-        deployedBy: userId,
+        deployedBy: context.session.user.id,
       });
 
       return { id: deploymentId, storagePath };
@@ -94,10 +89,9 @@ export const deploymentRouter = {
   markProcessing: protectedProcedure
     .input(z.object({ deploymentId: z.string() }))
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-      const { deployment: dep } = await getDeploymentWithPermission(
+      const { deployment: dep } = await getDeploymentFromContext(
+        context,
         input.deploymentId,
-        userId,
         "editor"
       );
 
@@ -123,10 +117,9 @@ export const deploymentRouter = {
       })
     )
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-      const { deployment: dep } = await getDeploymentWithPermission(
+      const { deployment: dep } = await getDeploymentFromContext(
+        context,
         input.deploymentId,
-        userId,
         "editor"
       );
 
@@ -158,8 +151,7 @@ export const deploymentRouter = {
   markFailed: protectedProcedure
     .input(z.object({ deploymentId: z.string() }))
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-      await getDeploymentWithPermission(input.deploymentId, userId, "editor");
+      await getDeploymentFromContext(context, input.deploymentId, "editor");
 
       await db
         .update(deployment)
@@ -173,10 +165,9 @@ export const deploymentRouter = {
   rollback: protectedProcedure
     .input(z.object({ deploymentId: z.string() }))
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-      const { deployment: dep } = await getDeploymentWithPermission(
+      const { deployment: dep } = await getDeploymentFromContext(
+        context,
         input.deploymentId,
-        userId,
         "admin",
         "Permission denied - admin required for rollback"
       );

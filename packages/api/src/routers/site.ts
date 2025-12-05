@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
 import { invalidateSiteCache } from "../lib/cache";
-import { requireSitePermission } from "../lib/check-site-permission";
+import { requireSitePermissionFromContext } from "../lib/check-site-permission";
 import { hasPermission } from "../lib/permissions";
 
 function generateId(): string {
@@ -134,10 +134,8 @@ export const siteRouter = {
       })
     )
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-
       // Check permission (admin+ can update site)
-      await requireSitePermission(input.siteId, userId, "admin");
+      await requireSitePermissionFromContext(context, input.siteId, "admin");
 
       const updates: Partial<typeof site.$inferInsert> = {};
       if (input.name !== undefined) {
@@ -190,12 +188,10 @@ export const siteRouter = {
   delete: protectedProcedure
     .input(z.object({ siteId: z.string() }))
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-
       // Check permission (owner only can delete site)
-      await requireSitePermission(
+      await requireSitePermissionFromContext(
+        context,
         input.siteId,
-        userId,
         "owner",
         "Only owners can delete sites"
       );
@@ -248,9 +244,9 @@ export const siteRouter = {
       const currentUserId = context.session.user.id;
 
       // Check permission (admin+ can add members)
-      const currentRole = await requireSitePermission(
+      const currentRole = await requireSitePermissionFromContext(
+        context,
         input.siteId,
-        currentUserId,
         "admin"
       );
 
@@ -372,12 +368,10 @@ export const siteRouter = {
   listMembers: protectedProcedure
     .input(z.object({ siteId: z.string() }))
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-
       // Check if user has access to this site (viewer+ can list members)
-      await requireSitePermission(
+      await requireSitePermissionFromContext(
+        context,
         input.siteId,
-        userId,
         "viewer",
         "Access denied"
       );

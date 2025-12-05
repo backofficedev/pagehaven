@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { protectedProcedure } from "../index";
-import { getDeploymentWithPermission } from "../lib/check-site-permission";
+import { getDeploymentFromContext } from "../lib/check-site-permission";
 import {
   deleteFiles,
   getContentType,
@@ -19,6 +19,13 @@ function decodeBase64(content: string): ArrayBuffer {
   return bytes.buffer as ArrayBuffer;
 }
 
+/** Validate deployment is in uploadable state */
+function assertUploadableDeployment(status: string): void {
+  if (status !== "pending" && status !== "processing") {
+    throw new Error("Cannot upload to a finalized deployment");
+  }
+}
+
 export const uploadRouter = {
   // Upload a single file to a deployment
   // Note: For large files, consider using presigned URLs instead
@@ -32,16 +39,13 @@ export const uploadRouter = {
       })
     )
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-      const { deployment: dep } = await getDeploymentWithPermission(
+      const { deployment: dep } = await getDeploymentFromContext(
+        context,
         input.deploymentId,
-        userId,
         "editor"
       );
 
-      if (dep.status !== "pending" && dep.status !== "processing") {
-        throw new Error("Cannot upload to a finalized deployment");
-      }
+      assertUploadableDeployment(dep.status);
 
       const buffer = decodeBase64(input.content);
 
@@ -77,16 +81,13 @@ export const uploadRouter = {
       })
     )
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-      const { deployment: dep } = await getDeploymentWithPermission(
+      const { deployment: dep } = await getDeploymentFromContext(
+        context,
         input.deploymentId,
-        userId,
         "editor"
       );
 
-      if (dep.status !== "pending" && dep.status !== "processing") {
-        throw new Error("Cannot upload to a finalized deployment");
-      }
+      assertUploadableDeployment(dep.status);
 
       const uploaded: Array<{ filePath: string; key: string; size: number }> =
         [];
@@ -117,10 +118,9 @@ export const uploadRouter = {
   listDeploymentFiles: protectedProcedure
     .input(z.object({ deploymentId: z.string() }))
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-      const { deployment: dep } = await getDeploymentWithPermission(
+      const { deployment: dep } = await getDeploymentFromContext(
+        context,
         input.deploymentId,
-        userId,
         "viewer"
       );
 
@@ -139,10 +139,9 @@ export const uploadRouter = {
   deleteDeploymentFiles: protectedProcedure
     .input(z.object({ deploymentId: z.string() }))
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-      const { deployment: dep } = await getDeploymentWithPermission(
+      const { deployment: dep } = await getDeploymentFromContext(
+        context,
         input.deploymentId,
-        userId,
         "admin",
         "Permission denied - admin required"
       );

@@ -5,7 +5,12 @@ import {
   siteMember,
 } from "@pagehaven/db/schema/site";
 import { and, eq } from "drizzle-orm";
+import type { Context } from "../context";
 import { hasPermission } from "./permissions";
+
+type AuthenticatedContext = {
+  session: NonNullable<Context["session"]>;
+};
 
 /**
  * Get user's membership for a site
@@ -112,4 +117,40 @@ export async function requireSitePermission(
     throw new Error(errorMessage);
   }
   return role;
+}
+
+/**
+ * Context-aware wrapper for getDeploymentWithPermission
+ * Extracts userId from context automatically
+ */
+export function getDeploymentFromContext(
+  context: AuthenticatedContext,
+  deploymentId: string,
+  requiredRole: SiteRole,
+  errorMessage?: string
+): Promise<DeploymentWithRole> {
+  return getDeploymentWithPermission(
+    deploymentId,
+    context.session.user.id,
+    requiredRole,
+    errorMessage
+  );
+}
+
+/**
+ * Context-aware wrapper for requireSitePermission
+ * Extracts userId from context automatically
+ */
+export function requireSitePermissionFromContext(
+  context: AuthenticatedContext,
+  siteId: string,
+  requiredRole: SiteRole,
+  errorMessage?: string
+): Promise<SiteRole> {
+  return requireSitePermission(
+    siteId,
+    context.session.user.id,
+    requiredRole,
+    errorMessage
+  );
 }

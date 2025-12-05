@@ -4,7 +4,7 @@ import { site } from "@pagehaven/db/schema/site";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
-import { requireSitePermission } from "../lib/check-site-permission";
+import { requireSitePermissionFromContext } from "../lib/check-site-permission";
 
 function generateId(): string {
   return crypto.randomUUID();
@@ -28,10 +28,8 @@ export const domainRouter = {
       })
     )
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-
       // Check permission (admin+ can add domains)
-      await requireSitePermission(input.siteId, userId, "admin");
+      await requireSitePermissionFromContext(context, input.siteId, "admin");
 
       // Check if domain is already in use
       const existing = await db
@@ -71,8 +69,6 @@ export const domainRouter = {
   verify: protectedProcedure
     .input(z.object({ domainId: z.string() }))
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-
       const domainRecord = await db
         .select()
         .from(domainVerification)
@@ -84,7 +80,11 @@ export const domainRouter = {
       }
 
       // Check permission (admin+ can verify domains)
-      await requireSitePermission(domainRecord.siteId, userId, "admin");
+      await requireSitePermissionFromContext(
+        context,
+        domainRecord.siteId,
+        "admin"
+      );
 
       // In production, this would do actual DNS lookup
       // For now, we'll simulate verification
@@ -126,12 +126,10 @@ export const domainRouter = {
   list: protectedProcedure
     .input(z.object({ siteId: z.string() }))
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-
       // Check membership (viewer+ can list domains)
-      await requireSitePermission(
+      await requireSitePermissionFromContext(
+        context,
         input.siteId,
-        userId,
         "viewer",
         "Access denied"
       );
@@ -148,8 +146,6 @@ export const domainRouter = {
   remove: protectedProcedure
     .input(z.object({ domainId: z.string() }))
     .handler(async ({ input, context }) => {
-      const userId = context.session.user.id;
-
       const domainRecord = await db
         .select({
           siteId: domainVerification.siteId,
@@ -164,7 +160,11 @@ export const domainRouter = {
       }
 
       // Check permission (admin+ can remove domains)
-      await requireSitePermission(domainRecord.siteId, userId, "admin");
+      await requireSitePermissionFromContext(
+        context,
+        domainRecord.siteId,
+        "admin"
+      );
 
       // Clear custom domain from site if it matches
       await db

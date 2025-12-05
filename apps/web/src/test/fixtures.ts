@@ -55,3 +55,21 @@ export type MockSession = {
     userAgent: string | null;
   };
 };
+
+/**
+ * Common test credentials
+ */
+export const TEST_CREDENTIALS = {
+  email: "test@example.com",
+  password: "password123",
+  name: "Test User",
+} as const;
+
+/**
+ * Common error messages
+ */
+export const TEST_ERRORS = {
+  invalidCredentials: "Invalid credentials",
+  emailExists: "Email already exists",
+  unauthorized: "Unauthorized",
+} as const;

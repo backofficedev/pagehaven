@@ -1,13 +1,12 @@
 import { expect, test } from "@playwright/test";
 import {
-  createSite,
+  createSiteAndNavigateToDeploy,
   generateSubdomain,
   generateTestUser,
   signUp,
 } from "./fixtures";
 
 // Regex patterns at module level for performance
-const DEPLOY_BUTTON_REGEX = /deploy|upload/i;
 const DEPLOY_EXACT_REGEX = /^deploy$/i;
 const CLEAR_FILES_REGEX = /clear files/i;
 const REMOVE_REGEX = /remove/i;
@@ -33,14 +32,11 @@ test.describe("Advanced Deployment", () => {
 
     siteName = "Advanced Deploy Test Site";
     subdomain = generateSubdomain();
-    await createSite(page, { name: siteName, subdomain }, expect);
-
-    // Navigate to deploy page
-    await page.getByText(siteName).click();
-    await page
-      .getByRole("button", { name: DEPLOY_BUTTON_REGEX })
-      .first()
-      .click();
+    await createSiteAndNavigateToDeploy(
+      page,
+      { name: siteName, subdomain },
+      expect
+    );
   });
 
   test.describe("File Upload Interface", () => {
