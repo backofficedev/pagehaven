@@ -14,8 +14,7 @@
     "**/migrations/**",
     "**/routeTree.gen.ts",
     "**/alchemy.run.ts",
-    "**/packages/api/src/lib/serve-static.ts",
-    "**/packages/api/src/test-utils/**"
+    "**/packages/api/src/lib/serve-static.ts"
   ],
   "format": ["typescript", "tsx", "javascript", "jsx"],
   "absolute": true,
