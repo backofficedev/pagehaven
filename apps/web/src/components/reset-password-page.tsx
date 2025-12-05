@@ -11,7 +11,9 @@ type ResetPasswordPageProps = {
   token: string;
 };
 
-export default function ResetPasswordPage({ token }: ResetPasswordPageProps) {
+export default function ResetPasswordPage({
+  token,
+}: Readonly<ResetPasswordPageProps>) {
   const form = useForm({
     defaultValues: {
       newPassword: "",

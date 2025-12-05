@@ -29,7 +29,7 @@ type AllProvidersProps = {
 /**
  * Wrapper component that provides all necessary context providers for testing
  */
-function AllProviders({ children, queryClient }: AllProvidersProps) {
+function AllProviders({ children, queryClient }: Readonly<AllProvidersProps>) {
   const client = queryClient ?? createTestQueryClient();
 
   return (

@@ -40,7 +40,7 @@ type ProfileFormProps = {
   session: SessionData;
 };
 
-export default function ProfileForm({ session }: ProfileFormProps) {
+export default function ProfileForm({ session }: Readonly<ProfileFormProps>) {
   const [isChangingEmail, setIsChangingEmail] = useState(false);
 
   const profileForm = useForm({

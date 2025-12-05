@@ -30,7 +30,7 @@ type SettingsPageProps = {
   session: SessionData;
 };
 
-export default function SettingsPage({ session }: SettingsPageProps) {
+export default function SettingsPage({ session }: Readonly<SettingsPageProps>) {
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
       <div className="mb-8">
