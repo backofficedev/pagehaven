@@ -2,6 +2,7 @@ import { useForm } from "@tanstack/react-form";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { z } from "zod";
+import { AuthPageLayout } from "@/components/auth-page-layout";
 import { FormField } from "@/components/form-field";
 import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
@@ -55,12 +56,20 @@ export default function ResetPasswordPage({
   });
 
   return (
-    <div className="mx-auto mt-10 w-full max-w-md p-6">
-      <h1 className="mb-6 text-center font-bold text-3xl">Set New Password</h1>
-      <p className="mb-6 text-center text-muted-foreground">
-        Enter your new password below.
-      </p>
-
+    <AuthPageLayout
+      description="Enter your new password below."
+      footer={
+        <Link to="/login">
+          <Button
+            className="text-indigo-600 hover:text-indigo-800"
+            variant="link"
+          >
+            Back to Sign In
+          </Button>
+        </Link>
+      }
+      title="Set New Password"
+    >
       <form
         className="space-y-4"
         onSubmit={(e) => {
@@ -109,17 +118,6 @@ export default function ResetPasswordPage({
           )}
         </form.Subscribe>
       </form>
-
-      <div className="mt-4 text-center">
-        <Link to="/login">
-          <Button
-            className="text-indigo-600 hover:text-indigo-800"
-            variant="link"
-          >
-            Back to Sign In
-          </Button>
-        </Link>
-      </div>
-    </div>
+    </AuthPageLayout>
   );
 }

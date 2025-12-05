@@ -3,6 +3,7 @@ import { deployment, site, siteMember } from "@pagehaven/db/schema/site";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
+import { requireSitePermission } from "../lib/check-site-permission";
 import { hasPermission } from "../lib/permissions";
 
 function generateId(): string {
@@ -22,21 +23,13 @@ export const deploymentRouter = {
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
 
-      // Check access
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, input.siteId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!membership) {
-        throw new Error("Access denied");
-      }
+      // Check access (viewer+ can list deployments)
+      await requireSitePermission(
+        input.siteId,
+        userId,
+        "viewer",
+        "Access denied"
+      );
 
       const deployments = await db
         .select()
@@ -90,21 +83,8 @@ export const deploymentRouter = {
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
 
-      // Check permission
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, input.siteId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(membership && hasPermission(membership.role, "editor"))) {
-        throw new Error("Permission denied");
-      }
+      // Check permission (editor+ can create deployments)
+      await requireSitePermission(input.siteId, userId, "editor");
 
       const deploymentId = generateId();
       // Storage path follows pattern: sites/{siteId}/deployments/{deploymentId}/

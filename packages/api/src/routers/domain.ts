@@ -1,10 +1,10 @@
 import { db } from "@pagehaven/db";
 import { domainVerification } from "@pagehaven/db/schema/analytics";
-import { site, siteMember } from "@pagehaven/db/schema/site";
+import { site } from "@pagehaven/db/schema/site";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
-import { hasPermission } from "../lib/permissions";
+import { requireSitePermission } from "../lib/check-site-permission";
 
 function generateId(): string {
   return crypto.randomUUID();
@@ -30,21 +30,8 @@ export const domainRouter = {
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
 
-      // Check permission (admin+)
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, input.siteId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(membership && hasPermission(membership.role, "admin"))) {
-        throw new Error("Permission denied");
-      }
+      // Check permission (admin+ can add domains)
+      await requireSitePermission(input.siteId, userId, "admin");
 
       // Check if domain is already in use
       const existing = await db
@@ -96,21 +83,8 @@ export const domainRouter = {
         throw new Error("Domain not found");
       }
 
-      // Check permission
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, domainRecord.siteId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(membership && hasPermission(membership.role, "admin"))) {
-        throw new Error("Permission denied");
-      }
+      // Check permission (admin+ can verify domains)
+      await requireSitePermission(domainRecord.siteId, userId, "admin");
 
       // In production, this would do actual DNS lookup
       // For now, we'll simulate verification
@@ -154,21 +128,13 @@ export const domainRouter = {
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
 
-      // Check membership
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, input.siteId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!membership) {
-        throw new Error("Access denied");
-      }
+      // Check membership (viewer+ can list domains)
+      await requireSitePermission(
+        input.siteId,
+        userId,
+        "viewer",
+        "Access denied"
+      );
 
       const domains = await db
         .select()
@@ -197,21 +163,8 @@ export const domainRouter = {
         throw new Error("Domain not found");
       }
 
-      // Check permission
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, domainRecord.siteId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(membership && hasPermission(membership.role, "admin"))) {
-        throw new Error("Permission denied");
-      }
+      // Check permission (admin+ can remove domains)
+      await requireSitePermission(domainRecord.siteId, userId, "admin");
 
       // Clear custom domain from site if it matches
       await db

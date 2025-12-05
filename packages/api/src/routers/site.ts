@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
 import { invalidateSiteCache } from "../lib/cache";
+import { requireSitePermission } from "../lib/check-site-permission";
 import { hasPermission } from "../lib/permissions";
 
 function generateId(): string {
@@ -135,21 +136,8 @@ export const siteRouter = {
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
 
-      // Check permission
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, input.siteId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(membership && hasPermission(membership.role, "admin"))) {
-        throw new Error("Permission denied");
-      }
+      // Check permission (admin+ can update site)
+      await requireSitePermission(input.siteId, userId, "admin");
 
       const updates: Partial<typeof site.$inferInsert> = {};
       if (input.name !== undefined) {
@@ -204,21 +192,13 @@ export const siteRouter = {
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
 
-      // Check permission
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, input.siteId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(membership && hasPermission(membership.role, "owner"))) {
-        throw new Error("Only owners can delete sites");
-      }
+      // Check permission (owner only can delete site)
+      await requireSitePermission(
+        input.siteId,
+        userId,
+        "owner",
+        "Only owners can delete sites"
+      );
 
       // Get site data for cache invalidation before deleting
       const siteData = await db
@@ -267,24 +247,15 @@ export const siteRouter = {
     .handler(async ({ input, context }) => {
       const currentUserId = context.session.user.id;
 
-      // Check permission
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, input.siteId),
-            eq(siteMember.userId, currentUserId)
-          )
-        )
-        .get();
-
-      if (!(membership && hasPermission(membership.role, "admin"))) {
-        throw new Error("Permission denied");
-      }
+      // Check permission (admin+ can add members)
+      const currentRole = await requireSitePermission(
+        input.siteId,
+        currentUserId,
+        "admin"
+      );
 
       // Cannot add someone with higher role than yourself
-      if (!hasPermission(membership.role, input.role)) {
+      if (!hasPermission(currentRole, input.role)) {
         throw new Error("Cannot assign a role higher than your own");
       }
 
@@ -403,21 +374,13 @@ export const siteRouter = {
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
 
-      // Check if user has access to this site
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, input.siteId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!membership) {
-        throw new Error("Access denied");
-      }
+      // Check if user has access to this site (viewer+ can list members)
+      await requireSitePermission(
+        input.siteId,
+        userId,
+        "viewer",
+        "Access denied"
+      );
 
       const members = await db
         .select()

@@ -1,9 +1,9 @@
 import { db } from "@pagehaven/db";
 import { siteAnalytics } from "@pagehaven/db/schema/analytics";
-import { siteMember } from "@pagehaven/db/schema/site";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure } from "../index";
+import { requireSitePermission } from "../lib/check-site-permission";
 
 function generateId(): string {
   return crypto.randomUUID();
@@ -74,21 +74,13 @@ export const analyticsRouter = {
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
 
-      // Check membership
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, input.siteId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!membership) {
-        throw new Error("Access denied");
-      }
+      // Check membership (viewer+ can view analytics)
+      await requireSitePermission(
+        input.siteId,
+        userId,
+        "viewer",
+        "Access denied"
+      );
 
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - input.days);

@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure } from "../index";
 import { CacheKey, cacheDelete } from "../lib/cache";
-import { hasPermission } from "../lib/permissions";
+import { requireSitePermission } from "../lib/check-site-permission";
 
 function generateId(): string {
   return crypto.randomUUID();
@@ -70,21 +70,13 @@ export const accessRouter = {
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
 
-      // Check access
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, input.siteId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!membership) {
-        throw new Error("Access denied");
-      }
+      // Check access (viewer+ can view access settings)
+      await requireSitePermission(
+        input.siteId,
+        userId,
+        "viewer",
+        "Access denied"
+      );
 
       const access = await db
         .select({
@@ -119,21 +111,8 @@ export const accessRouter = {
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
 
-      // Check permission
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, input.siteId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(membership && hasPermission(membership.role, "admin"))) {
-        throw new Error("Permission denied");
-      }
+      // Check permission (admin+ can update access settings)
+      await requireSitePermission(input.siteId, userId, "admin");
 
       // Validate password requirement
       if (input.accessType === "password" && !input.password) {
@@ -196,21 +175,8 @@ export const accessRouter = {
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
 
-      // Check access
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, input.siteId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(membership && hasPermission(membership.role, "admin"))) {
-        throw new Error("Permission denied");
-      }
+      // Check access (admin+ can list invites)
+      await requireSitePermission(input.siteId, userId, "admin");
 
       const invites = await db
         .select()
@@ -232,21 +198,8 @@ export const accessRouter = {
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
 
-      // Check permission
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, input.siteId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(membership && hasPermission(membership.role, "admin"))) {
-        throw new Error("Permission denied");
-      }
+      // Check permission (admin+ can create invites)
+      await requireSitePermission(input.siteId, userId, "admin");
 
       // Check if invite already exists
       const existing = await db
@@ -286,7 +239,7 @@ export const accessRouter = {
     .handler(async ({ input, context }) => {
       const userId = context.session.user.id;
 
-      // Get invite and check permission
+      // Get invite to find siteId
       const invite = await db
         .select({ siteId: siteInvite.siteId })
         .from(siteInvite)
@@ -297,20 +250,8 @@ export const accessRouter = {
         throw new Error("Invite not found");
       }
 
-      const membership = await db
-        .select({ role: siteMember.role })
-        .from(siteMember)
-        .where(
-          and(
-            eq(siteMember.siteId, invite.siteId),
-            eq(siteMember.userId, userId)
-          )
-        )
-        .get();
-
-      if (!(membership && hasPermission(membership.role, "admin"))) {
-        throw new Error("Permission denied");
-      }
+      // Check permission (admin+ can delete invites)
+      await requireSitePermission(invite.siteId, userId, "admin");
 
       await db.delete(siteInvite).where(eq(siteInvite.id, input.inviteId));
 
