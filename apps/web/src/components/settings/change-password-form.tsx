@@ -2,6 +2,7 @@ import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { FormField } from "@/components/form-field";
+import { FormWrapper } from "@/components/form-wrapper";
 import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
 import {
@@ -68,14 +69,7 @@ export default function ChangePasswordForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form
-          className="space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
-        >
+        <FormWrapper onSubmit={form.handleSubmit}>
           <form.Field name="currentPassword">
             {(field) => (
               <FormField
@@ -149,7 +143,7 @@ export default function ChangePasswordForm() {
               </Button>
             )}
           </form.Subscribe>
-        </form>
+        </FormWrapper>
       </CardContent>
     </Card>
   );

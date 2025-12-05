@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { AuthPageLayout } from "@/components/auth-page-layout";
 import { FormField } from "@/components/form-field";
+import { FormWrapper } from "@/components/form-wrapper";
 import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
@@ -70,14 +71,7 @@ export default function ResetPasswordPage({
       }
       title="Set New Password"
     >
-      <form
-        className="space-y-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
-        }}
-      >
+      <FormWrapper onSubmit={form.handleSubmit}>
         <form.Field name="newPassword">
           {(field) => (
             <FormField
@@ -117,7 +111,7 @@ export default function ResetPasswordPage({
             </Button>
           )}
         </form.Subscribe>
-      </form>
+      </FormWrapper>
     </AuthPageLayout>
   );
 }

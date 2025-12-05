@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import z from "zod";
 import { authClient } from "@/lib/auth-client";
 import { FormField } from "./form-field";
+import { FormWrapper } from "./form-wrapper";
 import Loader from "./loader";
 import { Button } from "./ui/button";
 
@@ -46,14 +47,7 @@ export default function SignInForm({
   return (
     <div className="mx-auto mt-10 w-full max-w-md p-6">
       <h1 className="mb-6 text-center font-bold text-3xl">Welcome Back</h1>
-      <form
-        className="space-y-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
-        }}
-      >
+      <FormWrapper onSubmit={form.handleSubmit}>
         <form.Field name="email">
           {(field) => (
             <FormField
@@ -93,7 +87,7 @@ export default function SignInForm({
             </Button>
           )}
         </form.Subscribe>
-      </form>
+      </FormWrapper>
 
       <div className="mt-4 text-center">
         <Button
