@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { z } from "zod";
 import { AuthPageLayout } from "@/components/auth-page-layout";
-import { FormField } from "@/components/form-field";
+import { ConnectedFormField } from "@/components/connected-form-field";
 import { FormWrapper } from "@/components/form-wrapper";
 import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
@@ -52,19 +52,12 @@ export default function ForgotPasswordPage() {
       title="Reset Password"
     >
       <FormWrapper onSubmit={form.handleSubmit}>
-        <form.Field name="email">
-          {(field) => (
-            <FormField
-              errors={field.state.meta.errors}
-              label="Email"
-              name={field.name}
-              onBlur={field.handleBlur}
-              onChange={field.handleChange}
-              type="email"
-              value={field.state.value}
-            />
-          )}
-        </form.Field>
+        <ConnectedFormField
+          form={form}
+          label="Email"
+          name="email"
+          type="email"
+        />
 
         <form.Subscribe>
           {(state) => (

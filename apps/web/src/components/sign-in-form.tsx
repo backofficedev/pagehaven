@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import z from "zod";
 import { authClient } from "@/lib/auth-client";
-import { FormField } from "./form-field";
+import { ConnectedFormField } from "./connected-form-field";
 import { FormWrapper } from "./form-wrapper";
 import Loader from "./loader";
 import { Button } from "./ui/button";
@@ -48,33 +48,18 @@ export default function SignInForm({
     <div className="mx-auto mt-10 w-full max-w-md p-6">
       <h1 className="mb-6 text-center font-bold text-3xl">Welcome Back</h1>
       <FormWrapper onSubmit={form.handleSubmit}>
-        <form.Field name="email">
-          {(field) => (
-            <FormField
-              errors={field.state.meta.errors}
-              label="Email"
-              name={field.name}
-              onBlur={field.handleBlur}
-              onChange={field.handleChange}
-              type="email"
-              value={field.state.value}
-            />
-          )}
-        </form.Field>
-
-        <form.Field name="password">
-          {(field) => (
-            <FormField
-              errors={field.state.meta.errors}
-              label="Password"
-              name={field.name}
-              onBlur={field.handleBlur}
-              onChange={field.handleChange}
-              type="password"
-              value={field.state.value}
-            />
-          )}
-        </form.Field>
+        <ConnectedFormField
+          form={form}
+          label="Email"
+          name="email"
+          type="email"
+        />
+        <ConnectedFormField
+          form={form}
+          label="Password"
+          name="password"
+          type="password"
+        />
 
         <form.Subscribe>
           {(state) => (

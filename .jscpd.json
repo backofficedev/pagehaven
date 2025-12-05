@@ -1,13 +1,17 @@
 {
   "$schema": "https://json.schemastore.org/jscpd.json",
-  "threshold": 14,
+  "threshold": 8,
   "reporters": ["console"],
   "output": "./coverage/jscpd",
   "ignorePattern": [
     "vi\\.mock\\(\"[^\"]+\",\\s*(?:async\\s*)?\\(\\)\\s*=>\\s*(?:\\(\\{|\\{)[\\s\\S]*?(?:\\}\\)|\\})\\);",
     "vi\\.mocked\\([^)]+\\)\\.mockReturnValue\\(\\{[\\s\\S]*?\\}\\s*(?:as\\s+[^)]+)?\\);",
     "vi\\.mocked\\([^)]+\\)\\.mockImplementation\\([\\s\\S]*?\\);",
-    "const\\s+\\{[^}]+\\}\\s*=\\s*await\\s+import\\([^)]+\\);"
+    "const\\s+\\{[^}]+\\}\\s*=\\s*await\\s+import\\([^)]+\\);",
+    "const\\s+user\\s*=\\s*userEvent\\.setup\\(\\);",
+    "await\\s+waitFor\\(\\(\\)\\s*=>\\s*\\{[\\s\\S]*?\\}\\);",
+    "import\\s+\\{[^}]+\\}\\s+from\\s+['\"][^'\"]+['\"];",
+    "import\\s+[A-Za-z]+\\s+from\\s+['\"][^'\"]+['\"];"
   ],
   "ignore": [
     "**/node_modules/**",

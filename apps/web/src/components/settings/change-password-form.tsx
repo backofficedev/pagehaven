@@ -1,7 +1,7 @@
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { FormField } from "@/components/form-field";
+import { ConnectedFormField } from "@/components/connected-form-field";
 import { FormWrapper } from "@/components/form-wrapper";
 import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
@@ -70,47 +70,24 @@ export default function ChangePasswordForm() {
       </CardHeader>
       <CardContent>
         <FormWrapper onSubmit={form.handleSubmit}>
-          <form.Field name="currentPassword">
-            {(field) => (
-              <FormField
-                errors={field.state.meta.errors}
-                label="Current Password"
-                name={field.name}
-                onBlur={field.handleBlur}
-                onChange={field.handleChange}
-                type="password"
-                value={field.state.value}
-              />
-            )}
-          </form.Field>
-
-          <form.Field name="newPassword">
-            {(field) => (
-              <FormField
-                errors={field.state.meta.errors}
-                label="New Password"
-                name={field.name}
-                onBlur={field.handleBlur}
-                onChange={field.handleChange}
-                type="password"
-                value={field.state.value}
-              />
-            )}
-          </form.Field>
-
-          <form.Field name="confirmPassword">
-            {(field) => (
-              <FormField
-                errors={field.state.meta.errors}
-                label="Confirm New Password"
-                name={field.name}
-                onBlur={field.handleBlur}
-                onChange={field.handleChange}
-                type="password"
-                value={field.state.value}
-              />
-            )}
-          </form.Field>
+          <ConnectedFormField
+            form={form}
+            label="Current Password"
+            name="currentPassword"
+            type="password"
+          />
+          <ConnectedFormField
+            form={form}
+            label="New Password"
+            name="newPassword"
+            type="password"
+          />
+          <ConnectedFormField
+            form={form}
+            label="Confirm New Password"
+            name="confirmPassword"
+            type="password"
+          />
 
           <form.Field name="revokeOtherSessions">
             {(field) => (
