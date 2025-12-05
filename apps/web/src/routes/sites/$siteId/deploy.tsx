@@ -1,8 +1,9 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, File, Loader2, Upload } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { File, Loader2, Upload } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { SitePageHeader } from "@/components/site-page-header";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -154,23 +155,12 @@ function DeployPage() {
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
-      <div className="mb-6">
-        <Link
-          className="mb-4 inline-flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground"
-          params={{ siteId }}
-          to="/sites/$siteId"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to {siteQuery.data?.name ?? "Site"}
-        </Link>
-      </div>
-
-      <div className="mb-8">
-        <h1 className="font-bold text-3xl">Deploy</h1>
-        <p className="text-muted-foreground">
-          Upload your static files to deploy
-        </p>
-      </div>
+      <SitePageHeader
+        description="Upload your static files to deploy"
+        siteId={siteId}
+        siteName={siteQuery.data?.name}
+        title="Deploy"
+      />
 
       <Card className="mb-6">
         <CardHeader>

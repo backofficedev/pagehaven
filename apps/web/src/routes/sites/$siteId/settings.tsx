@@ -1,18 +1,9 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  Eye,
-  Globe,
-  Lock,
-  Mail,
-  Plus,
-  Trash2,
-  Users,
-  X,
-} from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { Eye, Globe, Lock, Mail, Plus, Trash2, Users, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { SitePageHeader } from "@/components/site-page-header";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -58,7 +49,6 @@ const accessOptions = [
   },
 ] as const;
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Settings page has many form sections
 function SettingsPage() {
   const { siteId } = Route.useParams();
   const [siteName, setSiteName] = useState("");
@@ -186,21 +176,12 @@ function SettingsPage() {
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
-      <div className="mb-6">
-        <Link
-          className="mb-4 inline-flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground"
-          params={{ siteId }}
-          to="/sites/$siteId"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to {site?.name ?? "Site"}
-        </Link>
-      </div>
-
-      <div className="mb-8">
-        <h1 className="font-bold text-3xl">Settings</h1>
-        <p className="text-muted-foreground">Manage your site configuration</p>
-      </div>
+      <SitePageHeader
+        description="Manage your site configuration"
+        siteId={siteId}
+        siteName={site?.name}
+        title="Settings"
+      />
 
       <div className="space-y-6">
         <Card>

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Eye, FileText, HardDrive } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { Eye, FileText, HardDrive } from "lucide-react";
+import { SitePageHeader } from "@/components/site-page-header";
 import {
   Card,
   CardContent,
@@ -30,21 +31,12 @@ function AnalyticsPage() {
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
-      <div className="mb-6">
-        <Link
-          className="mb-4 inline-flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground"
-          params={{ siteId }}
-          to="/sites/$siteId"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to {site?.name ?? "Site"}
-        </Link>
-      </div>
-
-      <div className="mb-8">
-        <h1 className="font-bold text-3xl">Analytics</h1>
-        <p className="text-muted-foreground">Last 30 days of site activity</p>
-      </div>
+      <SitePageHeader
+        description="Last 30 days of site activity"
+        siteId={siteId}
+        siteName={site?.name}
+        title="Analytics"
+      />
 
       {analyticsQuery.isLoading ? (
         <div className="text-center text-muted-foreground">

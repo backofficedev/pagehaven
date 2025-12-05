@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/jscpd.json",
-  "threshold": 7,
+  "threshold": 3,
   "reporters": ["console"],
   "output": "./coverage/jscpd",
   "ignorePattern": [
@@ -16,7 +16,12 @@
     "expect\\(screen\\.getBy[A-Za-z]+\\([^)]+\\)\\)\\.toBeInTheDocument\\(\\);",
     "expect\\(screen\\.getBy[A-Za-z]+\\([^)]+\\)\\)\\.toHaveValue\\([^)]+\\);",
     "\\.default\\(sql`\\(cast\\(unixepoch\\('subsecond'\\)\\s*\\*\\s*1000\\s+as\\s+integer\\)\\)`\\)",
-    "\\.\\$onUpdate\\(\\(\\)\\s*=>\\s*(?:/\\*\\s*@__PURE__\\s*\\*/\\s*)?new\\s+Date\\(\\)\\)"
+    "\\.\\$onUpdate\\(\\(\\)\\s*=>\\s*(?:/\\*\\s*@__PURE__\\s*\\*/\\s*)?new\\s+Date\\(\\)\\)",
+    "beforeEach\\(\\(\\)\\s*=>\\s*\\{[\\s\\S]*?\\}\\);",
+    "setQueryResults\\(\\[[\\s\\S]*?\\]\\);",
+    "mockUseQuery\\.mockReturnValue\\([\\s\\S]*?\\);",
+    "describe\\(['\"][^'\"]+['\"],\\s*\\(\\)\\s*=>\\s*\\{",
+    "it\\(['\"][^'\"]+['\"],\\s*(?:async\\s*)?\\(\\)\\s*=>\\s*\\{"
   ],
   "ignore": [
     "**/node_modules/**",
