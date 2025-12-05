@@ -16,6 +16,9 @@
     "./lib/serve-static": {
       "default": "./src/lib/serve-static.ts"
     },
+    "./lib/github-webhook": {
+      "default": "./src/lib/github-webhook.ts"
+    },
     "./*": {
       "default": "./src/*.ts"
     }
