@@ -88,7 +88,7 @@
     "**/*.d.ts",
     "**/migrations/**",
     "**/routeTree.gen.ts",
-    "**/alchemy.run.ts",
+    "**/alchemy.run.*",
     "**/packages/api/src/lib/serve-static.ts"
   ],
   "format": ["typescript", "tsx", "javascript", "jsx"],
