@@ -68,7 +68,7 @@ erDiagram
         text id PK
         text siteId FK
         text userId FK
-        text role "owner admin editor viewer"
+        text role
         text invitedBy FK
         timestamp createdAt
     }
@@ -76,7 +76,7 @@ erDiagram
     SITE_ACCESS {
         text id PK
         text siteId FK_UK
-        text accessType "public password private owner_only"
+        text accessType
         text passwordHash
         timestamp createdAt
         timestamp updatedAt
@@ -97,7 +97,7 @@ erDiagram
         text id PK
         text siteId FK
         text storagePath
-        text status "pending processing live failed"
+        text status
         integer fileCount
         integer totalSize
         text commitHash
@@ -123,7 +123,7 @@ erDiagram
         text siteId FK
         text domain UK
         text verificationToken
-        text status "pending verified failed"
+        text status
         timestamp lastCheckedAt
         timestamp verifiedAt
         timestamp createdAt
