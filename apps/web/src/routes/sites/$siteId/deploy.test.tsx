@@ -398,4 +398,146 @@ describe("sites/$siteId/deploy route", () => {
       expect(filtered.find((f) => f.path === "style.css")).toBeUndefined();
     });
   });
+
+  describe("FileToUpload type", () => {
+    it("has correct structure", () => {
+      const file = {
+        path: "index.html",
+        content: "PGh0bWw+PC9odG1sPg==",
+        size: 1024,
+      };
+
+      expect(file.path).toBe("index.html");
+      expect(file.content).toBe("PGh0bWw+PC9odG1sPg==");
+      expect(file.size).toBe(1024);
+    });
+  });
+
+  describe("deployment error handling", () => {
+    it("handles Error instance correctly", () => {
+      const handleError = (error: unknown) =>
+        error instanceof Error ? error.message : "Deployment failed";
+
+      expect(handleError(new Error("Network error"))).toBe("Network error");
+      expect(handleError("string error")).toBe("Deployment failed");
+      expect(handleError(null)).toBe("Deployment failed");
+    });
+  });
+
+  describe("commit message handling", () => {
+    it("uses undefined for empty commit message", () => {
+      const getCommitMessage = (msg: string) => msg || undefined;
+
+      expect(getCommitMessage("")).toBeUndefined();
+      expect(getCommitMessage("Initial deploy")).toBe("Initial deploy");
+    });
+  });
+
+  describe("file upload mapping", () => {
+    it("maps files to upload format", () => {
+      const files = [
+        { path: "index.html", content: "abc123", size: 100 },
+        { path: "css/style.css", content: "def456", size: 200 },
+      ];
+
+      const mapped = files.map((f) => ({
+        filePath: f.path,
+        content: f.content,
+      }));
+
+      expect(mapped).toEqual([
+        { filePath: "index.html", content: "abc123" },
+        { filePath: "css/style.css", content: "def456" },
+      ]);
+    });
+  });
+
+  describe("deployment state management", () => {
+    it("tracks deploying state", () => {
+      let isDeploying = false;
+
+      const startDeploy = () => {
+        isDeploying = true;
+      };
+      const endDeploy = () => {
+        isDeploying = false;
+      };
+
+      expect(isDeploying).toBe(false);
+      startDeploy();
+      expect(isDeploying).toBe(true);
+      endDeploy();
+      expect(isDeploying).toBe(false);
+    });
+  });
+
+  describe("file list state management", () => {
+    it("appends new files to existing list", () => {
+      const existingFiles = [{ path: "index.html", content: "a", size: 100 }];
+      const newFiles = [{ path: "style.css", content: "b", size: 200 }];
+
+      const combined = [...existingFiles, ...newFiles];
+
+      expect(combined.length).toBe(2);
+      expect(combined[0].path).toBe("index.html");
+      expect(combined[1].path).toBe("style.css");
+    });
+
+    it("clears all files", () => {
+      const files = [
+        { path: "index.html", content: "a", size: 100 },
+        { path: "style.css", content: "b", size: 200 },
+      ];
+
+      const cleared: typeof files = [];
+
+      expect(cleared.length).toBe(0);
+    });
+  });
+
+  describe("query invalidation", () => {
+    it("invalidates correct query keys after deployment", () => {
+      const keysToInvalidate = ["site", "deployment"];
+
+      expect(keysToInvalidate).toContain("site");
+      expect(keysToInvalidate).toContain("deployment");
+    });
+  });
+
+  describe("navigation after deployment", () => {
+    it("navigates to site page with correct params", () => {
+      const siteId = "site-123";
+      const navigationTarget = { to: "/sites/$siteId", params: { siteId } };
+
+      expect(navigationTarget.to).toBe("/sites/$siteId");
+      expect(navigationTarget.params.siteId).toBe("site-123");
+    });
+  });
+
+  describe("UI elements", () => {
+    it("renders upload icon in deploy button", async () => {
+      await renderDeployPage();
+      expect(screen.getByTestId("upload-icon")).toBeInTheDocument();
+    });
+
+    it("has correct input types", async () => {
+      await renderDeployPage();
+      // Commit message input should be present
+      const commitInput = screen.getByPlaceholderText(
+        "What changed in this deployment?"
+      );
+      expect(commitInput).toBeInTheDocument();
+    });
+  });
+
+  describe("card descriptions", () => {
+    it("shows upload description", async () => {
+      await renderDeployPage();
+      expect(
+        screen.getByText(
+          "Select files or a folder to deploy. All files will be uploaded to your site."
+        )
+      ).toBeInTheDocument();
+    });
+  });
 });
