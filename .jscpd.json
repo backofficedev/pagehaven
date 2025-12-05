@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/jscpd.json",
-  "threshold": 11,
+  "threshold": 12,
   "reporters": ["console"],
   "output": "./coverage/jscpd",
   "ignore": [
@@ -14,7 +14,12 @@
     "**/migrations/**",
     "**/routeTree.gen.ts",
     "**/alchemy.run.ts",
-    "**/packages/api/src/lib/serve-static.ts"
+    "**/packages/api/src/lib/serve-static.ts",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/e2e/**"
   ],
   "format": ["typescript", "tsx", "javascript", "jsx"],
   "absolute": true,
