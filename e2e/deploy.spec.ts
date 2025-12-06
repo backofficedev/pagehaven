@@ -12,7 +12,7 @@ import {
 // Regex patterns at module level for performance
 const BACK_TO_SITE_REGEX = /back to site|back/i;
 const DEPLOYMENT_SUCCESS_REGEX = /success|deployed|live/i;
-const REMOVE_BUTTON_REGEX = /remove|delete|x/i;
+const REMOVE_BUTTON_REGEX = /^remove$/i;
 const DEPLOY_EXACT_REGEX = /^deploy$/i;
 const DEPLOY_HEADING_REGEX = /deploy/i;
 
@@ -149,10 +149,12 @@ test.describe("Deployment", () => {
 
       await expect(page.getByText("test.html")).toBeVisible({ timeout: 5000 });
 
-      // Look for a remove/delete button near the file
-      const removeButton = page.getByRole("button", {
-        name: REMOVE_BUTTON_REGEX,
-      });
+      // Look for a remove button near the file - use first() to get the file's remove button
+      const removeButton = page
+        .getByRole("button", {
+          name: REMOVE_BUTTON_REGEX,
+        })
+        .first();
       if (await removeButton.isVisible()) {
         await removeButton.click();
         await expect(page.getByText("test.html")).not.toBeVisible();
