@@ -23,6 +23,29 @@
         "vitest": "catalog:",
       },
     },
+    "apps/cli": {
+      "name": "@pagehaven/cli",
+      "version": "0.0.0",
+      "bin": {
+        "pagehaven": "./dist/index.js",
+      },
+      "dependencies": {
+        "@pagehaven/client": "workspace:*",
+        "@pagehaven/utils": "workspace:*",
+        "chalk": "^5.4.1",
+        "commander": "^14.0.0",
+        "glob": "^11.0.3",
+        "ora": "^8.2.0",
+        "yaml": "^2.8.2",
+      },
+      "devDependencies": {
+        "@pagehaven/config": "workspace:*",
+        "@types/node": "catalog:",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
     "apps/server": {
       "name": "server",
       "version": "0.0.0",
@@ -72,10 +95,9 @@
       "name": "web",
       "version": "0.0.0",
       "dependencies": {
-        "@orpc/client": "catalog:",
         "@orpc/tanstack-query": "catalog:",
-        "@pagehaven/api": "workspace:*",
         "@pagehaven/auth": "workspace:*",
+        "@pagehaven/client": "workspace:*",
         "@pagehaven/utils": "workspace:*",
         "@radix-ui/react-tabs": "^1.1.13",
         "@tailwindcss/vite": "^4.1.17",
@@ -122,6 +144,7 @@
         "@orpc/server": "catalog:",
         "@pagehaven/auth": "workspace:*",
         "@pagehaven/db": "workspace:*",
+        "@pagehaven/utils": "workspace:*",
         "drizzle-orm": "catalog:",
         "hono": "catalog:",
         "zod": "catalog:",
@@ -148,23 +171,16 @@
         "typescript": "^5",
       },
     },
-    "packages/cli": {
-      "name": "@pagehaven/cli",
+    "packages/client": {
+      "name": "@pagehaven/client",
       "version": "0.0.0",
-      "bin": {
-        "pagehaven": "./dist/index.js",
-      },
       "dependencies": {
-        "@pagehaven/utils": "workspace:*",
-        "chalk": "^5.4.1",
-        "commander": "^14.0.0",
-        "glob": "^11.0.3",
-        "ora": "^8.2.0",
-        "yaml": "^2.8.2",
+        "@orpc/client": "catalog:",
+        "@pagehaven/api": "workspace:*",
       },
       "devDependencies": {
+        "@cloudflare/workers-types": "catalog:",
         "@pagehaven/config": "workspace:*",
-        "@types/node": "catalog:",
       },
       "peerDependencies": {
         "typescript": "^5",
@@ -675,7 +691,9 @@
 
     "@pagehaven/auth": ["@pagehaven/auth@workspace:packages/auth"],
 
-    "@pagehaven/cli": ["@pagehaven/cli@workspace:packages/cli"],
+    "@pagehaven/cli": ["@pagehaven/cli@workspace:apps/cli"],
+
+    "@pagehaven/client": ["@pagehaven/client@workspace:packages/client"],
 
     "@pagehaven/config": ["@pagehaven/config@workspace:packages/config"],
 

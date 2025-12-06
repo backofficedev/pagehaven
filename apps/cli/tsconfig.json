@@ -8,8 +8,8 @@
   },
   "include": [
     "src/**/*",
-    "../api/env.d.ts",
-    "../auth/env.d.ts",
-    "../db/env.d.ts"
+    "../../packages/api/env.d.ts",
+    "../../packages/auth/env.d.ts",
+    "../../packages/db/env.d.ts"
   ]
 }
