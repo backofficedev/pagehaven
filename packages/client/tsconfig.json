@@ -1,0 +1,17 @@
+{
+  "extends": "@pagehaven/config/tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "lib": ["ESNext", "DOM"],
+    "types": ["node", "@cloudflare/workers-types"],
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*",
+    "../api/env.d.ts",
+    "../auth/env.d.ts",
+    "../db/env.d.ts"
+  ],
+  "exclude": ["node_modules"]
+}

@@ -1,0 +1,31 @@
+{
+  "name": "@pagehaven/client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./node": {
+      "default": "./src/node.ts"
+    }
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit --skipLibCheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@orpc/client": "catalog:",
+    "@pagehaven/api": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "@pagehaven/config": "workspace:*"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
