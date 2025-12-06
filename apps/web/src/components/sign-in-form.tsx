@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { createAuthCallbacks } from "@/lib/auth-callbacks";
 import { authClient } from "@/lib/auth-client";
 import { signInSchema } from "@/lib/validation";
@@ -57,6 +57,15 @@ export default function SignInForm({
         <SubmitButton form={form} loadingText="Submitting...">
           Sign In
         </SubmitButton>
+
+        <div className="text-right">
+          <Link
+            className="text-indigo-600 text-sm hover:text-indigo-800"
+            to="/forgot-password"
+          >
+            Forgot Password?
+          </Link>
+        </div>
       </FormWrapper>
 
       <div className="mt-4 text-center">

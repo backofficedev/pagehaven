@@ -15,7 +15,6 @@ const TOP_PAGES_REGEX = /top pages/i;
 const DAILY_VIEWS_REGEX = /daily views/i;
 const LAST_30_DAYS_REGEX = /last 30 days/i;
 const BACK_REGEX = /back to/i;
-const NO_DATA_REGEX = /no.*data|no.*views/i;
 
 test.describe("Site Analytics", () => {
   let siteName: string;
@@ -74,7 +73,8 @@ test.describe("Site Analytics", () => {
       await page.getByText(siteName).click();
       await page.getByRole("button", { name: ANALYTICS_REGEX }).click();
 
-      await expect(page.getByText(LAST_30_DAYS_REGEX)).toBeVisible();
+      // Use first() to handle multiple matching elements
+      await expect(page.getByText(LAST_30_DAYS_REGEX).first()).toBeVisible();
     });
 
     test("shows top pages section", async ({ page }) => {
@@ -97,10 +97,13 @@ test.describe("Site Analytics", () => {
       await page.getByText(siteName).click();
       await page.getByRole("button", { name: ANALYTICS_REGEX }).click();
 
-      // New site should show zero or empty state
-      await expect(
-        page.getByText(NO_DATA_REGEX).or(page.getByText("0"))
-      ).toBeVisible();
+      // New site should show zero views in the Total Views card
+      await expect(page.getByText("Total Views")).toBeVisible();
+      // The value should be 0 for a new site - find the card containing "Total Views" and check for 0
+      const totalViewsCard = page
+        .locator('[data-slot="card"]')
+        .filter({ hasText: "Total Views" });
+      await expect(totalViewsCard.locator(".font-bold")).toContainText("0");
     });
   });
 });

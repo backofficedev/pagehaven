@@ -19,8 +19,9 @@ const BACK_TO_SITES_REGEX = /back to sites/i;
 const DEPLOY_REGEX = /deploy/i;
 const SETTINGS_REGEX = /settings/i;
 const ANALYTICS_REGEX = /analytics/i;
-const NO_DEPLOYMENT_REGEX = /no deployment/i;
-const SUBDOMAIN_TAKEN_REGEX = /subdomain.*taken|already.*taken/i;
+const NO_DEPLOYMENT_REGEX = /no deployment|no deployments/i;
+const SUBDOMAIN_TAKEN_REGEX =
+  /subdomain.*taken|already.*taken|subdomain is already taken/i;
 
 test.describe("Sites Management", () => {
   test.beforeEach(async ({ page }) => {
@@ -52,9 +53,8 @@ test.describe("Sites Management", () => {
 
       await page.getByRole("button", { name: NEW_SITE_REGEX }).click();
 
-      await expect(
-        page.getByRole("heading", { name: CREATE_NEW_SITE_REGEX })
-      ).toBeVisible();
+      // CardTitle is a div, not a heading
+      await expect(page.getByText(CREATE_NEW_SITE_REGEX)).toBeVisible();
       await expect(page.locator("form #name")).toBeVisible();
       await expect(page.locator("form #subdomain")).toBeVisible();
     });
@@ -168,17 +168,17 @@ test.describe("Sites Management", () => {
       await page.getByText(siteName).click();
 
       // Should show status (no deployment for new site)
-      await expect(page.getByText(NO_DEPLOYMENT_REGEX)).toBeVisible();
+      await expect(page.getByText(NO_DEPLOYMENT_REGEX).first()).toBeVisible();
 
-      // Should show action buttons
+      // Should show action links (they are Links wrapping Buttons)
       await expect(
-        page.getByRole("button", { name: DEPLOY_REGEX })
+        page.getByRole("link", { name: DEPLOY_REGEX })
       ).toBeVisible();
       await expect(
-        page.getByRole("button", { name: ANALYTICS_REGEX })
+        page.getByRole("link", { name: ANALYTICS_REGEX })
       ).toBeVisible();
       await expect(
-        page.getByRole("button", { name: SETTINGS_REGEX })
+        page.getByRole("link", { name: SETTINGS_REGEX })
       ).toBeVisible();
     });
 

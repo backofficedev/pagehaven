@@ -10,12 +10,10 @@ import {
 const SETTINGS_REGEX = /settings/i;
 const ACCESS_CONTROL_REGEX = /access control/i;
 const UPDATE_ACCESS_REGEX = /update access/i;
-const PUBLIC_REGEX = /^public$/i;
+const PUBLIC_REGEX = /public/i;
 const PASSWORD_PROTECTED_REGEX = /password protected/i;
-const PRIVATE_REGEX = /^private$/i;
+const PRIVATE_REGEX = /private/i;
 const OWNER_ONLY_REGEX = /owner only/i;
-const SITE_PASSWORD_REGEX = /site password/i;
-const INVITED_USERS_REGEX = /invited users/i;
 const INVITE_REGEX = /^invite$/i;
 const SUCCESS_REGEX = /success|updated/i;
 const NO_INVITES_REGEX = /no invites yet/i;
@@ -45,11 +43,11 @@ test.describe("Site Access Control", () => {
       // Select password protected
       await page.getByText(PASSWORD_PROTECTED_REGEX).click();
 
-      // Password input should appear
-      await expect(page.getByLabel(SITE_PASSWORD_REGEX)).toBeVisible();
+      // Password input should appear - use ID selector
+      await expect(page.locator("#password")).toBeVisible();
 
       // Enter password
-      await page.getByLabel(SITE_PASSWORD_REGEX).fill("testpassword123");
+      await page.locator("#password").fill("testpassword123");
 
       // Update access
       await page.getByRole("button", { name: UPDATE_ACCESS_REGEX }).click();
@@ -75,7 +73,9 @@ test.describe("Site Access Control", () => {
       });
 
       // Invite section should now be visible
-      await expect(page.getByText(INVITED_USERS_REGEX)).toBeVisible();
+      await expect(
+        page.getByText("Invited Users", { exact: true })
+      ).toBeVisible();
     });
 
     test("can change from public to owner only", async ({ page }) => {
@@ -97,15 +97,15 @@ test.describe("Site Access Control", () => {
       page,
     }) => {
       // Initially public, password field should not be visible
-      await expect(page.getByLabel(SITE_PASSWORD_REGEX)).not.toBeVisible();
+      await expect(page.locator("#password")).not.toBeVisible();
 
       // Select password protected
       await page.getByText(PASSWORD_PROTECTED_REGEX).click();
-      await expect(page.getByLabel(SITE_PASSWORD_REGEX)).toBeVisible();
+      await expect(page.locator("#password")).toBeVisible();
 
       // Switch back to public
       await page.getByText(PUBLIC_REGEX).click();
-      await expect(page.getByLabel(SITE_PASSWORD_REGEX)).not.toBeVisible();
+      await expect(page.locator("#password")).not.toBeVisible();
     });
   });
 
@@ -120,7 +120,10 @@ test.describe("Site Access Control", () => {
     });
 
     test("shows invite section for private sites", async ({ page }) => {
-      await expect(page.getByText(INVITED_USERS_REGEX)).toBeVisible();
+      // Use exact match to avoid matching description text
+      await expect(
+        page.getByText("Invited Users", { exact: true })
+      ).toBeVisible();
       await expect(page.getByPlaceholder("user@example.com")).toBeVisible();
       await expect(
         page.getByRole("button", { name: INVITE_REGEX })
@@ -188,7 +191,7 @@ test.describe("Site Access Control", () => {
     test("access type persists after page reload", async ({ page }) => {
       // Change to password protected
       await page.getByText(PASSWORD_PROTECTED_REGEX).click();
-      await page.getByLabel(SITE_PASSWORD_REGEX).fill("secret123");
+      await page.locator("#password").fill("secret123");
       await page.getByRole("button", { name: UPDATE_ACCESS_REGEX }).click();
       await expect(page.getByText(SUCCESS_REGEX)).toBeVisible({
         timeout: 10_000,
@@ -202,7 +205,7 @@ test.describe("Site Access Control", () => {
       await expect(passwordOption).toBeVisible();
 
       // The radio should be checked (verify by checking if password field is visible)
-      await expect(page.getByLabel(SITE_PASSWORD_REGEX)).toBeVisible();
+      await expect(page.locator("#password")).toBeVisible();
     });
 
     test("private site shows invites after reload", async ({ page }) => {
@@ -217,48 +220,50 @@ test.describe("Site Access Control", () => {
       await page.reload();
 
       // Invite section should still be visible
-      await expect(page.getByText(INVITED_USERS_REGEX)).toBeVisible();
+      await expect(
+        page.getByText("Invited Users", { exact: true })
+      ).toBeVisible();
     });
   });
 
   test.describe("Access Type Visual Feedback", () => {
     test("selected access type is visually highlighted", async ({ page }) => {
-      // Click on private option
-      await page.getByText(PRIVATE_REGEX).click();
+      // Click on private option - use exact text match
+      await page.getByText("Private", { exact: true }).click();
 
       // The label containing "Private" should have some visual indication
-      // This tests that clicking changes the selection
-      const privateLabel = page
-        .locator("label")
-        .filter({ hasText: PRIVATE_REGEX });
-      await expect(privateLabel).toBeVisible();
+      const privateLabel = page.locator("label").filter({ hasText: "Private" });
+      await expect(privateLabel.first()).toBeVisible();
 
       // The radio input should be checked
-      const radioInput = privateLabel.locator('input[type="radio"]');
+      const radioInput = privateLabel.first().locator('input[type="radio"]');
       await expect(radioInput).toBeChecked();
     });
 
     test("only one access type can be selected at a time", async ({ page }) => {
-      // Click private
-      await page.getByText(PRIVATE_REGEX).click();
+      // Click private - use exact text match
+      await page.getByText("Private", { exact: true }).click();
       let privateRadio = page
         .locator("label")
-        .filter({ hasText: PRIVATE_REGEX })
+        .filter({ hasText: "Private" })
+        .first()
         .locator('input[type="radio"]');
       await expect(privateRadio).toBeChecked();
 
-      // Click public
-      await page.getByText(PUBLIC_REGEX).click();
+      // Click public - use exact text match
+      await page.getByText("Public", { exact: true }).click();
       const publicRadio = page
         .locator("label")
-        .filter({ hasText: PUBLIC_REGEX })
+        .filter({ hasText: "Public" })
+        .first()
         .locator('input[type="radio"]');
       await expect(publicRadio).toBeChecked();
 
       // Private should no longer be checked
       privateRadio = page
         .locator("label")
-        .filter({ hasText: PRIVATE_REGEX })
+        .filter({ hasText: "Private" })
+        .first()
         .locator('input[type="radio"]');
       await expect(privateRadio).not.toBeChecked();
     });

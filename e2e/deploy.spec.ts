@@ -40,7 +40,8 @@ test.describe("Deployment", () => {
         expect
       );
 
-      const fileInput = page.locator('input[type="file"]');
+      // Use first() since there are multiple file inputs (files and folder)
+      const fileInput = page.locator('input[type="file"]').first();
       await expect(fileInput).toBeAttached();
     });
 
@@ -73,7 +74,8 @@ test.describe("Deployment", () => {
         expect
       );
 
-      const fileInput = page.locator('input[type="file"]');
+      // Use first() since there are multiple file inputs
+      const fileInput = page.locator('input[type="file"]').first();
 
       // Set files using Playwright's setInputFiles
       await fileInput.setInputFiles({
@@ -96,7 +98,8 @@ test.describe("Deployment", () => {
         expect
       );
 
-      const fileInput = page.locator('input[type="file"]');
+      // Use first() since there are multiple file inputs
+      const fileInput = page.locator('input[type="file"]').first();
 
       // Upload multiple files
       await fileInput.setInputFiles([
@@ -133,7 +136,8 @@ test.describe("Deployment", () => {
         expect
       );
 
-      const fileInput = page.locator('input[type="file"]');
+      // Use first() since there are multiple file inputs
+      const fileInput = page.locator('input[type="file"]').first();
 
       await fileInput.setInputFiles({
         name: "test.html",
@@ -165,7 +169,8 @@ test.describe("Deployment", () => {
         expect
       );
 
-      const fileInput = page.locator('input[type="file"]');
+      // Use first() since there are multiple file inputs
+      const fileInput = page.locator('input[type="file"]').first();
 
       // Upload a simple HTML file
       await fileInput.setInputFiles({
@@ -202,7 +207,8 @@ test.describe("Deployment", () => {
         expect
       );
 
-      const fileInput = page.locator('input[type="file"]');
+      // Use first() since there are multiple file inputs
+      const fileInput = page.locator('input[type="file"]').first();
 
       await fileInput.setInputFiles({
         name: "index.html",

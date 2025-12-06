@@ -20,7 +20,6 @@ const PASSWORD_PROTECTED_REGEX = /password protected/i;
 const PRIVATE_REGEX = /private/i;
 const OWNER_ONLY_REGEX = /owner only/i;
 const BACK_REGEX = /back to/i;
-const PASSWORD_REGEX = /password/i;
 const ARE_YOU_SURE_REGEX = /are you sure/i;
 const CANCEL_REGEX = /cancel/i;
 
@@ -99,8 +98,8 @@ test.describe("Site Settings", () => {
       // Click on Password Protected option
       await page.getByText(PASSWORD_PROTECTED_REGEX).click();
 
-      // Should show password input
-      await expect(page.getByLabel(PASSWORD_REGEX)).toBeVisible();
+      // Should show password input - use specific ID selector
+      await expect(page.locator("#password")).toBeVisible();
     });
   });
 

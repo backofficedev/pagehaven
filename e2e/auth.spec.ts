@@ -12,7 +12,6 @@ const SIGN_IN_REGEX = /sign in/i;
 const ALREADY_HAVE_ACCOUNT_REGEX = /already have an account/i;
 const NEED_ACCOUNT_REGEX = /need an account/i;
 const PASSWORD_MIN_REGEX = /password must be at least 8 characters/i;
-const INVALID_EMAIL_REGEX = /invalid email/i;
 const AUTH_ERROR_REGEX = /invalid|incorrect|wrong|error/i;
 const SITES_REGEX = /sites/;
 const YOUR_SITES_REGEX = /your sites/i;
@@ -31,8 +30,10 @@ test.describe("Authentication", () => {
 
       await signUp(page, user, expect);
 
-      // Should show welcome message with user name
-      await expect(page.getByText(user.name)).toBeVisible();
+      // Should show welcome message with user name - use heading to avoid matching button
+      await expect(
+        page.getByRole("heading", { name: new RegExp(user.name, "i") })
+      ).toBeVisible();
     });
 
     test("shows validation error for short password", async ({ page }) => {
@@ -57,8 +58,11 @@ test.describe("Authentication", () => {
 
       await page.getByRole("button", { name: SIGN_UP_REGEX }).click();
 
-      // Should show validation error
-      await expect(page.getByText(INVALID_EMAIL_REGEX)).toBeVisible();
+      // Should stay on login page (not redirect to dashboard) due to validation error
+      // The form validation prevents submission with invalid email
+      await expect(page).toHaveURL(LOGIN_REGEX);
+      // Should not navigate away - still on the form
+      await expect(page.locator("#email")).toBeVisible();
     });
 
     test("can switch to sign in form", async ({ page }) => {

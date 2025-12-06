@@ -13,11 +13,11 @@ import {
 // Regex patterns at module level for performance
 const CLEAR_FILES_REGEX = /clear files/i;
 const REMOVE_REGEX = /remove/i;
-const FILES_TO_DEPLOY_REGEX = /files to deploy/i;
+const FILES_TO_DEPLOY_CARD_REGEX = /files to deploy/i;
 const COMMIT_MESSAGE_REGEX = /commit message/i;
 const DEPLOYMENT_SUCCESS_REGEX = /success|deployed|live/i;
 const SELECT_FILES_REGEX = /select files/i;
-const SELECT_FOLDER_REGEX = /select folder/i;
+const SELECT_FOLDER_REGEX = /or select folder|select folder/i;
 const FILE_COUNT_2_REGEX = /\(2\)/;
 const FILE_COUNT_3_REGEX = /\(3\)/;
 const FILE_SIZE_REGEX = /\d+\s*B/;
@@ -44,8 +44,9 @@ test.describe("Advanced Deployment", () => {
 
   test.describe("File Upload Interface", () => {
     test("shows file and folder upload inputs", async ({ page }) => {
-      await expect(page.getByText(SELECT_FILES_REGEX)).toBeVisible();
-      await expect(page.getByText(SELECT_FOLDER_REGEX)).toBeVisible();
+      // Use label role to avoid matching description text
+      await expect(page.getByLabel(SELECT_FILES_REGEX)).toBeVisible();
+      await expect(page.getByLabel(SELECT_FOLDER_REGEX)).toBeVisible();
     });
 
     test("shows commit message input", async ({ page }) => {
@@ -91,7 +92,12 @@ test.describe("Advanced Deployment", () => {
         },
       ]);
 
-      await expect(page.getByText(FILES_TO_DEPLOY_REGEX)).toBeVisible({
+      // Use locator that matches the card title specifically
+      await expect(
+        page
+          .locator('[data-slot="card-title"]')
+          .filter({ hasText: FILES_TO_DEPLOY_CARD_REGEX })
+      ).toBeVisible({
         timeout: 5000,
       });
       // Should show count (2)
@@ -108,8 +114,8 @@ test.describe("Advanced Deployment", () => {
       });
 
       await expect(page.getByText("index.html")).toBeVisible({ timeout: 5000 });
-      // Should show size (e.g., "38 B" or similar)
-      await expect(page.getByText(FILE_SIZE_REGEX)).toBeVisible();
+      // Should show size (e.g., "38 B" or similar) - use first() to handle multiple matches
+      await expect(page.getByText(FILE_SIZE_REGEX).first()).toBeVisible();
     });
 
     test("enables deploy button after file selection", async ({ page }) => {
@@ -143,7 +149,11 @@ test.describe("Advanced Deployment", () => {
       await expect(page.getByText("style.css")).not.toBeVisible();
 
       // Files to Deploy card should be gone
-      await expect(page.getByText(FILES_TO_DEPLOY_REGEX)).not.toBeVisible();
+      await expect(
+        page
+          .locator('[data-slot="card-title"]')
+          .filter({ hasText: FILES_TO_DEPLOY_CARD_REGEX })
+      ).not.toBeVisible();
     });
 
     test("disables buttons after clearing files", async ({ page }) => {
@@ -166,9 +176,10 @@ test.describe("Advanced Deployment", () => {
       );
       await expect(page.getByText("style.css")).toBeVisible();
 
-      // Find and click remove button for index.html
-      const indexRow = page.locator("div").filter({ hasText: "index.html" });
-      const removeButton = indexRow.getByRole("button", { name: REMOVE_REGEX });
+      // Find and click remove button for index.html - use first() to get the specific row
+      const removeButton = page
+        .getByRole("button", { name: REMOVE_REGEX })
+        .first();
       await removeButton.click();
 
       // index.html should be gone, style.css should remain
@@ -201,9 +212,8 @@ test.describe("Advanced Deployment", () => {
         timeout: 5000,
       });
 
-      // Remove one file
-      const fileRow = page.locator("div").filter({ hasText: "file1.html" });
-      await fileRow.getByRole("button", { name: REMOVE_REGEX }).click();
+      // Remove one file - use first remove button
+      await page.getByRole("button", { name: REMOVE_REGEX }).first().click();
 
       // Count should update to 2
       await expect(page.getByText(FILE_COUNT_2_REGEX)).toBeVisible();

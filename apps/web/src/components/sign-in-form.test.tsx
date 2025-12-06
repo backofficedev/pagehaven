@@ -9,11 +9,11 @@ import {
   setupAuthError,
   setupAuthSuccess,
 } from "@/test/test-utils";
-import { simpleToastMock, useNavigateMock } from "@/test/ui-mocks";
+import { simpleToastMock, tanstackRouterMock } from "@/test/ui-mocks";
 import SignInForm from "./sign-in-form";
 
-// Mock TanStack Router
-vi.mock("@tanstack/react-router", () => useNavigateMock);
+// Mock TanStack Router - use tanstackRouterMock which includes Link
+vi.mock("@tanstack/react-router", () => tanstackRouterMock);
 
 // Mock sonner toast
 vi.mock("sonner", () => simpleToastMock);

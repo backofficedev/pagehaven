@@ -4,6 +4,7 @@ import { generateTestUser, signUp } from "./fixtures";
 // Regex patterns at module level for performance
 const SETTINGS_REGEX = /settings/i;
 const PROFILE_REGEX = /profile/i;
+const SECURITY_REGEX = /security/i;
 const SESSIONS_REGEX = /sessions/i;
 const DANGER_ZONE_REGEX = /danger zone/i;
 const UPDATE_PROFILE_REGEX = /update profile/i;
@@ -39,7 +40,10 @@ test.describe("User Settings", () => {
     test("displays profile section", async ({ page }) => {
       await page.goto("/settings");
 
-      await expect(page.getByText(PROFILE_REGEX)).toBeVisible();
+      // Profile tab is default, so Profile tab trigger should be visible
+      await expect(
+        page.getByRole("tab", { name: PROFILE_REGEX })
+      ).toBeVisible();
     });
 
     test("shows name input with current value", async ({ page }) => {
@@ -53,7 +57,8 @@ test.describe("User Settings", () => {
     test("shows email display", async ({ page }) => {
       await page.goto("/settings");
 
-      await expect(page.getByText(EMAIL_REGEX)).toBeVisible();
+      // Email label should be visible in profile form
+      await expect(page.getByText(EMAIL_REGEX).first()).toBeVisible();
     });
 
     test("can update profile name", async ({ page }) => {
@@ -74,29 +79,39 @@ test.describe("User Settings", () => {
     test("displays change password section", async ({ page }) => {
       await page.goto("/settings");
 
-      await expect(page.getByText(CHANGE_PASSWORD_REGEX)).toBeVisible();
+      // Click on Security tab first
+      await page.getByRole("tab", { name: SECURITY_REGEX }).click();
+
+      // Use heading role to avoid matching the button
+      await expect(page.getByText(CHANGE_PASSWORD_REGEX).first()).toBeVisible();
     });
 
     test("shows password change form fields", async ({ page }) => {
       await page.goto("/settings");
 
+      // Click on Security tab first
+      await page.getByRole("tab", { name: SECURITY_REGEX }).click();
+
       await expect(page.getByLabel(CURRENT_PASSWORD_REGEX)).toBeVisible();
-      await expect(page.getByLabel(NEW_PASSWORD_REGEX)).toBeVisible();
+      await expect(page.getByLabel(NEW_PASSWORD_REGEX).first()).toBeVisible();
       await expect(page.getByLabel(CONFIRM_PASSWORD_REGEX)).toBeVisible();
     });
 
     test("can fill in password change form", async ({ page }) => {
       await page.goto("/settings");
 
+      // Click on Security tab first
+      await page.getByRole("tab", { name: SECURITY_REGEX }).click();
+
       await page.getByLabel(CURRENT_PASSWORD_REGEX).fill("OldPassword123!");
-      await page.getByLabel(NEW_PASSWORD_REGEX).fill("NewPassword123!");
+      await page.getByLabel(NEW_PASSWORD_REGEX).first().fill("NewPassword123!");
       await page.getByLabel(CONFIRM_PASSWORD_REGEX).fill("NewPassword123!");
 
       // Form should be filled
       await expect(page.getByLabel(CURRENT_PASSWORD_REGEX)).toHaveValue(
         "OldPassword123!"
       );
-      await expect(page.getByLabel(NEW_PASSWORD_REGEX)).toHaveValue(
+      await expect(page.getByLabel(NEW_PASSWORD_REGEX).first()).toHaveValue(
         "NewPassword123!"
       );
     });
@@ -106,17 +121,26 @@ test.describe("User Settings", () => {
     test("displays sessions section", async ({ page }) => {
       await page.goto("/settings");
 
-      await expect(page.getByText(SESSIONS_REGEX)).toBeVisible();
+      // Sessions tab should be visible
+      await expect(
+        page.getByRole("tab", { name: SESSIONS_REGEX })
+      ).toBeVisible();
     });
 
     test("shows current session", async ({ page }) => {
       await page.goto("/settings");
+
+      // Click on Sessions tab first
+      await page.getByRole("tab", { name: SESSIONS_REGEX }).click();
 
       await expect(page.getByText(CURRENT_SESSION_REGEX)).toBeVisible();
     });
 
     test("shows other sessions section", async ({ page }) => {
       await page.goto("/settings");
+
+      // Click on Sessions tab first
+      await page.getByRole("tab", { name: SESSIONS_REGEX }).click();
 
       await expect(page.getByText(OTHER_SESSIONS_REGEX)).toBeVisible();
     });
@@ -126,7 +150,9 @@ test.describe("User Settings", () => {
     test("displays delete account section", async ({ page }) => {
       await page.goto("/settings");
 
-      await expect(page.getByText(DANGER_ZONE_REGEX)).toBeVisible();
+      // Click on Danger Zone tab first
+      await page.getByRole("tab", { name: DANGER_ZONE_REGEX }).click();
+
       await expect(
         page.getByRole("button", { name: DELETE_ACCOUNT_REGEX })
       ).toBeVisible();
@@ -135,8 +161,13 @@ test.describe("User Settings", () => {
     test("shows delete account confirmation requirements", async ({ page }) => {
       await page.goto("/settings");
 
+      // Click on Danger Zone tab first
+      await page.getByRole("tab", { name: DANGER_ZONE_REGEX }).click();
+
       // The delete account section should show warning text
-      await expect(page.getByText(PERMANENT_WARNING_REGEX)).toBeVisible();
+      await expect(
+        page.getByText(PERMANENT_WARNING_REGEX).first()
+      ).toBeVisible();
     });
   });
 });
