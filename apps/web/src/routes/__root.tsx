@@ -1,6 +1,5 @@
-import { createORPCClient } from "@orpc/client";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
-import type { AppRouterClient } from "@pagehaven/api/routers/index";
+import type { AppRouterClient } from "@pagehaven/client";
 import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
@@ -13,7 +12,7 @@ import { useState } from "react";
 import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { link, type orpc } from "@/utils/orpc";
+import { client, type orpc } from "@/utils/orpc";
 import "../index.css";
 
 export type RouterAppContext = {
@@ -43,8 +42,8 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 });
 
 function RootComponent() {
-  const [client] = useState<AppRouterClient>(() => createORPCClient(link));
-  const [_orpcUtils] = useState(() => createTanstackQueryUtils(client));
+  const [_client] = useState<AppRouterClient>(() => client);
+  const [_orpcUtils] = useState(() => createTanstackQueryUtils(_client));
 
   return (
     <>

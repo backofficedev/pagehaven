@@ -1,19 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
 // Mock dependencies before importing the module
-class MockRPCLink {
-  config: { url: string; fetch: typeof fetch };
-  constructor(config: { url: string; fetch: typeof fetch }) {
-    this.config = config;
-  }
-}
-
-vi.mock("@orpc/client", () => ({
-  createORPCClient: vi.fn(() => ({})),
-}));
-
-vi.mock("@orpc/client/fetch", () => ({
-  RPCLink: MockRPCLink,
+vi.mock("@pagehaven/client", () => ({
+  createClient: vi.fn(() => ({})),
+  createLink: vi.fn(() => ({})),
 }));
 
 vi.mock("@orpc/tanstack-query", () => ({
@@ -36,7 +26,6 @@ describe("orpc", () => {
   it("exports link", async () => {
     const { link } = await import("./orpc");
     expect(link).toBeDefined();
-    expect(link).toBeInstanceOf(MockRPCLink);
   });
 
   it("exports client", async () => {

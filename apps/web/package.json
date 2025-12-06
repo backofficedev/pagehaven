@@ -23,9 +23,8 @@
     "destroy": "alchemy destroy --app web"
   },
   "dependencies": {
-    "@orpc/client": "catalog:",
     "@orpc/tanstack-query": "catalog:",
-    "@pagehaven/api": "workspace:*",
+    "@pagehaven/client": "workspace:*",
     "@pagehaven/auth": "workspace:*",
     "@pagehaven/utils": "workspace:*",
     "@radix-ui/react-tabs": "^1.1.13",

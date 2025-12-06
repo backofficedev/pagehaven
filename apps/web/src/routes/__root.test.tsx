@@ -3,8 +3,9 @@ import type React from "react";
 import { describe, expect, it, vi } from "vitest";
 
 // Mock dependencies
-vi.mock("@orpc/client", () => ({
-  createORPCClient: vi.fn(() => ({})),
+vi.mock("@pagehaven/client", () => ({
+  createClient: vi.fn(() => ({})),
+  createLink: vi.fn(() => ({})),
 }));
 
 vi.mock("@orpc/tanstack-query", () => ({
@@ -44,7 +45,7 @@ vi.mock("@/components/ui/sonner", () => ({
 }));
 
 vi.mock("@/utils/orpc", () => ({
-  link: {},
+  client: {},
   orpc: {},
 }));
 

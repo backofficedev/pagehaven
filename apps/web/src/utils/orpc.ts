@@ -1,7 +1,5 @@
-import { createORPCClient } from "@orpc/client";
-import { RPCLink } from "@orpc/client/fetch";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
-import type { AppRouterClient } from "@pagehaven/api/routers/index";
+import { createClient, createLink } from "@pagehaven/client";
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -20,16 +18,14 @@ export const queryClient = new QueryClient({
   }),
 });
 
-export const link = new RPCLink({
-  url: `${import.meta.env.VITE_SERVER_URL}/rpc`,
-  fetch(_url, options) {
-    return fetch(_url, {
-      ...options,
-      credentials: "include",
-    });
-  },
+export const link = createLink({
+  baseUrl: import.meta.env.VITE_SERVER_URL,
+  credentials: "include",
 });
 
-export const client: AppRouterClient = createORPCClient(link);
+export const client = createClient({
+  baseUrl: import.meta.env.VITE_SERVER_URL,
+  credentials: "include",
+});
 
 export const orpc = createTanstackQueryUtils(client);
