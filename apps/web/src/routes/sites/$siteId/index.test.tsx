@@ -6,20 +6,15 @@ import {
   authClientMock,
   buttonMock,
   cardMock,
+  createPageTestMocks,
   createRouteMockFns,
-  createRouterMock,
-  createSimpleQueryMock,
 } from "@/test/ui-mocks";
 
 // Store mock implementations for dynamic control
 const { mockUseQuery, mockUseParams } = createRouteMockFns();
 
 // Mock dependencies
-vi.mock("@tanstack/react-query", () => createSimpleQueryMock(mockUseQuery));
-vi.mock("@tanstack/react-router", () => createRouterMock(mockUseParams));
-
-vi.mock("lucide-react", () => ({
-  ArrowLeft: () => <span data-testid="arrow-left-icon" />,
+const pageMocks = createPageTestMocks(mockUseQuery, mockUseParams, {
   BarChart3: () => <span data-testid="bar-chart-icon" />,
   CheckCircle: () => <span data-testid="check-circle-icon" />,
   Clock: () => <span data-testid="clock-icon" />,
@@ -29,11 +24,14 @@ vi.mock("lucide-react", () => ({
   Settings: () => <span data-testid="settings-icon" />,
   Upload: () => <span data-testid="upload-icon" />,
   XCircle: () => <span data-testid="x-circle-icon" />,
-}));
+});
+
+vi.mock("@tanstack/react-query", () => pageMocks["@tanstack/react-query"]);
+vi.mock("@tanstack/react-router", () => pageMocks["@tanstack/react-router"]);
+vi.mock("lucide-react", () => pageMocks["lucide-react"]);
 
 vi.mock("@/components/ui/button", () => buttonMock);
 vi.mock("@/components/ui/card", () => cardMock);
-
 vi.mock("@/lib/auth-client", () => authClientMock);
 
 vi.mock("@/utils/config", () => ({

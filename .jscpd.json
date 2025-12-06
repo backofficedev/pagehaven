@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/jscpd.json",
-  "threshold": 0.1,
+  "threshold": 0,
   "reporters": ["console"],
   "output": "./coverage/jscpd",
   "ignorePattern": [
@@ -8,6 +8,7 @@
     "import\\s+[A-Za-z]+\\s+from\\s+['\"][^'\"]+['\"];",
     "\\.default\\(sql`\\(cast\\(unixepoch\\('subsecond'\\)\\s*\\*\\s*1000\\s+as\\s+integer\\)\\)`\\)",
     "\\.\\$onUpdate\\(\\(\\)\\s*=>\\s*(?:/\\*\\s*@__PURE__\\s*\\*/\\s*)?new\\s+Date\\(\\)\\)",
+    "vi\\.mock\\(['\"][^'\"]+['\"].*siteMocks",
     "vi\\.mock\\(['\"][^'\"]+['\"]",
     "vi\\.fn\\(\\)",
     "vi\\.importActual\\(",

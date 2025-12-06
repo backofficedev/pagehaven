@@ -5,9 +5,8 @@ import { formatBytes } from "@/lib/utils";
 import {
   authClientMock,
   cardMock,
+  createPageTestMocks,
   createRouteMockFns,
-  createRouterMock,
-  createSimpleQueryMock,
 } from "@/test/ui-mocks";
 
 // Regex patterns at module level for performance
@@ -17,18 +16,12 @@ const BACK_TO_REGEX = /Back to/;
 const { mockUseQuery, mockUseParams } = createRouteMockFns();
 
 // Mock dependencies
-vi.mock("@tanstack/react-query", () => createSimpleQueryMock(mockUseQuery));
-vi.mock("@tanstack/react-router", () => createRouterMock(mockUseParams));
-
-vi.mock("lucide-react", () => ({
-  ArrowLeft: () => <span data-testid="arrow-left-icon" />,
-  Eye: () => <span data-testid="eye-icon" />,
-  FileText: () => <span data-testid="file-text-icon" />,
-  HardDrive: () => <span data-testid="hard-drive-icon" />,
-}));
+const pageMocks = createPageTestMocks(mockUseQuery, mockUseParams);
+vi.mock("@tanstack/react-query", () => pageMocks["@tanstack/react-query"]);
+vi.mock("@tanstack/react-router", () => pageMocks["@tanstack/react-router"]);
+vi.mock("lucide-react", () => pageMocks["lucide-react"]);
 
 vi.mock("@/components/ui/card", () => cardMock);
-
 vi.mock("@/lib/auth-client", () => authClientMock);
 
 vi.mock("@/utils/orpc", () => ({

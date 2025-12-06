@@ -3,11 +3,11 @@ import {
   createSite,
   generateSubdomain,
   generateTestUser,
+  navigateToSiteSettings,
   signUp,
 } from "./fixtures";
 
 // Regex patterns at module level for performance
-const SETTINGS_REGEX = /settings/i;
 const GENERAL_REGEX = /general/i;
 const ACCESS_CONTROL_REGEX = /access control/i;
 const DANGER_ZONE_REGEX = /danger zone/i;
@@ -40,21 +40,11 @@ test.describe("Site Settings", () => {
 
   test.describe("Navigation", () => {
     test("can navigate to settings page from site detail", async ({ page }) => {
-      // Click on the site to go to detail page
-      await page.getByText(siteName).click();
-
-      // Click settings button
-      await page.getByRole("button", { name: SETTINGS_REGEX }).click();
-
-      // Should be on settings page
-      await expect(
-        page.getByRole("heading", { name: SETTINGS_REGEX })
-      ).toBeVisible();
+      await navigateToSiteSettings(page, siteName, expect);
     });
 
     test("can navigate back from settings", async ({ page }) => {
-      await page.getByText(siteName).click();
-      await page.getByRole("button", { name: SETTINGS_REGEX }).click();
+      await navigateToSiteSettings(page, siteName, expect);
 
       // Click back link
       await page.getByText(BACK_REGEX).click();
@@ -66,8 +56,7 @@ test.describe("Site Settings", () => {
 
   test.describe("General Settings", () => {
     test("displays general settings section", async ({ page }) => {
-      await page.getByText(siteName).click();
-      await page.getByRole("button", { name: SETTINGS_REGEX }).click();
+      await navigateToSiteSettings(page, siteName, expect);
 
       await expect(page.getByText(GENERAL_REGEX)).toBeVisible();
       await expect(page.getByLabel(SITE_NAME_REGEX)).toBeVisible();
@@ -75,8 +64,7 @@ test.describe("Site Settings", () => {
     });
 
     test("can update site name", async ({ page }) => {
-      await page.getByText(siteName).click();
-      await page.getByRole("button", { name: SETTINGS_REGEX }).click();
+      await navigateToSiteSettings(page, siteName, expect);
 
       const newName = "Updated Site Name";
       await page.getByLabel(SITE_NAME_REGEX).clear();
@@ -91,15 +79,13 @@ test.describe("Site Settings", () => {
 
   test.describe("Access Control", () => {
     test("displays access control section", async ({ page }) => {
-      await page.getByText(siteName).click();
-      await page.getByRole("button", { name: SETTINGS_REGEX }).click();
+      await navigateToSiteSettings(page, siteName, expect);
 
       await expect(page.getByText(ACCESS_CONTROL_REGEX)).toBeVisible();
     });
 
     test("shows all access type options", async ({ page }) => {
-      await page.getByText(siteName).click();
-      await page.getByRole("button", { name: SETTINGS_REGEX }).click();
+      await navigateToSiteSettings(page, siteName, expect);
 
       await expect(page.getByText(PUBLIC_REGEX)).toBeVisible();
       await expect(page.getByText(PASSWORD_PROTECTED_REGEX)).toBeVisible();
@@ -108,8 +94,7 @@ test.describe("Site Settings", () => {
     });
 
     test("can select different access types", async ({ page }) => {
-      await page.getByText(siteName).click();
-      await page.getByRole("button", { name: SETTINGS_REGEX }).click();
+      await navigateToSiteSettings(page, siteName, expect);
 
       // Click on Password Protected option
       await page.getByText(PASSWORD_PROTECTED_REGEX).click();
@@ -121,8 +106,7 @@ test.describe("Site Settings", () => {
 
   test.describe("Danger Zone", () => {
     test("displays danger zone section", async ({ page }) => {
-      await page.getByText(siteName).click();
-      await page.getByRole("button", { name: SETTINGS_REGEX }).click();
+      await navigateToSiteSettings(page, siteName, expect);
 
       await expect(page.getByText(DANGER_ZONE_REGEX)).toBeVisible();
       await expect(
@@ -131,8 +115,7 @@ test.describe("Site Settings", () => {
     });
 
     test("shows confirmation when delete is clicked", async ({ page }) => {
-      await page.getByText(siteName).click();
-      await page.getByRole("button", { name: SETTINGS_REGEX }).click();
+      await navigateToSiteSettings(page, siteName, expect);
 
       await page.getByRole("button", { name: DELETE_SITE_REGEX }).click();
 
@@ -144,8 +127,7 @@ test.describe("Site Settings", () => {
     });
 
     test("can cancel delete confirmation", async ({ page }) => {
-      await page.getByText(siteName).click();
-      await page.getByRole("button", { name: SETTINGS_REGEX }).click();
+      await navigateToSiteSettings(page, siteName, expect);
 
       await page.getByRole("button", { name: DELETE_SITE_REGEX }).click();
       await page.getByRole("button", { name: CANCEL_REGEX }).click();

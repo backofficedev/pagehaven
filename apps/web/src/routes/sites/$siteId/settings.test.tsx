@@ -3,15 +3,10 @@ import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createRouteRenderer } from "@/test/route-test-utils";
 import {
-  authClientMock,
-  buttonMock,
-  cardMock,
   createOrpcMock,
   createQueryMock,
   createRouterMock,
-  createToastMock,
-  inputMock,
-  labelMock,
+  createSiteTestMocks,
 } from "@/test/ui-mocks";
 
 // Regex patterns at module level for performance
@@ -47,8 +42,7 @@ vi.mock("@tanstack/react-query", () =>
 
 vi.mock("@tanstack/react-router", () => createRouterMock(mockUseParams));
 
-vi.mock("lucide-react", () => ({
-  ArrowLeft: () => <span data-testid="arrow-left-icon" />,
+const siteMocks = createSiteTestMocks(mockToastSuccess, mockToastError, {
   Eye: () => <span data-testid="eye-icon" />,
   Globe: () => <span data-testid="globe-icon" />,
   Lock: () => <span data-testid="lock-icon" />,
@@ -57,14 +51,15 @@ vi.mock("lucide-react", () => ({
   Trash2: () => <span data-testid="trash-icon" />,
   Users: () => <span data-testid="users-icon" />,
   X: () => <span data-testid="x-icon" />,
-}));
+});
 
-vi.mock("sonner", () => createToastMock(mockToastSuccess, mockToastError));
-vi.mock("@/components/ui/button", () => buttonMock);
-vi.mock("@/components/ui/card", () => cardMock);
-vi.mock("@/components/ui/input", () => inputMock);
-vi.mock("@/components/ui/label", () => labelMock);
-vi.mock("@/lib/auth-client", () => authClientMock);
+vi.mock("lucide-react", () => siteMocks["lucide-react"]);
+vi.mock("sonner", () => siteMocks.sonner);
+vi.mock("@/components/ui/button", () => siteMocks["@/components/ui/button"]);
+vi.mock("@/components/ui/card", () => siteMocks["@/components/ui/card"]);
+vi.mock("@/components/ui/input", () => siteMocks["@/components/ui/input"]);
+vi.mock("@/components/ui/label", () => siteMocks["@/components/ui/label"]);
+vi.mock("@/lib/auth-client", () => siteMocks["@/lib/auth-client"]);
 vi.mock("@/components/site-github-settings", () => ({
   default: () => <div data-testid="site-github-settings">GitHub Settings</div>,
 }));

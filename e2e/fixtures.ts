@@ -2,6 +2,7 @@ import { test as base, type Page } from "@playwright/test";
 
 // Regex patterns at module level for performance
 const CREATE_ACCOUNT_REGEX = /create account/i;
+const SETTINGS_REGEX = /settings/i;
 const WELCOME_BACK_REGEX = /welcome back/i;
 const SIGN_UP_REGEX = /sign up/i;
 const SIGN_IN_REGEX = /sign in/i;
@@ -61,6 +62,23 @@ export async function signUp(
 
   // Wait for redirect to dashboard (with longer timeout for API calls)
   await expect(page).toHaveURL(DASHBOARD_REGEX, { timeout: 15_000 });
+}
+
+/**
+ * Helper to navigate to site settings page
+ */
+export async function navigateToSiteSettings(
+  page: Page,
+  siteName: string,
+  expect: typeof import("@playwright/test").expect
+) {
+  await page.getByText(siteName).click();
+  await page.getByRole("button", { name: SETTINGS_REGEX }).click();
+
+  // Should be on settings page
+  await expect(
+    page.getByRole("heading", { name: SETTINGS_REGEX })
+  ).toBeVisible();
 }
 
 /**

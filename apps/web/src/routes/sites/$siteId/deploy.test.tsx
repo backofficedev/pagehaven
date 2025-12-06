@@ -3,14 +3,10 @@ import { render, screen } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  authClientMock,
-  buttonMock,
-  cardMock,
   createOrpcMock,
+  createQueryMock,
   createRouterMock,
-  createToastMock,
-  inputMock,
-  labelMock,
+  createSiteTestMocks,
 } from "@/test/ui-mocks";
 
 // Regex patterns at module level for performance
@@ -26,29 +22,23 @@ const mockToastSuccess = vi.fn();
 const mockToastError = vi.fn();
 
 // Mock dependencies
-vi.mock("@tanstack/react-query", () => ({
-  useQuery: () => mockUseQuery(),
-  useMutation: () => mockUseMutation(),
-}));
+vi.mock("@tanstack/react-query", () =>
+  createQueryMock(mockUseQuery, mockUseMutation)
+);
 
 vi.mock("@tanstack/react-router", () => ({
   ...createRouterMock(mockUseParams),
   useNavigate: () => mockNavigate,
 }));
 
-vi.mock("lucide-react", () => ({
-  ArrowLeft: () => <span data-testid="arrow-left-icon" />,
-  File: () => <span data-testid="file-icon" />,
-  Loader2: () => <span data-testid="loader-icon" />,
-  Upload: () => <span data-testid="upload-icon" />,
-}));
-
-vi.mock("sonner", () => createToastMock(mockToastSuccess, mockToastError));
-vi.mock("@/components/ui/button", () => buttonMock);
-vi.mock("@/components/ui/card", () => cardMock);
-vi.mock("@/components/ui/input", () => inputMock);
-vi.mock("@/components/ui/label", () => labelMock);
-vi.mock("@/lib/auth-client", () => authClientMock);
+const siteMocks = createSiteTestMocks(mockToastSuccess, mockToastError);
+vi.mock("lucide-react", () => siteMocks["lucide-react"]);
+vi.mock("sonner", () => siteMocks.sonner);
+vi.mock("@/components/ui/button", () => siteMocks["@/components/ui/button"]);
+vi.mock("@/components/ui/card", () => siteMocks["@/components/ui/card"]);
+vi.mock("@/components/ui/input", () => siteMocks["@/components/ui/input"]);
+vi.mock("@/components/ui/label", () => siteMocks["@/components/ui/label"]);
+vi.mock("@/lib/auth-client", () => siteMocks["@/lib/auth-client"]);
 
 vi.mock("@/utils/orpc", () =>
   createOrpcMock({

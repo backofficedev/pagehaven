@@ -29,18 +29,7 @@ test.describe("Authentication", () => {
     test("can sign up with valid credentials", async ({ page }) => {
       const user = generateTestUser();
 
-      await page.goto("/login");
-
-      // Fill in the form using specific input IDs
-      await page.locator("#name").fill(user.name);
-      await page.locator("#email").fill(user.email);
-      await page.locator("#password").fill(user.password);
-
-      // Submit
-      await page.getByRole("button", { name: SIGN_UP_REGEX }).click();
-
-      // Should redirect to dashboard
-      await expect(page).toHaveURL(DASHBOARD_REGEX, { timeout: 10_000 });
+      await signUp(page, user, expect);
 
       // Should show welcome message with user name
       await expect(page.getByText(user.name)).toBeVisible();

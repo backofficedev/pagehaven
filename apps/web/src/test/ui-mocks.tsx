@@ -357,3 +357,51 @@ export const publicSiteFixture = {
   activeDeploymentId: null,
   accessType: "public",
 };
+
+/**
+ * Creates a standard set of vi.mock calls for site route tests
+ * This eliminates duplication across site test files
+ */
+export function createSiteTestMocks(
+  mockToastSuccess: (msg: string) => void,
+  mockToastError: (msg: string) => void,
+  additionalIcons?: Record<string, () => ReactNode>
+) {
+  return {
+    sonner: createToastMock(mockToastSuccess, mockToastError),
+    "@/components/ui/button": buttonMock,
+    "@/components/ui/card": cardMock,
+    "@/components/ui/input": inputMock,
+    "@/components/ui/label": labelMock,
+    "@/lib/auth-client": authClientMock,
+    "lucide-react": {
+      ArrowLeft: () => <span data-testid="arrow-left-icon" />,
+      File: () => <span data-testid="file-icon" />,
+      Loader2: () => <span data-testid="loader-icon" />,
+      Upload: () => <span data-testid="upload-icon" />,
+      ...additionalIcons,
+    },
+  };
+}
+
+/**
+ * Creates a standard set of vi.mock calls for page route tests
+ * This eliminates duplication across page test files
+ */
+export function createPageTestMocks(
+  mockUseQuery: () => unknown,
+  mockUseParams: () => unknown,
+  additionalIcons?: Record<string, () => ReactNode>
+) {
+  return {
+    "@tanstack/react-query": createSimpleQueryMock(mockUseQuery),
+    "@tanstack/react-router": createRouterMock(mockUseParams),
+    "lucide-react": {
+      ArrowLeft: () => <span data-testid="arrow-left-icon" />,
+      Eye: () => <span data-testid="eye-icon" />,
+      FileText: () => <span data-testid="file-text-icon" />,
+      HardDrive: () => <span data-testid="hard-drive-icon" />,
+      ...additionalIcons,
+    },
+  };
+}
