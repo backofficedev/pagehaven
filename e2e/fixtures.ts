@@ -163,8 +163,13 @@ export async function navigateToDeployPage(
   expect: typeof import("@playwright/test").expect
 ) {
   await page.getByText(siteName).click();
-  await page.getByRole("button", { name: DEPLOY_BUTTON_REGEX }).first().click();
-  await expect(page).toHaveURL(DEPLOY_PAGE_REGEX);
+  // Wait for site detail page to load before clicking deploy
+  await expect(page.getByRole("heading", { name: siteName })).toBeVisible({
+    timeout: 10_000,
+  });
+  // Click the deploy link (which contains a button)
+  await page.getByRole("link", { name: DEPLOY_BUTTON_REGEX }).first().click();
+  await expect(page).toHaveURL(DEPLOY_PAGE_REGEX, { timeout: 10_000 });
 }
 
 /**

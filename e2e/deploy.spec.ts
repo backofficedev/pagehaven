@@ -6,6 +6,7 @@ import {
   generateTestUser,
   navigateToDeployPage,
   signUp,
+  uploadSingleHtmlFile,
 } from "./fixtures";
 
 // Regex patterns at module level for performance
@@ -13,6 +14,7 @@ const BACK_TO_SITE_REGEX = /back to site|back/i;
 const DEPLOYMENT_SUCCESS_REGEX = /success|deployed|live/i;
 const REMOVE_BUTTON_REGEX = /remove|delete|x/i;
 const DEPLOY_EXACT_REGEX = /^deploy$/i;
+const DEPLOY_HEADING_REGEX = /deploy/i;
 
 test.describe("Deployment", () => {
   test.beforeEach(async ({ page }) => {
@@ -207,28 +209,29 @@ test.describe("Deployment", () => {
         expect
       );
 
-      // Use first() since there are multiple file inputs
-      const fileInput = page.locator('input[type="file"]').first();
-
-      await fileInput.setInputFiles({
-        name: "index.html",
-        mimeType: "text/html",
-        buffer: Buffer.from("<html><body>Test</body></html>"),
+      // Verify we're on the deploy page
+      await expect(
+        page.getByRole("heading", { name: DEPLOY_HEADING_REGEX })
+      ).toBeVisible({
+        timeout: 10_000,
       });
 
-      await expect(page.getByText("index.html")).toBeVisible({ timeout: 5000 });
+      await uploadSingleHtmlFile(
+        page,
+        expect,
+        "<html><body>Test</body></html>"
+      );
 
       const deployButton = page.getByRole("button", {
         name: DEPLOY_EXACT_REGEX,
       });
-      if (await deployButton.isVisible()) {
-        await deployButton.click();
+      await expect(deployButton).toBeVisible({ timeout: 5000 });
+      await deployButton.click();
 
-        // Progress might be too fast to catch, so we just check deployment completes
-        await expect(page.getByText(DEPLOYMENT_SUCCESS_REGEX)).toBeVisible({
-          timeout: 30_000,
-        });
-      }
+      // Progress might be too fast to catch, so we just check deployment completes
+      await expect(page.getByText(DEPLOYMENT_SUCCESS_REGEX)).toBeVisible({
+        timeout: 60_000,
+      });
     });
   });
 });

@@ -168,8 +168,11 @@ test.describe("Authentication", () => {
       await page.goto("/dashboard");
 
       // Should stay on dashboard (not redirect to login)
-      await expect(page).toHaveURL(DASHBOARD_REGEX);
-      await expect(page.getByText(user.name)).toBeVisible();
+      await expect(page).toHaveURL(DASHBOARD_REGEX, { timeout: 10_000 });
+      // User name appears in welcome heading and user menu button
+      await expect(page.getByText(user.name).first()).toBeVisible({
+        timeout: 5000,
+      });
     });
 
     test("can access sites after sign in", async ({ page }) => {

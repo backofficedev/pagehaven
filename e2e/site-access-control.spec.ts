@@ -72,10 +72,11 @@ test.describe("Site Access Control", () => {
         timeout: 10_000,
       });
 
-      // Invite section should now be visible
+      // Wait for the invite section to appear (it renders when accessType === "private")
+      // The local state is already "private" from clicking the radio, so section should show
       await expect(
         page.getByText("Invited Users", { exact: true })
-      ).toBeVisible();
+      ).toBeVisible({ timeout: 5000 });
     });
 
     test("can change from public to owner only", async ({ page }) => {
@@ -117,6 +118,10 @@ test.describe("Site Access Control", () => {
       await expect(page.getByText(SUCCESS_REGEX)).toBeVisible({
         timeout: 10_000,
       });
+      // Wait for invite section to appear (confirms accessType is "private")
+      await expect(
+        page.getByText("Invited Users", { exact: true })
+      ).toBeVisible({ timeout: 5000 });
     });
 
     test("shows invite section for private sites", async ({ page }) => {
@@ -156,9 +161,13 @@ test.describe("Site Access Control", () => {
       });
 
       // Find and click the remove button (X icon) for this invite
-      const inviteRow = page.locator("div").filter({ hasText: inviteEmail });
-      const removeButton = inviteRow.getByRole("button");
-      await removeButton.click();
+      // The invite row has the email in a paragraph, find the row containing it
+      // and click the last button (the X button, not the Invite button)
+      const inviteRow = page
+        .locator("p", { hasText: inviteEmail })
+        .locator("..");
+      // The X button is a sibling of the div containing the email
+      await inviteRow.locator("..").getByRole("button").last().click();
 
       // Wait for success
       await expect(page.getByText(SUCCESS_REGEX)).toBeVisible({
@@ -216,13 +225,26 @@ test.describe("Site Access Control", () => {
         timeout: 10_000,
       });
 
+      // Wait for the invite section to appear before reload (confirms mutation completed)
+      await expect(
+        page.getByText("Invited Users", { exact: true })
+      ).toBeVisible({ timeout: 5000 });
+
+      // Small delay to ensure mutation is persisted
+      await page.waitForTimeout(500);
+
       // Reload page
       await page.reload();
 
-      // Invite section should still be visible
+      // Wait for page to load and access query to complete
+      await expect(page.getByText(ACCESS_CONTROL_REGEX)).toBeVisible({
+        timeout: 10_000,
+      });
+
+      // Invite section should still be visible after reload
       await expect(
         page.getByText("Invited Users", { exact: true })
-      ).toBeVisible();
+      ).toBeVisible({ timeout: 10_000 });
     });
   });
 

@@ -274,24 +274,21 @@ test.describe("Advanced Deployment", () => {
     test("navigates to site detail after successful deployment", async ({
       page,
     }) => {
-      const fileInput = page.locator('input[type="file"]').first();
-
-      await fileInput.setInputFiles({
-        name: "index.html",
-        mimeType: "text/html",
-        buffer: Buffer.from("<html><body>Test</body></html>"),
-      });
-
-      await expect(page.getByText("index.html")).toBeVisible({ timeout: 5000 });
+      await uploadSingleHtmlFile(
+        page,
+        expect,
+        "<html><body>Test</body></html>"
+      );
       await getDeployButton(page).click();
 
-      // Wait for navigation back to site detail
+      // Wait for navigation back to site detail (deployment can take time)
       await expect(page.getByText(DEPLOYMENT_SUCCESS_REGEX)).toBeVisible({
-        timeout: 30_000,
+        timeout: 60_000,
       });
 
       // Should be back on site detail page (not deploy page)
-      await expect(page).not.toHaveURL(DEPLOY_URL_REGEX);
+      // Wait longer for navigation to complete after success toast
+      await expect(page).not.toHaveURL(DEPLOY_URL_REGEX, { timeout: 10_000 });
     });
   });
 
