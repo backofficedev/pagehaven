@@ -64,25 +64,44 @@ export function createQueryMock(
 
 /**
  * Creates a base orpc mock with site.get and site.list queries
+ * Includes key() methods for query invalidation
  */
 export function createOrpcMock(additionalMocks?: Record<string, unknown>) {
   const { site: additionalSite, ...otherMocks } = additionalMocks ?? {};
   return {
     orpc: {
       site: {
+        key: () => ["site"],
         get: {
           queryOptions: () => ({
-            queryKey: ["site"],
+            queryKey: ["site", "get"],
             queryFn: () => Promise.resolve(null),
           }),
+          key: () => ["site", "get"],
         },
         list: {
           queryOptions: () => ({
-            queryKey: ["sites"],
+            queryKey: ["site", "list"],
             queryFn: () => Promise.resolve([]),
           }),
+          key: () => ["site", "list"],
         },
         ...(additionalSite as Record<string, unknown>),
+      },
+      deployment: {
+        key: () => ["deployment"],
+      },
+      access: {
+        key: () => ["access"],
+        listInvites: {
+          key: () => ["access", "listInvites"],
+        },
+      },
+      github: {
+        key: () => ["github"],
+      },
+      apiKey: {
+        key: () => ["apiKey"],
       },
       ...otherMocks,
     },

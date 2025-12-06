@@ -130,8 +130,8 @@ function DeployPage() {
       });
 
       toast.success("Deployment successful!");
-      queryClient.invalidateQueries({ queryKey: ["site"] });
-      queryClient.invalidateQueries({ queryKey: ["deployment"] });
+      queryClient.invalidateQueries({ queryKey: orpc.site.key() });
+      queryClient.invalidateQueries({ queryKey: orpc.deployment.key() });
       navigate({ to: "/sites/$siteId", params: { siteId } });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Deployment failed");

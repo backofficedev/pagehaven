@@ -38,7 +38,7 @@ function SitesPage() {
       setShowCreateForm(false);
       setNewSiteName("");
       setNewSiteSubdomain("");
-      queryClient.invalidateQueries({ queryKey: ["site", "list"] });
+      queryClient.invalidateQueries({ queryKey: orpc.site.list.key() });
     },
     onError: (error) => {
       toast.error(error.message);

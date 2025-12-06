@@ -145,7 +145,7 @@ export default function SiteGitHubSettings({
         autoDeploy: true,
       });
       toast.success("Repository linked successfully");
-      queryClient.invalidateQueries({ queryKey: ["github"] });
+      queryClient.invalidateQueries({ queryKey: orpc.github.key() });
       setIsLinkDialogOpen(false);
       resetForm();
     } catch (error) {
@@ -159,7 +159,7 @@ export default function SiteGitHubSettings({
     try {
       await unlinkMutation.mutateAsync({ siteId });
       toast.success("Repository unlinked");
-      queryClient.invalidateQueries({ queryKey: ["github"] });
+      queryClient.invalidateQueries({ queryKey: orpc.github.key() });
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to unlink repository"
@@ -182,7 +182,7 @@ export default function SiteGitHubSettings({
           ? "Auto-deploy disabled"
           : "Auto-deploy enabled"
       );
-      queryClient.invalidateQueries({ queryKey: ["github"] });
+      queryClient.invalidateQueries({ queryKey: orpc.github.key() });
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to update settings"

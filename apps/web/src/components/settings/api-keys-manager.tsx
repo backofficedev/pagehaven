@@ -80,7 +80,7 @@ export default function ApiKeysManager() {
       });
 
       setCreatedKey(result);
-      queryClient.invalidateQueries({ queryKey: ["apiKey"] });
+      queryClient.invalidateQueries({ queryKey: orpc.apiKey.key() });
       setNewKeyName("");
       setNewKeyExpiry("never");
     } catch (error) {
@@ -94,7 +94,7 @@ export default function ApiKeysManager() {
     try {
       await revokeMutation.mutateAsync({ keyId });
       toast.success("API key revoked");
-      queryClient.invalidateQueries({ queryKey: ["apiKey"] });
+      queryClient.invalidateQueries({ queryKey: orpc.apiKey.key() });
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to revoke API key"

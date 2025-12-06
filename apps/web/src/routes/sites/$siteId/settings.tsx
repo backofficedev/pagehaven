@@ -86,7 +86,7 @@ function SettingsPage() {
     ...orpc.site.update.mutationOptions(),
     onSuccess: () => {
       toast.success("Site updated successfully");
-      queryClient.invalidateQueries({ queryKey: ["site"] });
+      queryClient.invalidateQueries({ queryKey: orpc.site.key() });
     },
     onError: (error) => {
       toast.error(error.message);
@@ -97,7 +97,7 @@ function SettingsPage() {
     ...orpc.access.update.mutationOptions(),
     onSuccess: () => {
       toast.success("Access settings updated");
-      queryClient.invalidateQueries({ queryKey: ["access"] });
+      queryClient.invalidateQueries({ queryKey: orpc.access.key() });
       setSitePassword("");
     },
     onError: (error) => {
@@ -109,7 +109,7 @@ function SettingsPage() {
     ...orpc.site.delete.mutationOptions(),
     onSuccess: () => {
       toast.success("Site deleted");
-      queryClient.invalidateQueries({ queryKey: ["site"] });
+      queryClient.invalidateQueries({ queryKey: orpc.site.key() });
     },
     onError: (error) => {
       toast.error(error.message);
@@ -120,7 +120,9 @@ function SettingsPage() {
     ...orpc.access.createInvite.mutationOptions(),
     onSuccess: () => {
       toast.success("Invite sent");
-      queryClient.invalidateQueries({ queryKey: ["access", "listInvites"] });
+      queryClient.invalidateQueries({
+        queryKey: orpc.access.listInvites.key(),
+      });
       setInviteEmail("");
     },
     onError: (error) => {
@@ -132,7 +134,9 @@ function SettingsPage() {
     ...orpc.access.deleteInvite.mutationOptions(),
     onSuccess: () => {
       toast.success("Invite removed");
-      queryClient.invalidateQueries({ queryKey: ["access", "listInvites"] });
+      queryClient.invalidateQueries({
+        queryKey: orpc.access.listInvites.key(),
+      });
     },
     onError: (error) => {
       toast.error(error.message);

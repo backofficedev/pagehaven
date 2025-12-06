@@ -40,7 +40,7 @@ export default function GitHubConnection() {
     try {
       await disconnectMutation.mutateAsync({});
       toast.success("GitHub disconnected");
-      queryClient.invalidateQueries({ queryKey: ["github"] });
+      queryClient.invalidateQueries({ queryKey: orpc.github.key() });
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to disconnect GitHub"
