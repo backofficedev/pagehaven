@@ -9,12 +9,13 @@
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target node",
     "dev:local": "bun run ./src/index.ts",
-    "check-types": "tsc -b",
+    "check-types": "tsc --noEmit --skipLibCheck",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@pagehaven/client": "workspace:*",
     "@pagehaven/utils": "workspace:*",
     "chalk": "^5.4.1",
     "commander": "^14.0.0",

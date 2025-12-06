@@ -2,7 +2,14 @@
   "extends": "@pagehaven/config/tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "lib": ["ESNext", "DOM"],
+    "skipLibCheck": true
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src/**/*",
+    "../api/env.d.ts",
+    "../auth/env.d.ts",
+    "../db/env.d.ts"
+  ]
 }

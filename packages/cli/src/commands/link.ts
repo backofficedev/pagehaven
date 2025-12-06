@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { Command } from "commander";
 import ora from "ora";
-import { createApi } from "../lib/api";
+import { createApiClient } from "../lib/api";
 import { getConfig, isAuthenticated, saveConfig } from "../lib/config";
 import { readProjectConfig, updateProjectConfig } from "./init";
 
@@ -17,7 +17,7 @@ export const linkCommand = new Command("link")
     }
 
     const config = getConfig();
-    const api = createApi(config.apiUrl, config.token);
+    const client = createApiClient(config.apiUrl, config.token);
 
     let siteId: string;
 
@@ -25,10 +25,19 @@ export const linkCommand = new Command("link")
       // Create a new site
       const spinner = ora("Creating site...").start();
       try {
-        const site = await api.sites.create(options.create);
+        // Generate subdomain from name (lowercase, replace spaces with hyphens)
+        const subdomain = options.create
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "");
+        const site = await client.site.create({
+          name: options.create,
+          subdomain,
+        });
         siteId = site.id;
         spinner.succeed(
-          `Created site: ${chalk.cyan(site.name)} (${site.subdomain})`
+          `Created site: ${chalk.cyan(options.create)} (${site.subdomain})`
         );
       } catch (error) {
         spinner.fail("Failed to create site");
@@ -43,7 +52,7 @@ export const linkCommand = new Command("link")
       // List sites and let user choose
       const spinner = ora("Fetching sites...").start();
       try {
-        const sites = await api.sites.list();
+        const sites = await client.site.list();
         spinner.stop();
 
         if (sites.length === 0) {

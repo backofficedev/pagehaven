@@ -43,18 +43,18 @@ vi.mock("glob", () => ({
   glob: (...args: unknown[]) => mockGlob(...args),
 }));
 
-// Mock api
+// Mock api - now using getApiClient which returns an oRPC client
 vi.mock("../lib/api", () => ({
-  api: {
-    deployments: {
-      create: (...args: unknown[]) => mockApiCreate(...args),
-      markProcessing: (...args: unknown[]) => mockApiMarkProcessing(...args),
-      finalize: (...args: unknown[]) => mockApiFinalize(...args),
+  getApiClient: () => ({
+    deployment: {
+      create: (args: unknown) => mockApiCreate(args),
+      markProcessing: (args: unknown) => mockApiMarkProcessing(args),
+      finalize: (args: unknown) => mockApiFinalize(args),
     },
     upload: {
-      uploadFiles: (...args: unknown[]) => mockApiUploadFiles(...args),
+      uploadFiles: (args: unknown) => mockApiUploadFiles(args),
     },
-  },
+  }),
 }));
 
 // Mock config
@@ -271,7 +271,10 @@ describe("deploy command", () => {
         "Initial deploy",
       ]);
 
-      expect(mockApiCreate).toHaveBeenCalledWith("site-123", "Initial deploy");
+      expect(mockApiCreate).toHaveBeenCalledWith({
+        siteId: "site-123",
+        commitMessage: "Initial deploy",
+      });
     });
 
     it("marks deployment as processing", async () => {
@@ -288,7 +291,9 @@ describe("deploy command", () => {
         "site-1",
       ]);
 
-      expect(mockApiMarkProcessing).toHaveBeenCalledWith("deploy-456");
+      expect(mockApiMarkProcessing).toHaveBeenCalledWith({
+        deploymentId: "deploy-456",
+      });
     });
 
     it("uploads files in batches of 10", async () => {
@@ -328,7 +333,11 @@ describe("deploy command", () => {
         "site-1",
       ]);
 
-      expect(mockApiFinalize).toHaveBeenCalledWith("deploy-final", 2, 20);
+      expect(mockApiFinalize).toHaveBeenCalledWith({
+        deploymentId: "deploy-final",
+        fileCount: 2,
+        totalSize: 20,
+      });
     });
 
     it("shows success message on completion", async () => {

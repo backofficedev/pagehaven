@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { Command } from "commander";
-import { api } from "../lib/api";
+import { getApiClient } from "../lib/api";
 import { isAuthenticated } from "../lib/config";
 
 export const sitesCommand = new Command("sites")
@@ -13,7 +13,8 @@ export const sitesCommand = new Command("sites")
       }
 
       try {
-        const sites = await api.sites.list();
+        const client = getApiClient();
+        const sites = await client.site.list();
 
         if (sites.length === 0) {
           console.log(chalk.yellow("No sites found"));

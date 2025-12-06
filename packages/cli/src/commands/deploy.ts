@@ -5,7 +5,7 @@ import chalk from "chalk";
 import { Command } from "commander";
 import { glob } from "glob";
 import ora from "ora";
-import { api } from "../lib/api";
+import { getApiClient } from "../lib/api";
 import { isAuthenticated } from "../lib/config";
 
 const BATCH_SIZE = 10;
@@ -79,15 +79,17 @@ export const deployCommand = new Command("deploy")
 
         spinner.text = `Preparing ${filesToUpload.length} files (${formatSize(totalSize)})`;
 
+        const client = getApiClient();
+
         // Create deployment
         spinner.text = "Creating deployment...";
-        const deployment = await api.deployments.create(
-          options.site,
-          options.message
-        );
+        const deployment = await client.deployment.create({
+          siteId: options.site,
+          commitMessage: options.message,
+        });
 
         // Mark as processing
-        await api.deployments.markProcessing(deployment.id);
+        await client.deployment.markProcessing({ deploymentId: deployment.id });
 
         // Upload files in batches
         spinner.text = "Uploading files...";
@@ -95,24 +97,24 @@ export const deployCommand = new Command("deploy")
 
         for (let i = 0; i < filesToUpload.length; i += BATCH_SIZE) {
           const batch = filesToUpload.slice(i, i + BATCH_SIZE);
-          await api.upload.uploadFiles(
-            deployment.id,
-            batch.map((f) => ({
+          await client.upload.uploadFiles({
+            deploymentId: deployment.id,
+            files: batch.map((f) => ({
               filePath: f.path,
               content: f.content,
-            }))
-          );
+            })),
+          });
           uploaded += batch.length;
           spinner.text = `Uploading files... ${uploaded}/${filesToUpload.length}`;
         }
 
         // Finalize deployment
         spinner.text = "Finalizing deployment...";
-        await api.deployments.finalize(
-          deployment.id,
-          filesToUpload.length,
-          totalSize
-        );
+        await client.deployment.finalize({
+          deploymentId: deployment.id,
+          fileCount: filesToUpload.length,
+          totalSize,
+        });
 
         spinner.succeed(chalk.green("Deployment successful!"));
         console.log();

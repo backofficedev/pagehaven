@@ -2,7 +2,7 @@ import { formatSize } from "@pagehaven/utils/format";
 import chalk from "chalk";
 import { Command } from "commander";
 import ora from "ora";
-import { createApi } from "../lib/api";
+import { createApiClient } from "../lib/api";
 import { getConfig, isAuthenticated } from "../lib/config";
 import { readProjectConfig } from "./init";
 
@@ -28,12 +28,12 @@ export const statusCommand = new Command("status")
       process.exit(1);
     }
 
-    const api = createApi(globalConfig.apiUrl, globalConfig.token);
+    const client = createApiClient(globalConfig.apiUrl, globalConfig.token);
     const spinner = ora("Fetching site status...").start();
 
     try {
-      const site = await api.sites.get(siteId);
-      const deployments = await api.deployments.list(siteId);
+      const site = await client.site.get({ siteId });
+      const deployments = await client.deployment.list({ siteId });
       spinner.stop();
 
       console.log();
@@ -62,7 +62,7 @@ export const statusCommand = new Command("status")
           console.log(
             `  ${statusColor(deployment.status.toUpperCase().padEnd(10))} ` +
               `${chalk.gray(deployment.id.slice(0, 8))} ` +
-              `${deployment.fileCount} files, ${formatSize(deployment.totalSize)} ` +
+              `${deployment.fileCount ?? 0} files, ${formatSize(deployment.totalSize ?? 0)} ` +
               `${chalk.gray(formatDate(deployment.createdAt))}` +
               activeMarker
           );
@@ -98,8 +98,8 @@ function getStatusColor(status: string) {
   }
 }
 
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
+function formatDate(dateInput: Date | string): string {
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60_000);
