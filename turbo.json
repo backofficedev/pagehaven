@@ -71,6 +71,30 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", "**/*.test.ts", "**/*.spec.ts"],
       "outputs": ["coverage/**"]
+    },
+    "//#test:e2e": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "e2e/**/*.ts",
+        "playwright.config.ts",
+        "apps/**/src/**",
+        "packages/**/src/**"
+      ],
+      "outputs": ["playwright-report/**", "test-results/**"]
+    },
+    "//#test:e2e:ui": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "//#cpd": {
+      "inputs": ["**/*.{ts,tsx,js,jsx}", "jscpd.json"],
+      "outputs": []
+    },
+    "//#sonar": {
+      "inputs": ["apps/**", "packages/**", "sonar-project.properties"],
+      "outputs": [],
+      "cache": false
     }
   }
 }
