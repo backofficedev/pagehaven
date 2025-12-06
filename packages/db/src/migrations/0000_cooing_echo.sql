@@ -26,6 +26,22 @@ CREATE TABLE `site_analytics` (
 --> statement-breakpoint
 CREATE INDEX `analytics_site_date_idx` ON `site_analytics` (`site_id`,`date`);--> statement-breakpoint
 CREATE INDEX `analytics_site_path_idx` ON `site_analytics` (`site_id`,`path`);--> statement-breakpoint
+CREATE TABLE `api_key` (
+	`id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`name` text NOT NULL,
+	`key_hash` text NOT NULL,
+	`key_prefix` text NOT NULL,
+	`scopes` text DEFAULT '*' NOT NULL,
+	`last_used_at` integer,
+	`expires_at` integer,
+	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `api_key_key_hash_unique` ON `api_key` (`key_hash`);--> statement-breakpoint
+CREATE INDEX `api_key_user_idx` ON `api_key` (`user_id`);--> statement-breakpoint
+CREATE INDEX `api_key_hash_idx` ON `api_key` (`key_hash`);--> statement-breakpoint
 CREATE TABLE `account` (
 	`id` text PRIMARY KEY NOT NULL,
 	`account_id` text NOT NULL,
@@ -79,6 +95,45 @@ CREATE TABLE `verification` (
 );
 --> statement-breakpoint
 CREATE INDEX `verification_identifier_idx` ON `verification` (`identifier`);--> statement-breakpoint
+CREATE TABLE `github_connection` (
+	`id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`github_user_id` text NOT NULL,
+	`github_username` text NOT NULL,
+	`github_avatar_url` text,
+	`access_token` text NOT NULL,
+	`scopes` text DEFAULT 'repo' NOT NULL,
+	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	`updated_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `github_connection_user_id_unique` ON `github_connection` (`user_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `github_connection_github_user_id_unique` ON `github_connection` (`github_user_id`);--> statement-breakpoint
+CREATE INDEX `github_connection_user_idx` ON `github_connection` (`user_id`);--> statement-breakpoint
+CREATE INDEX `github_connection_github_user_idx` ON `github_connection` (`github_user_id`);--> statement-breakpoint
+CREATE TABLE `site_github_config` (
+	`id` text PRIMARY KEY NOT NULL,
+	`site_id` text NOT NULL,
+	`repo_owner` text NOT NULL,
+	`repo_name` text NOT NULL,
+	`repo_branch` text DEFAULT 'main' NOT NULL,
+	`repo_full_name` text NOT NULL,
+	`build_command` text,
+	`output_directory` text DEFAULT 'dist' NOT NULL,
+	`install_command` text,
+	`auto_deploy` integer DEFAULT true NOT NULL,
+	`webhook_secret` text NOT NULL,
+	`last_deployed_commit` text,
+	`last_deployed_at` integer,
+	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	`updated_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	FOREIGN KEY (`site_id`) REFERENCES `site`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `site_github_config_site_id_unique` ON `site_github_config` (`site_id`);--> statement-breakpoint
+CREATE INDEX `site_github_config_site_idx` ON `site_github_config` (`site_id`);--> statement-breakpoint
+CREATE INDEX `site_github_config_repo_idx` ON `site_github_config` (`repo_full_name`);--> statement-breakpoint
 CREATE TABLE `deployment` (
 	`id` text PRIMARY KEY NOT NULL,
 	`site_id` text NOT NULL,
