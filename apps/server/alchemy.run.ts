@@ -31,6 +31,8 @@ export const server = await Worker("server", {
   },
 });
 
+export type Server = typeof server;
+
 console.log(`Server -> ${server.url}`);
 
 await app.finalize();

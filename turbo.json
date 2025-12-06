@@ -13,7 +13,25 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
-    "dev": {
+    "server#dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "server#dev:ready": {
+      "cache": false,
+      "persistent": false
+    },
+    "static#dev": {
+      "dependsOn": ["server#dev:ready"],
+      "cache": false,
+      "persistent": true
+    },
+    "static#dev:ready": {
+      "cache": false,
+      "persistent": false
+    },
+    "web#dev": {
+      "dependsOn": ["server#dev:ready", "static#dev:ready"],
       "cache": false,
       "persistent": true
     },

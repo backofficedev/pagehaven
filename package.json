@@ -74,7 +74,8 @@
     "sonar-scanner": "^3.1.0",
     "turbo": "^2.6.3",
     "ultracite": "6.3.8",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "wait-on": "^9.0.3"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [

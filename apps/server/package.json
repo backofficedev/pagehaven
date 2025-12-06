@@ -16,6 +16,7 @@
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "start": "bun run dist/index.js",
     "dev": "alchemy dev --app server",
+    "dev:ready": "wait-on tcp:3000",
     "deploy": "alchemy deploy --app server",
     "destroy": "alchemy destroy --app server"
   },
