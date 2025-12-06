@@ -11,9 +11,11 @@ import {
   cardMock,
   configMock,
   createAuthClientMock,
+  createOrpcMock,
   createQueryMock,
   inputMock,
   labelMock,
+  publicSiteFixture,
 } from "@/test/ui-mocks";
 
 // Regex patterns at module level for performance
@@ -27,7 +29,6 @@ const mockUseQuery = vi.fn();
 const mockUseMutation = vi.fn();
 const mockRedirect = vi.fn();
 const mockGetSession = vi.fn();
-const mockInvalidateQueries = vi.fn();
 const mockToastSuccess = vi.fn();
 const mockToastError = vi.fn();
 
@@ -81,24 +82,15 @@ vi.mock("@/components/ui/label", () => labelMock);
 vi.mock("@/lib/auth-client", () => createAuthClientMock(mockGetSession));
 vi.mock("@/utils/config", () => configMock);
 
-vi.mock("@/utils/orpc", () => ({
-  orpc: {
+vi.mock("@/utils/orpc", () =>
+  createOrpcMock({
     site: {
-      list: {
-        queryOptions: () => ({
-          queryKey: ["sites"],
-          queryFn: () => Promise.resolve([]),
-        }),
-      },
       create: {
         mutationOptions: () => ({}),
       },
     },
-  },
-  queryClient: {
-    invalidateQueries: mockInvalidateQueries,
-  },
-}));
+  })
+);
 
 // Helper to render the SitesPage component
 const renderSitesPage = createRouteRenderer(() => import("./index"));
@@ -271,19 +263,8 @@ describe("sites route", () => {
 
   describe("getAccessIcon helper", () => {
     it("renders globe icon for public access", async () => {
-      const testSites = [
-        {
-          id: "site-1",
-          name: "Public Site",
-          subdomain: "public",
-          role: "owner",
-          activeDeploymentId: null,
-          accessType: "public",
-        },
-      ];
-
       mockUseQuery.mockReturnValue({
-        data: testSites,
+        data: [publicSiteFixture],
         isLoading: false,
       });
 

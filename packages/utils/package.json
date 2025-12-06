@@ -6,6 +6,9 @@
   "exports": {
     "./format": {
       "default": "./src/format.ts"
+    },
+    "./mime-types": {
+      "default": "./src/mime-types.ts"
     }
   },
   "scripts": {

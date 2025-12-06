@@ -1,37 +1,34 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { authClientWithSessionMock, tanstackRouterMock } from "@/test/ui-mocks";
 
-// Mock TanStack Router - inline to avoid hoisting issues
-vi.mock("@tanstack/react-router", () => ({
-  Link: ({
-    children,
-    to,
-    ...props
-  }: {
-    children: React.ReactNode;
-    to: string;
-  }) => (
-    <a href={to} {...props}>
-      {children}
-    </a>
-  ),
-  useNavigate: vi.fn(() => vi.fn()),
-}));
+vi.mock("@tanstack/react-router", () => tanstackRouterMock);
+vi.mock("@/lib/auth-client", () => authClientWithSessionMock);
 
-// Mock auth client
-vi.mock("@/lib/auth-client", () => ({
-  authClient: {
-    useSession: vi.fn(() => ({
-      data: null,
-      isPending: false,
-    })),
-    signOut: vi.fn(),
-  },
-}));
-
-// Import after mocks
 import UserMenu from "./user-menu";
+
+/** Helper to mock unauthenticated state */
+async function mockUnauthenticated() {
+  const { authClient } = await import("@/lib/auth-client");
+  vi.mocked(authClient.useSession).mockReturnValue({
+    data: null,
+    isPending: false,
+  } as ReturnType<typeof authClient.useSession>);
+}
+
+/** Helper to mock authenticated state with given session */
+async function mockAuthenticated(session: {
+  user: { id: string; name: string; email: string };
+  session: { id: string };
+}) {
+  const { authClient } = await import("@/lib/auth-client");
+  vi.mocked(authClient.useSession).mockReturnValue({
+    data: session,
+    isPending: false,
+  } as ReturnType<typeof authClient.useSession>);
+  return authClient;
+}
 
 describe("UserMenu", () => {
   beforeEach(() => {
@@ -63,23 +60,13 @@ describe("UserMenu", () => {
 
   describe("unauthenticated state", () => {
     it("shows Sign In button when not logged in", async () => {
-      const { authClient } = await import("@/lib/auth-client");
-      vi.mocked(authClient.useSession).mockReturnValue({
-        data: null,
-        isPending: false,
-      } as ReturnType<typeof authClient.useSession>);
-
+      await mockUnauthenticated();
       render(<UserMenu />);
       expect(screen.getByText("Sign In")).toBeInTheDocument();
     });
 
     it("Sign In button links to /login", async () => {
-      const { authClient } = await import("@/lib/auth-client");
-      vi.mocked(authClient.useSession).mockReturnValue({
-        data: null,
-        isPending: false,
-      } as ReturnType<typeof authClient.useSession>);
-
+      await mockUnauthenticated();
       render(<UserMenu />);
       const signInLink = screen.getByText("Sign In").closest("a");
       expect(signInLink).toHaveAttribute("href", "/login");
@@ -87,36 +74,20 @@ describe("UserMenu", () => {
   });
 
   describe("authenticated state", () => {
-    const mockSession = {
-      user: {
-        id: "user-123",
-        name: "John Doe",
-        email: "john@example.com",
-      },
-      session: {
-        id: "session-123",
-      },
+    const johnSession = {
+      user: { id: "user-123", name: "John Doe", email: "john@example.com" },
+      session: { id: "session-123" },
     };
 
-    /** Helper to setup authenticated session mock */
-    async function setupAuthenticatedSession() {
-      const { authClient } = await import("@/lib/auth-client");
-      vi.mocked(authClient.useSession).mockReturnValue({
-        data: mockSession,
-        isPending: false,
-      } as ReturnType<typeof authClient.useSession>);
-      return authClient;
-    }
-
     it("shows user name when logged in", async () => {
-      await setupAuthenticatedSession();
+      await mockAuthenticated(johnSession);
 
       render(<UserMenu />);
       expect(screen.getByText("John Doe")).toBeInTheDocument();
     });
 
     it("opens dropdown menu on click", async () => {
-      await setupAuthenticatedSession();
+      await mockAuthenticated(johnSession);
 
       const user = userEvent.setup();
       render(<UserMenu />);
@@ -128,7 +99,7 @@ describe("UserMenu", () => {
     });
 
     it("shows user email in dropdown", async () => {
-      await setupAuthenticatedSession();
+      await mockAuthenticated(johnSession);
 
       const user = userEvent.setup();
       render(<UserMenu />);
@@ -140,7 +111,7 @@ describe("UserMenu", () => {
     });
 
     it("shows Sign Out button in dropdown", async () => {
-      await setupAuthenticatedSession();
+      await mockAuthenticated(johnSession);
 
       const user = userEvent.setup();
       render(<UserMenu />);
@@ -152,7 +123,7 @@ describe("UserMenu", () => {
     });
 
     it("calls signOut when Sign Out is clicked", async () => {
-      const authClient = await setupAuthenticatedSession();
+      const authClient = await mockAuthenticated(johnSession);
 
       const user = userEvent.setup();
       render(<UserMenu />);
@@ -168,28 +139,13 @@ describe("UserMenu", () => {
   });
 
   describe("dropdown menu structure", () => {
-    const mockSession = {
-      user: {
-        id: "user-123",
-        name: "Jane Smith",
-        email: "jane@example.com",
-      },
-      session: {
-        id: "session-456",
-      },
+    const janeSession = {
+      user: { id: "user-123", name: "Jane Smith", email: "jane@example.com" },
+      session: { id: "session-456" },
     };
 
-    /** Helper to setup authenticated session mock */
-    async function setupAuthenticatedSession() {
-      const { authClient } = await import("@/lib/auth-client");
-      vi.mocked(authClient.useSession).mockReturnValue({
-        data: mockSession,
-        isPending: false,
-      } as ReturnType<typeof authClient.useSession>);
-    }
-
     it("has My Account label", async () => {
-      await setupAuthenticatedSession();
+      await mockAuthenticated(janeSession);
 
       const user = userEvent.setup();
       render(<UserMenu />);
@@ -201,7 +157,7 @@ describe("UserMenu", () => {
     });
 
     it("has separator between label and items", async () => {
-      await setupAuthenticatedSession();
+      await mockAuthenticated(janeSession);
 
       const user = userEvent.setup();
       render(<UserMenu />);

@@ -145,12 +145,13 @@ describe("DeniedGatePage", () => {
   });
 
   describe("search validation", () => {
-    it("validates search params with reason and redirect", () => {
-      const validateSearch = (search: Record<string, unknown>) => ({
-        reason: (search.reason as string) || "unknown",
-        redirect: (search.redirect as string) || "/",
-      });
+    /** Helper to validate search params */
+    const validateSearch = (search: Record<string, unknown>) => ({
+      reason: (search.reason as string) || "unknown",
+      redirect: (search.redirect as string) || "/",
+    });
 
+    it("validates search params with reason and redirect", () => {
       const result = validateSearch({
         reason: "not_member",
         redirect: "/dashboard",
@@ -160,11 +161,6 @@ describe("DeniedGatePage", () => {
     });
 
     it("provides default values for missing search params", () => {
-      const validateSearch = (search: Record<string, unknown>) => ({
-        reason: (search.reason as string) || "unknown",
-        redirect: (search.redirect as string) || "/",
-      });
-
       const result = validateSearch({});
       expect(result.reason).toBe("unknown");
       expect(result.redirect).toBe("/");

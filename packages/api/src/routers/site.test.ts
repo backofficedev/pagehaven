@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import { updateSiteSchema } from "../schemas/upload";
 import { mockDb } from "../test-utils/mock-db";
 
 // Mock the database module
@@ -117,13 +118,6 @@ describe("site input validation schemas", () => {
     name: z.string().min(1).max(100),
     subdomain: subdomainSchema,
     description: z.string().max(500).optional(),
-  });
-
-  const updateSiteSchema = z.object({
-    siteId: z.string(),
-    name: z.string().min(1).max(100).optional(),
-    description: z.string().max(500).optional(),
-    customDomain: z.string().max(253).nullable().optional(),
   });
 
   describe("create site schema - happy path", () => {

@@ -15,13 +15,15 @@ type RequestOptions = {
   body?: unknown;
 };
 
-async function request<T>(
+/**
+ * Core request function that handles the actual HTTP request
+ */
+async function coreRequest<T>(
+  baseUrl: string,
   path: string,
+  token: string | undefined,
   options: RequestOptions = {}
 ): Promise<T> {
-  const config = getConfig();
-  const token = getToken();
-
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -30,7 +32,7 @@ async function request<T>(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${config.apiUrl}${path}`, {
+  const response = await fetch(`${baseUrl}${path}`, {
     method: options.method ?? "GET",
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
@@ -44,6 +46,12 @@ async function request<T>(
   }
 
   return response.json();
+}
+
+function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const config = getConfig();
+  const token = getToken();
+  return coreRequest<T>(config.apiUrl, path, token, options);
 }
 
 export type Site = {
@@ -115,36 +123,8 @@ export const api = {
  * Create an API client with custom URL and token
  */
 export function createApi(apiUrl: string, token?: string) {
-  async function customRequest<T>(
-    path: string,
-    options: RequestOptions = {}
-  ): Promise<T> {
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${apiUrl}${path}`, {
-      method: options.method ?? "GET",
-      headers,
-      body: options.body ? JSON.stringify(options.body) : undefined,
-    });
-
-    if (!response.ok) {
-      const errorData = (await response
-        .json()
-        .catch(() => ({ message: "Unknown error" }))) as { message?: string };
-      throw new ApiError(
-        errorData.message ?? "Request failed",
-        response.status
-      );
-    }
-
-    return response.json();
-  }
+  const customRequest = <T>(path: string, options: RequestOptions = {}) =>
+    coreRequest<T>(apiUrl, path, token, options);
 
   return {
     sites: {

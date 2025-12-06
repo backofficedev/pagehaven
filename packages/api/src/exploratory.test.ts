@@ -2,6 +2,7 @@
  * Exploratory tests for edge cases and boundary conditions
  * These tests explore unusual scenarios and potential failure modes
  */
+import { getContentType, mimeTypes } from "@pagehaven/utils/mime-types";
 import { describe, expect, it } from "vitest";
 import { hasPermission } from "./lib/permissions";
 
@@ -244,40 +245,11 @@ describe("Exploratory Tests", () => {
   });
 
   describe("content type edge cases", () => {
-    const contentTypes: Record<string, string> = {
-      html: "text/html",
-      htm: "text/html",
-      css: "text/css",
-      js: "application/javascript",
-      mjs: "application/javascript",
-      json: "application/json",
-      png: "image/png",
-      jpg: "image/jpeg",
-      jpeg: "image/jpeg",
-      gif: "image/gif",
-      svg: "image/svg+xml",
-      webp: "image/webp",
-      ico: "image/x-icon",
-      woff: "font/woff",
-      woff2: "font/woff2",
-      ttf: "font/ttf",
-      otf: "font/otf",
-      eot: "application/vnd.ms-fontobject",
-      pdf: "application/pdf",
-      xml: "application/xml",
-      zip: "application/zip",
-      txt: "text/plain",
-      md: "text/markdown",
-      mp3: "audio/mpeg",
-      mp4: "video/mp4",
-      webm: "video/webm",
-      wasm: "application/wasm",
-    };
-
-    const getContentType = (filename: string): string => {
-      const ext = filename.split(".").pop()?.toLowerCase() || "";
-      return contentTypes[ext] || "application/octet-stream";
-    };
+    it("has expected mime types defined", () => {
+      expect(mimeTypes.html).toBe("text/html");
+      expect(mimeTypes.css).toBe("text/css");
+      expect(mimeTypes.js).toBe("application/javascript");
+    });
 
     it("handles files without extension", () => {
       expect(getContentType("Makefile")).toBe("application/octet-stream");

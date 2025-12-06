@@ -12,6 +12,7 @@ const CREATE_SITE_REGEX = /create site/i;
 const DASHBOARD_REGEX = /dashboard/;
 const DEPLOY_BUTTON_REGEX = /deploy|upload/i;
 const DEPLOY_PAGE_REGEX = /deploy/;
+const DEPLOY_EXACT_REGEX = /^deploy$/i;
 
 /**
  * Generate a unique test user for each test run
@@ -171,6 +172,67 @@ export async function uploadFiles(
   const fileInput = page.locator('input[type="file"]');
   await expect(fileInput).toBeAttached();
   await fileInput.setInputFiles(files);
+}
+
+/**
+ * Test file data for common file types
+ */
+export const testFiles = {
+  indexHtml: {
+    name: "index.html",
+    mimeType: "text/html",
+    buffer: Buffer.from("<html></html>"),
+  },
+  styleCss: {
+    name: "style.css",
+    mimeType: "text/css",
+    buffer: Buffer.from("body {}"),
+  },
+  createHtml: (content = "<html></html>") => ({
+    name: "index.html",
+    mimeType: "text/html",
+    buffer: Buffer.from(content),
+  }),
+};
+
+/**
+ * Helper to upload a single HTML file and wait for it to be visible
+ */
+export async function uploadSingleHtmlFile(
+  page: Page,
+  expect: typeof import("@playwright/test").expect,
+  content = "<html></html>"
+) {
+  const fileInput = page.locator('input[type="file"]').first();
+  await fileInput.setInputFiles({
+    name: "index.html",
+    mimeType: "text/html",
+    buffer: Buffer.from(content),
+  });
+  await expect(page.getByText("index.html")).toBeVisible({ timeout: 5000 });
+}
+
+/**
+ * Helper to upload multiple files and wait for them to be visible
+ */
+export async function uploadMultipleFiles(
+  page: Page,
+  files: Array<{ name: string; mimeType: string; buffer: Buffer }>,
+  expect: typeof import("@playwright/test").expect
+) {
+  const fileInput = page.locator('input[type="file"]').first();
+  await fileInput.setInputFiles(files);
+  // Wait for first file to be visible
+  if (files.length > 0) {
+    await expect(page.getByText(files[0].name)).toBeVisible({ timeout: 5000 });
+  }
+}
+
+/**
+ * Helper to get the deploy button
+ */
+export function getDeployButton(page: Page) {
+  return page.getByRole("button", { name: DEPLOY_EXACT_REGEX });
 }
 
 /**

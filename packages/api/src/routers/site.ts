@@ -6,6 +6,7 @@ import { protectedProcedure } from "../index";
 import { invalidateSiteCache } from "../lib/cache";
 import { requireSitePermissionFromContext } from "../lib/check-site-permission";
 import { hasPermission } from "../lib/permissions";
+import { updateSiteSchema } from "../schemas/upload";
 
 function generateId(): string {
   return crypto.randomUUID();
@@ -125,14 +126,7 @@ export const siteRouter = {
 
   // Update site details (requires admin+)
   update: protectedProcedure
-    .input(
-      z.object({
-        siteId: z.string(),
-        name: z.string().min(1).max(100).optional(),
-        description: z.string().max(500).optional(),
-        customDomain: z.string().max(253).nullable().optional(),
-      })
-    )
+    .input(updateSiteSchema)
     .handler(async ({ input, context }) => {
       // Check permission (admin+ can update site)
       await requireSitePermissionFromContext(context, input.siteId, "admin");

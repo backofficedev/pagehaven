@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { protectedProcedure } from "../index";
 import { getDeploymentFromContext } from "../lib/check-site-permission";
 import {
@@ -8,6 +7,11 @@ import {
   listFiles,
   uploadFile,
 } from "../lib/storage";
+import {
+  deploymentIdSchema,
+  uploadFileSchema,
+  uploadFilesSchema,
+} from "../schemas/upload";
 
 /** Decode base64 string to ArrayBuffer */
 function decodeBase64(content: string): ArrayBuffer {
@@ -30,14 +34,7 @@ export const uploadRouter = {
   // Upload a single file to a deployment
   // Note: For large files, consider using presigned URLs instead
   uploadFile: protectedProcedure
-    .input(
-      z.object({
-        deploymentId: z.string(),
-        filePath: z.string().min(1),
-        content: z.string(), // Base64 encoded content
-        contentType: z.string().optional(),
-      })
-    )
+    .input(uploadFileSchema)
     .handler(async ({ input, context }) => {
       const { deployment: dep } = await getDeploymentFromContext(
         context,
@@ -68,18 +65,7 @@ export const uploadRouter = {
 
   // Upload multiple files at once (batch upload)
   uploadFiles: protectedProcedure
-    .input(
-      z.object({
-        deploymentId: z.string(),
-        files: z.array(
-          z.object({
-            filePath: z.string().min(1),
-            content: z.string(), // Base64 encoded
-            contentType: z.string().optional(),
-          })
-        ),
-      })
-    )
+    .input(uploadFilesSchema)
     .handler(async ({ input, context }) => {
       const { deployment: dep } = await getDeploymentFromContext(
         context,
@@ -116,7 +102,7 @@ export const uploadRouter = {
 
   // List files in a deployment
   listDeploymentFiles: protectedProcedure
-    .input(z.object({ deploymentId: z.string() }))
+    .input(deploymentIdSchema)
     .handler(async ({ input, context }) => {
       const { deployment: dep } = await getDeploymentFromContext(
         context,
@@ -137,7 +123,7 @@ export const uploadRouter = {
 
   // Delete all files for a deployment (cleanup)
   deleteDeploymentFiles: protectedProcedure
-    .input(z.object({ deploymentId: z.string() }))
+    .input(deploymentIdSchema)
     .handler(async ({ input, context }) => {
       const { deployment: dep } = await getDeploymentFromContext(
         context,

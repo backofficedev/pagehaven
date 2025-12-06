@@ -2,17 +2,20 @@ import { render, screen } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { describeRouteExports } from "@/test/route-test-utils";
-import { buttonMock, cardMock, createRouterMock } from "@/test/ui-mocks";
+import {
+  authClientMock,
+  buttonMock,
+  cardMock,
+  createRouteMockFns,
+  createRouterMock,
+  createSimpleQueryMock,
+} from "@/test/ui-mocks";
 
 // Store mock implementations for dynamic control
-const mockUseQuery = vi.fn();
-const mockUseParams = vi.fn();
+const { mockUseQuery, mockUseParams } = createRouteMockFns();
 
 // Mock dependencies
-vi.mock("@tanstack/react-query", () => ({
-  useQuery: () => mockUseQuery(),
-}));
-
+vi.mock("@tanstack/react-query", () => createSimpleQueryMock(mockUseQuery));
 vi.mock("@tanstack/react-router", () => createRouterMock(mockUseParams));
 
 vi.mock("lucide-react", () => ({
@@ -31,13 +34,7 @@ vi.mock("lucide-react", () => ({
 vi.mock("@/components/ui/button", () => buttonMock);
 vi.mock("@/components/ui/card", () => cardMock);
 
-vi.mock("@/lib/auth-client", () => ({
-  authClient: {
-    getSession: vi.fn(() =>
-      Promise.resolve({ data: { user: { name: "Test" } } })
-    ),
-  },
-}));
+vi.mock("@/lib/auth-client", () => authClientMock);
 
 vi.mock("@/utils/config", () => ({
   getSiteUrl: (subdomain: string) => `https://${subdomain}.pagehaven.io`,
@@ -71,6 +68,26 @@ async function renderSiteDetailPage() {
   const route = module.Route as unknown as { component: React.ComponentType };
   const SiteDetailPage = route.component;
   return render(<SiteDetailPage />);
+}
+
+/** Helper to create a deployment mock with specific status */
+function createDeploymentMock(status: string, id = "deploy-1") {
+  return {
+    id,
+    status,
+    commitMessage: status.charAt(0).toUpperCase() + status.slice(1),
+    createdAt: new Date(),
+  };
+}
+
+/** Helper to setup site and deployments query mocks */
+function setupSiteWithDeployments(
+  site: Record<string, unknown>,
+  deployments: ReturnType<typeof createDeploymentMock>[]
+) {
+  mockUseQuery
+    .mockReturnValueOnce({ data: site, isLoading: false })
+    .mockReturnValueOnce({ data: deployments, isLoading: false });
 }
 
 describe("sites/$siteId route", () => {
@@ -273,55 +290,23 @@ describe("sites/$siteId route", () => {
     };
 
     it("shows check icon for live deployments", async () => {
-      const mockDeployments = [
-        {
-          id: "deploy-1",
-          status: "live",
-          commitMessage: "Live",
-          createdAt: new Date(),
-        },
-      ];
-
-      mockUseQuery
-        .mockReturnValueOnce({ data: mockSite, isLoading: false })
-        .mockReturnValueOnce({ data: mockDeployments, isLoading: false });
-
+      setupSiteWithDeployments(mockSite, [createDeploymentMock("live")]);
       await renderSiteDetailPage();
       expect(screen.getByTestId("check-circle-icon")).toBeInTheDocument();
     });
 
     it("shows x icon for failed deployments", async () => {
-      const mockDeployments = [
-        {
-          id: "deploy-2",
-          status: "failed",
-          commitMessage: "Failed",
-          createdAt: new Date(),
-        },
-      ];
-
-      mockUseQuery
-        .mockReturnValueOnce({ data: mockSite, isLoading: false })
-        .mockReturnValueOnce({ data: mockDeployments, isLoading: false });
-
+      setupSiteWithDeployments(mockSite, [
+        createDeploymentMock("failed", "deploy-2"),
+      ]);
       await renderSiteDetailPage();
       expect(screen.getByTestId("x-circle-icon")).toBeInTheDocument();
     });
 
     it("shows loader icon for processing deployments", async () => {
-      const mockDeployments = [
-        {
-          id: "deploy-3",
-          status: "processing",
-          commitMessage: "Processing",
-          createdAt: new Date(),
-        },
-      ];
-
-      mockUseQuery
-        .mockReturnValueOnce({ data: mockSite, isLoading: false })
-        .mockReturnValueOnce({ data: mockDeployments, isLoading: false });
-
+      setupSiteWithDeployments(mockSite, [
+        createDeploymentMock("processing", "deploy-3"),
+      ]);
       await renderSiteDetailPage();
       expect(screen.getByTestId("loader-icon")).toBeInTheDocument();
     });

@@ -15,6 +15,31 @@ import {
   DropdownMenuTrigger,
 } from "./dropdown-menu";
 
+/** Helper to render a radio group dropdown for testing */
+function renderRadioGroupDropdown(props?: {
+  value?: string;
+  onValueChange?: (value: string) => void;
+}) {
+  return render(
+    <DropdownMenu>
+      <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuRadioGroup
+          onValueChange={props?.onValueChange}
+          value={props?.value ?? "option1"}
+        >
+          <DropdownMenuRadioItem value="option1">
+            Option 1
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="option2">
+            Option 2
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 describe("DropdownMenu", () => {
   describe("smoke tests", () => {
     it("renders trigger without crashing", () => {
@@ -224,21 +249,7 @@ describe("DropdownMenu", () => {
   describe("radio items", () => {
     it("renders radio group with items", async () => {
       const user = userEvent.setup();
-      render(
-        <DropdownMenu>
-          <DropdownMenuTrigger>Open</DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuRadioGroup value="option1">
-              <DropdownMenuRadioItem value="option1">
-                Option 1
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="option2">
-                Option 2
-              </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
+      renderRadioGroupDropdown();
 
       await user.click(screen.getByText("Open"));
       await waitFor(() => {
@@ -250,24 +261,7 @@ describe("DropdownMenu", () => {
     it("calls onValueChange when radio item selected", async () => {
       const user = userEvent.setup();
       const handleChange = vi.fn();
-      render(
-        <DropdownMenu>
-          <DropdownMenuTrigger>Open</DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuRadioGroup
-              onValueChange={handleChange}
-              value="option1"
-            >
-              <DropdownMenuRadioItem value="option1">
-                Option 1
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="option2">
-                Option 2
-              </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
+      renderRadioGroupDropdown({ onValueChange: handleChange });
 
       await user.click(screen.getByText("Open"));
       await waitFor(() => {

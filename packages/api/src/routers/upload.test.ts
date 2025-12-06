@@ -1,31 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { z } from "zod";
+import { uploadFileSchema, uploadFilesSchema } from "../schemas/upload";
 import { mockDb } from "../test-utils/mock-db";
 
 const LEADING_SLASHES_REGEX = /^\/+/;
 
 // Mock the database module
 vi.mock("@pagehaven/db", () => mockDb);
-
-// Upload file schema
-const uploadFileSchema = z.object({
-  deploymentId: z.string(),
-  filePath: z.string().min(1),
-  content: z.string(), // Base64 encoded content
-  contentType: z.string().optional(),
-});
-
-// Upload files (batch) schema
-const uploadFilesSchema = z.object({
-  deploymentId: z.string(),
-  files: z.array(
-    z.object({
-      filePath: z.string().min(1),
-      content: z.string(), // Base64 encoded
-      contentType: z.string().optional(),
-    })
-  ),
-});
 
 describe("upload router", () => {
   describe("smoke tests", () => {

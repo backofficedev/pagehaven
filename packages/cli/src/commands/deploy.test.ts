@@ -1,7 +1,6 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { formatSize } from "@pagehaven/utils/format";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Store mock functions for dynamic control
@@ -109,6 +108,21 @@ describe("deploy command", () => {
     console.error = originalConsoleError;
   });
 
+  /** Helper to setup a basic deploy test with an index.html file */
+  async function setupBasicDeployTest() {
+    mockGlob.mockResolvedValue(["index.html"]);
+    writeFileSync(join(testDir, "index.html"), "<html></html>");
+    const { deployCommand } = await import("./deploy");
+    return { deployCommand };
+  }
+
+  /** Helper to run deploy command with default args */
+  async function runDeployCommand(deployCommand: {
+    parseAsync: (args: string[]) => Promise<unknown>;
+  }) {
+    await deployCommand.parseAsync(["node", "deploy", testDir, "-s", "site-1"]);
+  }
+
   describe("deployCommand", () => {
     it("exports deployCommand", async () => {
       const { deployCommand } = await import("./deploy");
@@ -199,17 +213,8 @@ describe("deploy command", () => {
     });
 
     it("scans directory with correct glob options", async () => {
-      mockGlob.mockResolvedValue(["index.html"]);
-      writeFileSync(join(testDir, "index.html"), "<html></html>");
-
-      const { deployCommand } = await import("./deploy");
-      await deployCommand.parseAsync([
-        "node",
-        "deploy",
-        testDir,
-        "-s",
-        "site-1",
-      ]);
+      const { deployCommand } = await setupBasicDeployTest();
+      await runDeployCommand(deployCommand);
 
       expect(mockGlob).toHaveBeenCalledWith("**/*", {
         cwd: testDir,
@@ -327,17 +332,8 @@ describe("deploy command", () => {
     });
 
     it("shows success message on completion", async () => {
-      mockGlob.mockResolvedValue(["index.html"]);
-      writeFileSync(join(testDir, "index.html"), "<html></html>");
-
-      const { deployCommand } = await import("./deploy");
-      await deployCommand.parseAsync([
-        "node",
-        "deploy",
-        testDir,
-        "-s",
-        "site-1",
-      ]);
+      const { deployCommand } = await setupBasicDeployTest();
+      await runDeployCommand(deployCommand);
 
       expect(mockSpinner.succeed).toHaveBeenCalledWith(
         expect.stringContaining("Deployment successful")
@@ -401,21 +397,7 @@ describe("deploy command", () => {
     });
   });
 
-  describe("formatSize helper", () => {
-    it("formats bytes correctly", () => {
-      expect(formatSize(500)).toBe("500 B");
-      expect(formatSize(1024)).toBe("1.0 KB");
-      expect(formatSize(2048)).toBe("2.0 KB");
-      expect(formatSize(1_048_576)).toBe("1.0 MB");
-      expect(formatSize(5_242_880)).toBe("5.0 MB");
-    });
-
-    it("formats edge cases", () => {
-      expect(formatSize(0)).toBe("0 B");
-      expect(formatSize(1023)).toBe("1023 B");
-      expect(formatSize(1024 * 1024 - 1)).toBe("1024.0 KB");
-    });
-  });
+  // Note: formatSize is tested in @pagehaven/utils/format.test.ts
 
   describe("output messages", () => {
     it("displays file count and size after deployment", async () => {

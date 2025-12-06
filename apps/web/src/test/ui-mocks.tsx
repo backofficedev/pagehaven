@@ -63,7 +63,7 @@ export function createQueryMock(
 }
 
 /**
- * Creates a base orpc mock with site.get query
+ * Creates a base orpc mock with site.get and site.list queries
  */
 export function createOrpcMock(additionalMocks?: Record<string, unknown>) {
   const { site: additionalSite, ...otherMocks } = additionalMocks ?? {};
@@ -74,6 +74,12 @@ export function createOrpcMock(additionalMocks?: Record<string, unknown>) {
           queryOptions: () => ({
             queryKey: ["site"],
             queryFn: () => Promise.resolve(null),
+          }),
+        },
+        list: {
+          queryOptions: () => ({
+            queryKey: ["sites"],
+            queryFn: () => Promise.resolve([]),
           }),
         },
         ...(additionalSite as Record<string, unknown>),
@@ -155,6 +161,35 @@ export const simpleToastMock = {
  */
 export const useNavigateMock = {
   useNavigate: vi.fn(() => vi.fn()),
+};
+
+/**
+ * Full TanStack Router mock with Link, useNavigate, and useRouter
+ * Use this for components that need navigation functionality
+ */
+export const tanstackRouterMock = {
+  Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
+  useNavigate: vi.fn(() => vi.fn()),
+  useRouter: vi.fn(() => ({
+    navigate: vi.fn(),
+  })),
+};
+
+/**
+ * Auth client mock with useSession for components
+ */
+export const authClientWithSessionMock = {
+  authClient: {
+    useSession: vi.fn(() => ({
+      data: null,
+      isPending: false,
+    })),
+    signOut: vi.fn(),
+  },
 };
 
 type MockComponentProps = {
@@ -259,6 +294,26 @@ export const labelMock = {
 };
 
 /**
+ * Creates a simple useQuery mock for TanStack Query
+ */
+export function createSimpleQueryMock(mockUseQuery: () => unknown) {
+  return {
+    useQuery: () => mockUseQuery(),
+  };
+}
+
+/**
+ * Creates standard mock functions for route tests
+ * Returns mockUseQuery and mockUseParams for use with createSimpleQueryMock and createRouterMock
+ */
+export function createRouteMockFns() {
+  return {
+    mockUseQuery: vi.fn(),
+    mockUseParams: vi.fn(),
+  };
+}
+
+/**
  * Creates a TanStack Router mock for gate pages (login/denied) that use useSearch
  */
 export function createGateRouterMock(mockUseSearch: () => unknown) {
@@ -290,3 +345,15 @@ export function createGateRouterMock(mockUseSearch: () => unknown) {
     },
   };
 }
+
+/**
+ * Test fixture for a public site
+ */
+export const publicSiteFixture = {
+  id: "site-1",
+  name: "Public Site",
+  subdomain: "public",
+  role: "owner",
+  activeDeploymentId: null,
+  accessType: "public",
+};

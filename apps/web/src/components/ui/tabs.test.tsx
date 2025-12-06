@@ -3,6 +3,18 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
 
+/** Renders a standard single-tab component for testing */
+function renderSingleTabComponent() {
+  return render(
+    <Tabs defaultValue="tab1">
+      <TabsList>
+        <TabsTrigger value="tab1">Tab 1</TabsTrigger>
+      </TabsList>
+      <TabsContent value="tab1">Content 1</TabsContent>
+    </Tabs>
+  );
+}
+
 /** Renders a standard two-tab component for testing */
 function renderTwoTabComponent() {
   return render(
@@ -20,14 +32,7 @@ function renderTwoTabComponent() {
 describe("Tabs", () => {
   describe("smoke tests", () => {
     it("renders without crashing", () => {
-      render(
-        <Tabs defaultValue="tab1">
-          <TabsList>
-            <TabsTrigger value="tab1">Tab 1</TabsTrigger>
-          </TabsList>
-          <TabsContent value="tab1">Content 1</TabsContent>
-        </Tabs>
-      );
+      renderSingleTabComponent();
       expect(screen.getByRole("tablist")).toBeInTheDocument();
     });
 
@@ -115,14 +120,7 @@ describe("Tabs", () => {
 
   describe("accessibility", () => {
     it("has correct ARIA roles", () => {
-      render(
-        <Tabs defaultValue="tab1">
-          <TabsList>
-            <TabsTrigger value="tab1">Tab 1</TabsTrigger>
-          </TabsList>
-          <TabsContent value="tab1">Content 1</TabsContent>
-        </Tabs>
-      );
+      renderSingleTabComponent();
       expect(screen.getByRole("tablist")).toBeInTheDocument();
       expect(screen.getByRole("tab")).toBeInTheDocument();
       expect(screen.getByRole("tabpanel")).toBeInTheDocument();

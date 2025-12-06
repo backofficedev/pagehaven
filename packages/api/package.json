@@ -33,6 +33,7 @@
     "@orpc/server": "catalog:",
     "@pagehaven/auth": "workspace:*",
     "@pagehaven/db": "workspace:*",
+    "@pagehaven/utils": "workspace:*",
     "drizzle-orm": "catalog:",
     "hono": "catalog:",
     "zod": "catalog:"

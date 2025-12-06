@@ -10,7 +10,9 @@ import {
   cardMock,
   configMock,
   createAuthClientMock,
+  createOrpcMock,
   createRouterMock,
+  publicSiteFixture,
   skeletonMock,
 } from "@/test/ui-mocks";
 
@@ -51,18 +53,7 @@ vi.mock("@/components/ui/skeleton", () => skeletonMock);
 vi.mock("@/lib/auth-client", () => createAuthClientMock(mockGetSession));
 vi.mock("@/utils/config", () => configMock);
 
-vi.mock("@/utils/orpc", () => ({
-  orpc: {
-    site: {
-      list: {
-        queryOptions: () => ({
-          queryKey: ["sites"],
-          queryFn: () => Promise.resolve([]),
-        }),
-      },
-    },
-  },
-}));
+vi.mock("@/utils/orpc", () => createOrpcMock());
 
 // Helper to render the DashboardPage component
 const renderDashboard = createRouteRenderer(() => import("./dashboard"));
@@ -234,19 +225,8 @@ describe("dashboard route", () => {
 
   describe("getAccessIcon helper", () => {
     it("renders access icons for different access types", async () => {
-      const testSites = [
-        {
-          id: "site-1",
-          name: "Public Site",
-          subdomain: "public",
-          role: "owner",
-          activeDeploymentId: null,
-          accessType: "public",
-        },
-      ];
-
       mockUseQuery.mockReturnValue({
-        data: testSites,
+        data: [publicSiteFixture],
         isLoading: false,
       });
 

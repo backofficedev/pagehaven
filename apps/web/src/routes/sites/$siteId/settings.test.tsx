@@ -7,6 +7,7 @@ import {
   buttonMock,
   cardMock,
   createOrpcMock,
+  createQueryMock,
   createRouterMock,
   createToastMock,
   inputMock,
@@ -33,33 +34,16 @@ function setQueryResults(
 }
 
 // Mock dependencies
-vi.mock("@tanstack/react-query", () => ({
-  useQuery: () => {
+vi.mock("@tanstack/react-query", () =>
+  createQueryMock(() => {
     const result = mockQueryResults[queryCallCount] || {
       data: null,
       isLoading: false,
     };
     queryCallCount += 1;
     return result;
-  },
-  useMutation: (options: unknown) => {
-    const opts = options as {
-      onSuccess?: () => void;
-      onError?: (error: Error) => void;
-    };
-    return {
-      ...mockUseMutation(),
-      mutate: (_data: unknown) => {
-        const result = mockUseMutation();
-        if (result.shouldSucceed !== false) {
-          opts.onSuccess?.();
-        } else {
-          opts.onError?.(new Error("Test error"));
-        }
-      },
-    };
-  },
-}));
+  }, mockUseMutation)
+);
 
 vi.mock("@tanstack/react-router", () => createRouterMock(mockUseParams));
 
@@ -131,6 +115,15 @@ function setupDefaultQueries() {
     { data: defaultSite, isLoading: false },
     { data: defaultAccess, isLoading: false },
     { data: defaultInvites, isLoading: false },
+  ]);
+}
+
+/** Helper to setup queries with specific access type */
+function setupQueriesWithAccess(accessType: string, invites: unknown[] = []) {
+  setQueryResults([
+    { data: defaultSite, isLoading: false },
+    { data: { accessType }, isLoading: false },
+    { data: invites, isLoading: false },
   ]);
 }
 
@@ -292,23 +285,15 @@ describe("sites/$siteId/settings route", () => {
       expect(screen.getByLabelText("Site Password")).toBeInTheDocument();
     });
 
-    it("hides password field for public access type", async () => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: { accessType: "public" }, isLoading: false },
-        { data: defaultInvites, isLoading: false },
-      ]);
+    it("hides password field for public access", async () => {
+      setupQueriesWithAccess("public");
 
       await renderSettingsPage();
       expect(screen.queryByLabelText("Site Password")).not.toBeInTheDocument();
     });
 
     it("allows entering password", async () => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: { accessType: "password" }, isLoading: false },
-        { data: defaultInvites, isLoading: false },
-      ]);
+      setupQueriesWithAccess("password");
 
       await renderSettingsPage();
 
@@ -321,11 +306,7 @@ describe("sites/$siteId/settings route", () => {
 
   describe("Invite management for private sites", () => {
     it("shows invite section for private access type", async () => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: { accessType: "private" }, isLoading: false },
-        { data: [], isLoading: false },
-      ]);
+      setupQueriesWithAccess("private");
 
       await renderSettingsPage();
       expect(screen.getByText("Invited Users")).toBeInTheDocument();
@@ -335,22 +316,14 @@ describe("sites/$siteId/settings route", () => {
     });
 
     it("hides invite section for public access type", async () => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: { accessType: "public" }, isLoading: false },
-        { data: [], isLoading: false },
-      ]);
+      setupQueriesWithAccess("public");
 
       await renderSettingsPage();
       expect(screen.queryByText("Invited Users")).not.toBeInTheDocument();
     });
 
     it("displays invite input and button", async () => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: { accessType: "private" }, isLoading: false },
-        { data: [], isLoading: false },
-      ]);
+      setupQueriesWithAccess("private");
 
       await renderSettingsPage();
       expect(
@@ -360,11 +333,7 @@ describe("sites/$siteId/settings route", () => {
     });
 
     it("allows entering email in invite form", async () => {
-      setQueryResults([
-        { data: defaultSite, isLoading: false },
-        { data: { accessType: "private" }, isLoading: false },
-        { data: [], isLoading: false },
-      ]);
+      setupQueriesWithAccess("private");
 
       await renderSettingsPage();
 

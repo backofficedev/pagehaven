@@ -4,7 +4,9 @@ import {
   siteGithubConfig,
 } from "@pagehaven/db/schema/github";
 import { deployment, site } from "@pagehaven/db/schema/site";
+import { getContentType } from "@pagehaven/utils/mime-types";
 import { eq } from "drizzle-orm";
+import { githubFetch } from "./github-api";
 import { uploadFile } from "./storage";
 
 // GitHub webhook event types
@@ -82,29 +84,6 @@ export async function verifyWebhookSignature(
 }
 
 /**
- * GitHub API helper with access token
- */
-async function githubFetch<T>(
-  endpoint: string,
-  accessToken: string
-): Promise<T> {
-  const response = await fetch(`https://api.github.com${endpoint}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      Accept: "application/vnd.github.v3+json",
-      "User-Agent": "PageHaven",
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`GitHub API error: ${response.status} - ${error}`);
-  }
-
-  return response.json() as Promise<T>;
-}
-
-/**
  * Get file content from GitHub
  */
 async function getFileContent(
@@ -129,36 +108,6 @@ async function getFileContent(
   }
 
   return Buffer.from(blob.content, "utf-8");
-}
-
-/**
- * Get content type from file path
- */
-function getContentType(filePath: string): string {
-  const ext = filePath.split(".").pop()?.toLowerCase();
-  const mimeTypes: Record<string, string> = {
-    html: "text/html",
-    css: "text/css",
-    js: "application/javascript",
-    mjs: "application/javascript",
-    json: "application/json",
-    png: "image/png",
-    jpg: "image/jpeg",
-    jpeg: "image/jpeg",
-    gif: "image/gif",
-    svg: "image/svg+xml",
-    webp: "image/webp",
-    ico: "image/x-icon",
-    woff: "font/woff",
-    woff2: "font/woff2",
-    ttf: "font/ttf",
-    eot: "application/vnd.ms-fontobject",
-    pdf: "application/pdf",
-    xml: "application/xml",
-    txt: "text/plain",
-    md: "text/markdown",
-  };
-  return mimeTypes[ext ?? ""] ?? "application/octet-stream";
 }
 
 type DeploymentContext = {

@@ -2,20 +2,22 @@ import { render, screen } from "@testing-library/react";
 import type React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { formatBytes } from "@/lib/utils";
-import { cardMock, createRouterMock } from "@/test/ui-mocks";
+import {
+  authClientMock,
+  cardMock,
+  createRouteMockFns,
+  createRouterMock,
+  createSimpleQueryMock,
+} from "@/test/ui-mocks";
 
 // Regex patterns at module level for performance
 const BACK_TO_REGEX = /Back to/;
 
 // Store mock implementations for dynamic control
-const mockUseQuery = vi.fn();
-const mockUseParams = vi.fn();
+const { mockUseQuery, mockUseParams } = createRouteMockFns();
 
 // Mock dependencies
-vi.mock("@tanstack/react-query", () => ({
-  useQuery: () => mockUseQuery(),
-}));
-
+vi.mock("@tanstack/react-query", () => createSimpleQueryMock(mockUseQuery));
 vi.mock("@tanstack/react-router", () => createRouterMock(mockUseParams));
 
 vi.mock("lucide-react", () => ({
@@ -27,13 +29,7 @@ vi.mock("lucide-react", () => ({
 
 vi.mock("@/components/ui/card", () => cardMock);
 
-vi.mock("@/lib/auth-client", () => ({
-  authClient: {
-    getSession: vi.fn(() =>
-      Promise.resolve({ data: { user: { name: "Test" } } })
-    ),
-  },
-}));
+vi.mock("@/lib/auth-client", () => authClientMock);
 
 vi.mock("@/utils/orpc", () => ({
   orpc: {

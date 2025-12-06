@@ -8,6 +8,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure } from "../index";
 import { requireSitePermissionFromContext } from "../lib/check-site-permission";
+import { githubFetch } from "../lib/github-api";
 
 function generateId(): string {
   return crypto.randomUUID();
@@ -65,27 +66,6 @@ async function getGithubConnectionOrThrow(userId: string) {
   }
 
   return connection;
-}
-
-// GitHub API helper
-async function githubFetch<T>(
-  endpoint: string,
-  accessToken: string
-): Promise<T> {
-  const response = await fetch(`https://api.github.com${endpoint}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      Accept: "application/vnd.github.v3+json",
-      "User-Agent": "PageHaven",
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`GitHub API error: ${response.status} - ${error}`);
-  }
-
-  return response.json() as Promise<T>;
 }
 
 export const githubRouter = {

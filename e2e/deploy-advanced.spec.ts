@@ -3,11 +3,14 @@ import {
   createSiteAndNavigateToDeploy,
   generateSubdomain,
   generateTestUser,
+  getDeployButton,
   signUp,
+  testFiles,
+  uploadMultipleFiles,
+  uploadSingleHtmlFile,
 } from "./fixtures";
 
 // Regex patterns at module level for performance
-const DEPLOY_EXACT_REGEX = /^deploy$/i;
 const CLEAR_FILES_REGEX = /clear files/i;
 const REMOVE_REGEX = /remove/i;
 const FILES_TO_DEPLOY_REGEX = /files to deploy/i;
@@ -50,10 +53,7 @@ test.describe("Advanced Deployment", () => {
     });
 
     test("deploy button disabled without files", async ({ page }) => {
-      const deployButton = page.getByRole("button", {
-        name: DEPLOY_EXACT_REGEX,
-      });
-      await expect(deployButton).toBeDisabled();
+      await expect(getDeployButton(page)).toBeDisabled();
     });
 
     test("clear files button disabled without files", async ({ page }) => {
@@ -113,35 +113,14 @@ test.describe("Advanced Deployment", () => {
     });
 
     test("enables deploy button after file selection", async ({ page }) => {
-      const fileInput = page.locator('input[type="file"]').first();
-
-      await fileInput.setInputFiles({
-        name: "index.html",
-        mimeType: "text/html",
-        buffer: Buffer.from("<html></html>"),
-      });
-
-      await expect(page.getByText("index.html")).toBeVisible({ timeout: 5000 });
-
-      const deployButton = page.getByRole("button", {
-        name: DEPLOY_EXACT_REGEX,
-      });
-      await expect(deployButton).toBeEnabled();
+      await uploadSingleHtmlFile(page, expect);
+      await expect(getDeployButton(page)).toBeEnabled();
     });
 
     test("enables clear files button after file selection", async ({
       page,
     }) => {
-      const fileInput = page.locator('input[type="file"]').first();
-
-      await fileInput.setInputFiles({
-        name: "index.html",
-        mimeType: "text/html",
-        buffer: Buffer.from("<html></html>"),
-      });
-
-      await expect(page.getByText("index.html")).toBeVisible({ timeout: 5000 });
-
+      await uploadSingleHtmlFile(page, expect);
       const clearButton = page.getByRole("button", { name: CLEAR_FILES_REGEX });
       await expect(clearButton).toBeEnabled();
     });
@@ -149,22 +128,11 @@ test.describe("Advanced Deployment", () => {
 
   test.describe("Clear Files", () => {
     test("clears all selected files", async ({ page }) => {
-      const fileInput = page.locator('input[type="file"]').first();
-
-      await fileInput.setInputFiles([
-        {
-          name: "index.html",
-          mimeType: "text/html",
-          buffer: Buffer.from("<html></html>"),
-        },
-        {
-          name: "style.css",
-          mimeType: "text/css",
-          buffer: Buffer.from("body {}"),
-        },
-      ]);
-
-      await expect(page.getByText("index.html")).toBeVisible({ timeout: 5000 });
+      await uploadMultipleFiles(
+        page,
+        [testFiles.indexHtml, testFiles.styleCss],
+        expect
+      );
       await expect(page.getByText("style.css")).toBeVisible();
 
       // Click clear files
@@ -179,46 +147,23 @@ test.describe("Advanced Deployment", () => {
     });
 
     test("disables buttons after clearing files", async ({ page }) => {
-      const fileInput = page.locator('input[type="file"]').first();
-
-      await fileInput.setInputFiles({
-        name: "index.html",
-        mimeType: "text/html",
-        buffer: Buffer.from("<html></html>"),
-      });
-
-      await expect(page.getByText("index.html")).toBeVisible({ timeout: 5000 });
-
+      await uploadSingleHtmlFile(page, expect);
       await page.getByRole("button", { name: CLEAR_FILES_REGEX }).click();
 
-      const deployButton = page.getByRole("button", {
-        name: DEPLOY_EXACT_REGEX,
-      });
-      const clearButton = page.getByRole("button", { name: CLEAR_FILES_REGEX });
-
-      await expect(deployButton).toBeDisabled();
-      await expect(clearButton).toBeDisabled();
+      await expect(getDeployButton(page)).toBeDisabled();
+      await expect(
+        page.getByRole("button", { name: CLEAR_FILES_REGEX })
+      ).toBeDisabled();
     });
   });
 
   test.describe("Remove Individual Files", () => {
     test("can remove a single file from list", async ({ page }) => {
-      const fileInput = page.locator('input[type="file"]').first();
-
-      await fileInput.setInputFiles([
-        {
-          name: "index.html",
-          mimeType: "text/html",
-          buffer: Buffer.from("<html></html>"),
-        },
-        {
-          name: "style.css",
-          mimeType: "text/css",
-          buffer: Buffer.from("body {}"),
-        },
-      ]);
-
-      await expect(page.getByText("index.html")).toBeVisible({ timeout: 5000 });
+      await uploadMultipleFiles(
+        page,
+        [testFiles.indexHtml, testFiles.styleCss],
+        expect
+      );
       await expect(page.getByText("style.css")).toBeVisible();
 
       // Find and click remove button for index.html
@@ -273,21 +218,9 @@ test.describe("Advanced Deployment", () => {
     });
 
     test("commit message is optional", async ({ page }) => {
-      const fileInput = page.locator('input[type="file"]').first();
-
-      await fileInput.setInputFiles({
-        name: "index.html",
-        mimeType: "text/html",
-        buffer: Buffer.from("<html></html>"),
-      });
-
-      await expect(page.getByText("index.html")).toBeVisible({ timeout: 5000 });
-
+      await uploadSingleHtmlFile(page, expect);
       // Deploy button should be enabled even without commit message
-      const deployButton = page.getByRole("button", {
-        name: DEPLOY_EXACT_REGEX,
-      });
-      await expect(deployButton).toBeEnabled();
+      await expect(getDeployButton(page)).toBeEnabled();
     });
   });
 
@@ -310,10 +243,7 @@ test.describe("Advanced Deployment", () => {
       await messageInput.fill("Test deployment");
 
       // Click deploy
-      const deployButton = page.getByRole("button", {
-        name: DEPLOY_EXACT_REGEX,
-      });
-      await deployButton.click();
+      await getDeployButton(page).click();
 
       // Wait for success
       await expect(page.getByText(DEPLOYMENT_SUCCESS_REGEX)).toBeVisible({
@@ -322,20 +252,8 @@ test.describe("Advanced Deployment", () => {
     });
 
     test("shows loading state during deployment", async ({ page }) => {
-      const fileInput = page.locator('input[type="file"]').first();
-
-      await fileInput.setInputFiles({
-        name: "index.html",
-        mimeType: "text/html",
-        buffer: Buffer.from("<html></html>"),
-      });
-
-      await expect(page.getByText("index.html")).toBeVisible({ timeout: 5000 });
-
-      const deployButton = page.getByRole("button", {
-        name: DEPLOY_EXACT_REGEX,
-      });
-      await deployButton.click();
+      await uploadSingleHtmlFile(page, expect);
+      await getDeployButton(page).click();
 
       // Should show deploying state (button text changes or spinner appears)
       await expect(page.getByText(DEPLOYING_REGEX)).toBeVisible({
@@ -355,11 +273,7 @@ test.describe("Advanced Deployment", () => {
       });
 
       await expect(page.getByText("index.html")).toBeVisible({ timeout: 5000 });
-
-      const deployButton = page.getByRole("button", {
-        name: DEPLOY_EXACT_REGEX,
-      });
-      await deployButton.click();
+      await getDeployButton(page).click();
 
       // Wait for navigation back to site detail
       await expect(page.getByText(DEPLOYMENT_SUCCESS_REGEX)).toBeVisible({

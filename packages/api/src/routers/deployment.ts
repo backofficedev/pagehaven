@@ -7,6 +7,7 @@ import {
   getDeploymentFromContext,
   requireSitePermissionFromContext,
 } from "../lib/check-site-permission";
+import { deploymentIdSchema } from "../schemas/upload";
 
 function generateId(): string {
   return crypto.randomUUID();
@@ -44,7 +45,7 @@ export const deploymentRouter = {
 
   // Get a single deployment
   get: protectedProcedure
-    .input(z.object({ deploymentId: z.string() }))
+    .input(deploymentIdSchema)
     .handler(async ({ input, context }) => {
       const { deployment: dep } = await getDeploymentFromContext(
         context,
@@ -163,7 +164,7 @@ export const deploymentRouter = {
 
   // Rollback to a previous deployment (requires admin+)
   rollback: protectedProcedure
-    .input(z.object({ deploymentId: z.string() }))
+    .input(deploymentIdSchema)
     .handler(async ({ input, context }) => {
       const { deployment: dep } = await getDeploymentFromContext(
         context,

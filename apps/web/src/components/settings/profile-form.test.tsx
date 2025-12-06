@@ -31,6 +31,18 @@ function renderProfileForm() {
   return render(<ProfileForm session={mockSession} />);
 }
 
+/** Helper to fill and submit email change form */
+async function fillAndSubmitEmailChangeForm(
+  user: ReturnType<typeof userEvent.setup>
+) {
+  await user.type(
+    screen.getByLabelText("New Email Address"),
+    "newemail@example.com"
+  );
+  await user.type(screen.getByLabelText("Confirm Password"), "password123");
+  await user.click(screen.getByRole("button", { name: "Change Email" }));
+}
+
 describe("ProfileForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -183,13 +195,7 @@ describe("ProfileForm", () => {
 
       const user = userEvent.setup();
       renderProfileForm();
-
-      await user.type(
-        screen.getByLabelText("New Email Address"),
-        "newemail@example.com"
-      );
-      await user.type(screen.getByLabelText("Confirm Password"), "password123");
-      await user.click(screen.getByRole("button", { name: "Change Email" }));
+      await fillAndSubmitEmailChangeForm(user);
 
       await vi.waitFor(() => {
         expect(authClient.changeEmail).toHaveBeenCalled();
@@ -209,13 +215,7 @@ describe("ProfileForm", () => {
 
       const user = userEvent.setup();
       renderProfileForm();
-
-      await user.type(
-        screen.getByLabelText("New Email Address"),
-        "newemail@example.com"
-      );
-      await user.type(screen.getByLabelText("Confirm Password"), "password123");
-      await user.click(screen.getByRole("button", { name: "Change Email" }));
+      await fillAndSubmitEmailChangeForm(user);
 
       await vi.waitFor(() => {
         expect(toast.success).toHaveBeenCalledWith(
@@ -239,13 +239,7 @@ describe("ProfileForm", () => {
 
       const user = userEvent.setup();
       renderProfileForm();
-
-      await user.type(
-        screen.getByLabelText("New Email Address"),
-        "newemail@example.com"
-      );
-      await user.type(screen.getByLabelText("Confirm Password"), "password123");
-      await user.click(screen.getByRole("button", { name: "Change Email" }));
+      await fillAndSubmitEmailChangeForm(user);
 
       await vi.waitFor(() => {
         expect(toast.error).toHaveBeenCalledWith("Email change failed");
