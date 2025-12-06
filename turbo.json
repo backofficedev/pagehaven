@@ -31,7 +31,7 @@
       "persistent": false
     },
     "web#dev": {
-      "dependsOn": ["server#dev:ready", "static#dev:ready"],
+      "dependsOn": ["server#dev:ready"],
       "cache": false,
       "persistent": true
     },
@@ -40,11 +40,11 @@
       "cache": false
     },
     "server#destroy": {
-      "dependsOn": ["web#destroy", "static#destroy"],
+      "dependsOn": ["web#destroy"],
       "cache": false
     },
     "static#destroy": {
-      "dependsOn": ["web#destroy"],
+      "dependsOn": ["web#destroy", "server#destroy"],
       "cache": false
     },
     "web#destroy": {
