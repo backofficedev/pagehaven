@@ -22,6 +22,7 @@ const OWNER_ONLY_REGEX = /owner only/i;
 const BACK_REGEX = /back to/i;
 const ARE_YOU_SURE_REGEX = /are you sure/i;
 const CANCEL_REGEX = /cancel/i;
+const SITE_UPDATED_REGEX = /site updated successfully/i;
 
 test.describe("Site Settings", () => {
   let siteName: string;
@@ -66,13 +67,19 @@ test.describe("Site Settings", () => {
       await navigateToSiteSettings(page, siteName, expect);
 
       const newName = "Updated Site Name";
-      await page.getByLabel(SITE_NAME_REGEX).clear();
-      await page.getByLabel(SITE_NAME_REGEX).fill(newName);
+      const siteNameInput = page.getByLabel(SITE_NAME_REGEX);
+
+      // Clear and fill - use fill('') first for reliable clearing
+      await siteNameInput.fill("");
+      await siteNameInput.fill(newName);
 
       await page.getByRole("button", { name: SAVE_CHANGES_REGEX }).click();
 
-      // Wait for success indication (toast or updated value)
-      await expect(page.getByLabel(SITE_NAME_REGEX)).toHaveValue(newName);
+      // Wait for success toast to confirm mutation completed
+      await expect(page.getByText(SITE_UPDATED_REGEX)).toBeVisible();
+
+      // Verify the input still has the new value
+      await expect(siteNameInput).toHaveValue(newName);
     });
   });
 

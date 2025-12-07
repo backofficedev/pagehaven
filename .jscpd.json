@@ -115,7 +115,16 @@
     "\"editor\"",
     "\"viewer\"",
     "\\.toBe\\(true\\)",
-    "\\.toBe\\(false\\)"
+    "\\.toBe\\(false\\)",
+    "await\\s+page\\.reload\\(\\)",
+    "await\\s+expect\\(page\\.getByText\\(",
+    "await\\s+expect\\(page\\.getByRole\\(",
+    "await\\s+expect\\(page\\.locator\\(",
+    "\\.toBeVisible\\(\\)",
+    "\\.toBeChecked\\(\\)",
+    "page\\.getByRole\\(\"button\"",
+    "UPDATE_ACCESS_REGEX",
+    "ACCESS_SUCCESS_REGEX"
   ],
   "ignore": [
     "**/node_modules/**",

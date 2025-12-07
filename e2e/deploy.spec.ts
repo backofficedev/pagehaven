@@ -87,7 +87,7 @@ test.describe("Deployment", () => {
       });
 
       // Should show the file in the list
-      await expect(page.getByText("index.html")).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText("index.html")).toBeVisible();
     });
 
     test("can select multiple files", async ({ page }) => {
@@ -123,7 +123,7 @@ test.describe("Deployment", () => {
       ]);
 
       // Should show all files
-      await expect(page.getByText("index.html")).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText("index.html")).toBeVisible();
       await expect(page.getByText("style.css")).toBeVisible();
       await expect(page.getByText("script.js")).toBeVisible();
     });
@@ -147,7 +147,7 @@ test.describe("Deployment", () => {
         buffer: Buffer.from("<html></html>"),
       });
 
-      await expect(page.getByText("test.html")).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText("test.html")).toBeVisible();
 
       // Look for a remove button near the file - use first() to get the file's remove button
       const removeButton = page
@@ -185,7 +185,7 @@ test.describe("Deployment", () => {
         ),
       });
 
-      await expect(page.getByText("index.html")).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText("index.html")).toBeVisible();
 
       // Find and click the deploy button
       const deployButton = page.getByRole("button", {
@@ -214,9 +214,7 @@ test.describe("Deployment", () => {
       // Verify we're on the deploy page
       await expect(
         page.getByRole("heading", { name: DEPLOY_HEADING_REGEX })
-      ).toBeVisible({
-        timeout: 10_000,
-      });
+      ).toBeVisible();
 
       await uploadSingleHtmlFile(
         page,
@@ -227,7 +225,7 @@ test.describe("Deployment", () => {
       const deployButton = page.getByRole("button", {
         name: DEPLOY_EXACT_REGEX,
       });
-      await expect(deployButton).toBeVisible({ timeout: 5000 });
+      await expect(deployButton).toBeVisible();
       await deployButton.click();
 
       // Progress might be too fast to catch, so we just check deployment completes

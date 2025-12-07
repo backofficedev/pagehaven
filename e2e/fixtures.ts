@@ -14,6 +14,8 @@ const DASHBOARD_REGEX = /dashboard/;
 const DEPLOY_BUTTON_REGEX = /deploy|upload/i;
 const DEPLOY_PAGE_REGEX = /deploy/;
 const DEPLOY_EXACT_REGEX = /^deploy$/i;
+const SITE_CREATED_REGEX = /site created successfully!?/i;
+const SITE_NAME_REGEX = /site name/i;
 
 /**
  * Generate a unique test user for each test run
@@ -75,10 +77,16 @@ export async function navigateToSiteSettings(
   await page.getByText(siteName).click();
   await page.getByRole("button", { name: SETTINGS_REGEX }).click();
 
-  // Should be on settings page
+  // Wait for settings page to fully load
   await expect(
     page.getByRole("heading", { name: SETTINGS_REGEX })
   ).toBeVisible();
+
+  // Wait for Access Control section to be visible (confirms page fully loaded)
+  await expect(page.getByText("Access Control", { exact: true })).toBeVisible();
+
+  // Wait for site name input to have the site name (confirms site query loaded)
+  await expect(page.getByLabel(SITE_NAME_REGEX)).toHaveValue(siteName);
 }
 
 /**
@@ -147,11 +155,11 @@ export async function createSite(
     .getByRole("button", { name: CREATE_SITE_REGEX })
     .click();
 
-  // Wait for form to close (indicates success) or site to appear in list
-  await Promise.race([
-    expect(page.locator("form")).not.toBeVisible({ timeout: 15_000 }),
-    expect(page.getByText(site.name)).toBeVisible({ timeout: 15_000 }),
-  ]);
+  // Wait for success toast to confirm site was created
+  await expect(page.getByText(SITE_CREATED_REGEX)).toBeVisible();
+
+  // Wait for site to appear in list
+  await expect(page.getByText(site.name)).toBeVisible();
 }
 
 /**

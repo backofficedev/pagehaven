@@ -8,15 +8,28 @@ import {
 
 // Regex patterns at module level for performance
 const SETTINGS_REGEX = /settings/i;
-const ACCESS_CONTROL_REGEX = /access control/i;
 const UPDATE_ACCESS_REGEX = /update access/i;
 const PUBLIC_REGEX = /public/i;
 const PASSWORD_PROTECTED_REGEX = /password protected/i;
-const PRIVATE_REGEX = /private/i;
 const OWNER_ONLY_REGEX = /owner only/i;
 const INVITE_REGEX = /^invite$/i;
 const ACCESS_SUCCESS_REGEX = /access settings updated/i;
 const NO_INVITES_REGEX = /no invites yet/i;
+
+/**
+ * Helper to submit access form and reload page, then wait for page to load
+ */
+async function submitAccessAndReload(
+  page: import("@playwright/test").Page,
+  expectFn: typeof expect
+) {
+  await page.getByRole("button", { name: UPDATE_ACCESS_REGEX }).click();
+  await expectFn(page.getByText(ACCESS_SUCCESS_REGEX)).toBeVisible();
+  await page.reload();
+  await expectFn(
+    page.getByText("Access Control", { exact: true })
+  ).toBeVisible();
+}
 
 test.describe("Site Access Control", () => {
   let siteName: string;
@@ -33,12 +46,23 @@ test.describe("Site Access Control", () => {
     // Navigate to settings
     await page.getByText(siteName).click();
     await page.getByRole("button", { name: SETTINGS_REGEX }).click();
+
+    // Wait for settings page to fully load - Access Control section should be visible
+    await expect(
+      page.getByText("Access Control", { exact: true })
+    ).toBeVisible();
+
+    // Wait for access query to load - public radio should be checked by default
+    const publicRadio = page.locator('input[type="radio"][value="public"]');
+    await expect(publicRadio).toBeChecked();
   });
 
   test.describe("Access Type Changes", () => {
     test("can change from public to password protected", async ({ page }) => {
-      // Verify we're on settings page
-      await expect(page.getByText(ACCESS_CONTROL_REGEX)).toBeVisible();
+      // Verify we're on settings page - use exact match to avoid matching back link
+      await expect(
+        page.getByText("Access Control", { exact: true })
+      ).toBeVisible();
 
       // Select password protected
       await page.getByText(PASSWORD_PROTECTED_REGEX).click();
@@ -52,35 +76,40 @@ test.describe("Site Access Control", () => {
       // Update access
       await page.getByRole("button", { name: UPDATE_ACCESS_REGEX }).click();
 
-      // Wait for success
-      await expect(page.getByText(ACCESS_SUCCESS_REGEX)).toBeVisible({
-        timeout: 10_000,
-      });
+      // Wait for success toast
+      await expect(page.getByText(ACCESS_SUCCESS_REGEX)).toBeVisible();
     });
 
     test("can change from public to private", async ({ page }) => {
-      await expect(page.getByText(ACCESS_CONTROL_REGEX)).toBeVisible();
+      // Verify we're on settings page - use exact match to avoid matching back link
+      await expect(
+        page.getByText("Access Control", { exact: true })
+      ).toBeVisible();
 
-      // Select private
-      await page.getByText(PRIVATE_REGEX).click();
+      // Select private - click radio directly for reliability
+      const privateRadio = page.locator('input[type="radio"][value="private"]');
+      await privateRadio.click();
+
+      // Wait for radio to be checked (confirms click was processed)
+      await expect(privateRadio).toBeChecked();
 
       // Update access
       await page.getByRole("button", { name: UPDATE_ACCESS_REGEX }).click();
 
-      // Wait for success
-      await expect(page.getByText(ACCESS_SUCCESS_REGEX)).toBeVisible({
-        timeout: 10_000,
-      });
+      // Wait for success toast
+      await expect(page.getByText(ACCESS_SUCCESS_REGEX)).toBeVisible();
 
       // Wait for the invite section to appear (it renders when accessType === "private")
-      // The local state is already "private" from clicking the radio, so section should show
       await expect(
         page.getByText("Invited Users", { exact: true })
-      ).toBeVisible({ timeout: 5000 });
+      ).toBeVisible();
     });
 
     test("can change from public to owner only", async ({ page }) => {
-      await expect(page.getByText(ACCESS_CONTROL_REGEX)).toBeVisible();
+      // Verify we're on settings page - use exact match to avoid matching back link
+      await expect(
+        page.getByText("Access Control", { exact: true })
+      ).toBeVisible();
 
       // Select owner only
       await page.getByText(OWNER_ONLY_REGEX).click();
@@ -88,10 +117,8 @@ test.describe("Site Access Control", () => {
       // Update access
       await page.getByRole("button", { name: UPDATE_ACCESS_REGEX }).click();
 
-      // Wait for success
-      await expect(page.getByText(ACCESS_SUCCESS_REGEX)).toBeVisible({
-        timeout: 10_000,
-      });
+      // Wait for success toast
+      await expect(page.getByText(ACCESS_SUCCESS_REGEX)).toBeVisible();
     });
 
     test("password field hidden when not password protected", async ({
@@ -112,28 +139,31 @@ test.describe("Site Access Control", () => {
 
   test.describe("Private Site Invites", () => {
     test.beforeEach(async ({ page }) => {
-      // Wait for the Access Control section to be fully loaded
+      // Wait for Access Control section to be visible (confirms parent beforeEach completed)
       await expect(
         page.getByText("Access Control", { exact: true })
-      ).toBeVisible({
-        timeout: 10_000,
-      });
+      ).toBeVisible();
 
       // Set site to private first - click the radio input directly for reliability
       const privateRadio = page.locator('input[type="radio"][value="private"]');
-      await expect(privateRadio).toBeVisible({ timeout: 5000 });
       await privateRadio.click();
+
+      // Wait for radio to be checked (confirms click was processed)
+      await expect(privateRadio).toBeChecked();
 
       // Verify the invite section appears (confirms local state is "private")
       await expect(
         page.getByText("Invited Users", { exact: true })
-      ).toBeVisible({ timeout: 10_000 });
+      ).toBeVisible();
 
       // Now submit the form to persist the change
       await page.getByRole("button", { name: UPDATE_ACCESS_REGEX }).click();
 
-      // Wait for mutation to complete
-      await page.waitForLoadState("networkidle");
+      // Wait for success toast to confirm mutation completed
+      await expect(page.getByText(ACCESS_SUCCESS_REGEX)).toBeVisible();
+
+      // Wait for invites query to complete - either "No invites yet" or invite list should be visible
+      await expect(page.getByText(NO_INVITES_REGEX)).toBeVisible();
     });
 
     test("shows invite section for private sites", async ({ page }) => {
@@ -150,17 +180,15 @@ test.describe("Site Access Control", () => {
     test("can invite a user to private site", async ({ page }) => {
       const inviteEmail = "invited@example.com";
 
-      // Wait for invite input to be visible (confirms beforeEach completed)
+      // The invite input should be visible after beforeEach completes
       const inviteInput = page.getByPlaceholder("user@example.com");
-      await expect(inviteInput).toBeVisible({ timeout: 10_000 });
+      await expect(inviteInput).toBeVisible();
 
       await inviteInput.fill(inviteEmail);
       await page.getByRole("button", { name: INVITE_REGEX }).click();
 
-      // Wait for success - use specific invite success message
-      await expect(page.getByText("Invite sent")).toBeVisible({
-        timeout: 10_000,
-      });
+      // Wait for success toast
+      await expect(page.getByText("Invite sent")).toBeVisible();
 
       // Invited email should appear in list
       await expect(page.getByText(inviteEmail)).toBeVisible();
@@ -169,30 +197,28 @@ test.describe("Site Access Control", () => {
     test("can remove an invited user", async ({ page }) => {
       const inviteEmail = "toremove@example.com";
 
-      // Wait for invite input to be visible (confirms beforeEach completed)
+      // The invite input should be visible after beforeEach completes
       const inviteInput = page.getByPlaceholder("user@example.com");
-      await expect(inviteInput).toBeVisible({ timeout: 10_000 });
+      await expect(inviteInput).toBeVisible();
 
       // First invite a user
       await inviteInput.fill(inviteEmail);
       await page.getByRole("button", { name: INVITE_REGEX }).click();
-      await expect(page.getByText(inviteEmail)).toBeVisible({
-        timeout: 10_000,
-      });
+
+      // Wait for invite success toast first
+      await expect(page.getByText("Invite sent")).toBeVisible();
+
+      // Wait for invite to appear in list
+      await expect(page.getByText(inviteEmail)).toBeVisible();
 
       // Find and click the remove button (X icon) for this invite
-      // The invite row has the email in a paragraph, find the row containing it
-      // and click the last button (the X button, not the Invite button)
       const inviteRow = page
         .locator("p", { hasText: inviteEmail })
         .locator("..");
-      // The X button is a sibling of the div containing the email
       await inviteRow.locator("..").getByRole("button").last().click();
 
-      // Wait for success - use specific invite removed message
-      await expect(page.getByText("Invite removed")).toBeVisible({
-        timeout: 10_000,
-      });
+      // Wait for success toast
+      await expect(page.getByText("Invite removed")).toBeVisible();
 
       // Email should no longer be visible
       await expect(page.getByText(inviteEmail)).not.toBeVisible();
@@ -218,67 +244,49 @@ test.describe("Site Access Control", () => {
 
   test.describe("Access Type Persistence", () => {
     test("access type persists after page reload", async ({ page }) => {
+      // Wait for Access Control section to be visible (confirms parent beforeEach completed)
+      await expect(
+        page.getByText("Access Control", { exact: true })
+      ).toBeVisible();
+
       // Change to password protected - click radio directly for reliability
       const passwordRadio = page.locator(
         'input[type="radio"][value="password"]'
       );
       await passwordRadio.click();
+      await expect(passwordRadio).toBeChecked();
 
-      // Verify password field appears (confirms local state change)
-      await expect(page.locator("#password")).toBeVisible({ timeout: 5000 });
+      // Verify password field appears and fill it
+      await expect(page.locator("#password")).toBeVisible();
       await page.locator("#password").fill("secret123");
 
-      // Submit the form
-      await page.getByRole("button", { name: UPDATE_ACCESS_REGEX }).click();
+      // Submit and reload
+      await submitAccessAndReload(page, expect);
 
-      // Wait for mutation to complete
-      await page.waitForLoadState("networkidle");
-
-      // Reload page
-      await page.reload();
-
-      // Wait for page to load and access query to complete
-      await expect(
-        page.getByText("Access Control", { exact: true })
-      ).toBeVisible({
-        timeout: 10_000,
-      });
-
-      // The password field should be visible after reload (confirms access type persisted)
-      await expect(page.locator("#password")).toBeVisible({ timeout: 10_000 });
+      // Verify access type persisted
+      await expect(passwordRadio).toBeChecked();
+      await expect(page.locator("#password")).toBeVisible();
     });
 
     test("private site shows invites after reload", async ({ page }) => {
-      // Change to private - use exact text match to avoid matching description
-      await page.getByText("Private", { exact: true }).click();
-      await page.getByRole("button", { name: UPDATE_ACCESS_REGEX }).click();
-      await expect(page.getByText(ACCESS_SUCCESS_REGEX)).toBeVisible({
-        timeout: 10_000,
-      });
+      // Change to private - click radio directly for reliability
+      const privateRadio = page.locator('input[type="radio"][value="private"]');
+      await privateRadio.click();
+      await expect(privateRadio).toBeChecked();
 
-      // Wait for the invite section to appear before reload (confirms mutation completed)
-      // The section should appear because local state is now "private"
+      // Verify the invite section appears
       await expect(
         page.getByText("Invited Users", { exact: true })
-      ).toBeVisible({ timeout: 10_000 });
+      ).toBeVisible();
 
-      // Wait for network to be idle to ensure mutation is persisted
-      await page.waitForLoadState("networkidle");
+      // Submit and reload
+      await submitAccessAndReload(page, expect);
 
-      // Reload page
-      await page.reload();
-
-      // Wait for page to load and access query to complete - use exact match to avoid matching back link
-      await expect(
-        page.getByText("Access Control", { exact: true })
-      ).toBeVisible({
-        timeout: 10_000,
-      });
-
-      // Invite section should still be visible after reload
+      // Verify access type persisted
+      await expect(privateRadio).toBeChecked();
       await expect(
         page.getByText("Invited Users", { exact: true })
-      ).toBeVisible({ timeout: 10_000 });
+      ).toBeVisible();
     });
   });
 
