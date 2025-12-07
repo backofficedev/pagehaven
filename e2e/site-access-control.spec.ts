@@ -17,18 +17,25 @@ const ACCESS_SUCCESS_REGEX = /access settings updated/i;
 const NO_INVITES_REGEX = /no invites yet/i;
 
 /**
- * Helper to submit access form and reload page, then wait for page to load
+ * Helper to submit access form and reload page, then wait for page and data to load
  */
 async function submitAccessAndReload(
   page: import("@playwright/test").Page,
-  expectFn: typeof expect
+  expectFn: typeof expect,
+  expectedRadioValue: string
 ) {
   await page.getByRole("button", { name: UPDATE_ACCESS_REGEX }).click();
   await expectFn(page.getByText(ACCESS_SUCCESS_REGEX)).toBeVisible();
   await page.reload();
+  // Wait for page structure to load
   await expectFn(
     page.getByText("Access Control", { exact: true })
   ).toBeVisible();
+  // Wait for access query to complete - the expected radio should be checked
+  const expectedRadio = page.locator(
+    `input[type="radio"][value="${expectedRadioValue}"]`
+  );
+  await expectFn(expectedRadio).toBeChecked();
 }
 
 test.describe("Site Access Control", () => {
@@ -43,8 +50,12 @@ test.describe("Site Access Control", () => {
     subdomain = generateSubdomain();
     await createSite(page, { name: siteName, subdomain }, expect);
 
-    // Navigate to settings
+    // Navigate to settings - click site name first
     await page.getByText(siteName).click();
+
+    // Wait for site detail page to load before clicking settings
+    await expect(page.getByRole("heading", { name: siteName })).toBeVisible();
+
     await page.getByRole("button", { name: SETTINGS_REGEX }).click();
 
     // Wait for settings page to fully load - Access Control section should be visible
@@ -139,10 +150,9 @@ test.describe("Site Access Control", () => {
 
   test.describe("Private Site Invites", () => {
     test.beforeEach(async ({ page }) => {
-      // Wait for Access Control section to be visible (confirms parent beforeEach completed)
-      await expect(
-        page.getByText("Access Control", { exact: true })
-      ).toBeVisible();
+      // Wait for parent beforeEach to complete - public radio should be checked
+      const publicRadio = page.locator('input[type="radio"][value="public"]');
+      await expect(publicRadio).toBeChecked();
 
       // Set site to private first - click the radio input directly for reliability
       const privateRadio = page.locator('input[type="radio"][value="private"]');
@@ -260,15 +270,18 @@ test.describe("Site Access Control", () => {
       await expect(page.locator("#password")).toBeVisible();
       await page.locator("#password").fill("secret123");
 
-      // Submit and reload
-      await submitAccessAndReload(page, expect);
+      // Submit and reload - pass expected radio value for proper wait
+      await submitAccessAndReload(page, expect, "password");
 
-      // Verify access type persisted
-      await expect(passwordRadio).toBeChecked();
+      // Verify password field is visible (radio check already done in helper)
       await expect(page.locator("#password")).toBeVisible();
     });
 
     test("private site shows invites after reload", async ({ page }) => {
+      // Wait for parent beforeEach to complete - public radio should be checked
+      const publicRadio = page.locator('input[type="radio"][value="public"]');
+      await expect(publicRadio).toBeChecked();
+
       // Change to private - click radio directly for reliability
       const privateRadio = page.locator('input[type="radio"][value="private"]');
       await privateRadio.click();
@@ -279,11 +292,10 @@ test.describe("Site Access Control", () => {
         page.getByText("Invited Users", { exact: true })
       ).toBeVisible();
 
-      // Submit and reload
-      await submitAccessAndReload(page, expect);
+      // Submit and reload - pass expected radio value for proper wait
+      await submitAccessAndReload(page, expect, "private");
 
-      // Verify access type persisted
-      await expect(privateRadio).toBeChecked();
+      // Verify invite section is visible (radio check already done in helper)
       await expect(
         page.getByText("Invited Users", { exact: true })
       ).toBeVisible();

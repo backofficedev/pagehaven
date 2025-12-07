@@ -14,7 +14,6 @@ const DASHBOARD_REGEX = /dashboard/;
 const DEPLOY_BUTTON_REGEX = /deploy|upload/i;
 const DEPLOY_PAGE_REGEX = /deploy/;
 const DEPLOY_EXACT_REGEX = /^deploy$/i;
-const SITE_CREATED_REGEX = /site created successfully!?/i;
 const SITE_NAME_REGEX = /site name/i;
 
 /**
@@ -74,7 +73,12 @@ export async function navigateToSiteSettings(
   siteName: string,
   expect: typeof import("@playwright/test").expect
 ) {
+  // Click on site name to go to site detail
   await page.getByText(siteName).click();
+
+  // Wait for site detail page to load before clicking settings
+  await expect(page.getByRole("heading", { name: siteName })).toBeVisible();
+
   await page.getByRole("button", { name: SETTINGS_REGEX }).click();
 
   // Wait for settings page to fully load
@@ -82,11 +86,16 @@ export async function navigateToSiteSettings(
     page.getByRole("heading", { name: SETTINGS_REGEX })
   ).toBeVisible();
 
-  // Wait for Access Control section to be visible (confirms page fully loaded)
+  // Wait for Access Control section to be visible (confirms page structure loaded)
   await expect(page.getByText("Access Control", { exact: true })).toBeVisible();
 
+  // Wait for site name input to be visible first
+  const siteNameInput = page.getByLabel(SITE_NAME_REGEX);
+  await expect(siteNameInput).toBeVisible();
+
   // Wait for site name input to have the site name (confirms site query loaded)
-  await expect(page.getByLabel(SITE_NAME_REGEX)).toHaveValue(siteName);
+  // This is the key wait - the input starts empty and gets populated by useEffect
+  await expect(siteNameInput).toHaveValue(siteName);
 }
 
 /**
@@ -142,24 +151,23 @@ export async function createSite(
   // Click new site button
   await page.getByRole("button", { name: NEW_SITE_REGEX }).click();
 
-  // Wait for the create form to appear
-  await expect(page.locator("form")).toBeVisible();
+  // Wait for the create form to appear - look for "Create New Site" heading
+  await expect(page.getByText("Create New Site")).toBeVisible();
 
-  // Fill in the form - use form-scoped selectors to avoid conflicts
-  await page.locator("form #name").fill(site.name);
-  await page.locator("form #subdomain").fill(site.subdomain);
+  // Fill in the form using labels for reliability
+  await page.getByLabel("Site Name").fill(site.name);
+  await page.getByLabel("Subdomain").fill(site.subdomain);
 
-  // Submit - use the form's submit button specifically
-  await page
-    .locator("form")
-    .getByRole("button", { name: CREATE_SITE_REGEX })
-    .click();
+  // Submit - use first() to avoid strict mode violation (there may be another Create Site button in empty state)
+  await page.getByRole("button", { name: CREATE_SITE_REGEX }).first().click();
 
-  // Wait for success toast to confirm site was created
-  await expect(page.getByText(SITE_CREATED_REGEX)).toBeVisible();
+  // Wait for the create form to disappear (indicates success)
+  await expect(page.getByText("Create New Site")).not.toBeVisible({
+    timeout: 30_000,
+  });
 
   // Wait for site to appear in list
-  await expect(page.getByText(site.name)).toBeVisible();
+  await expect(page.getByText(site.name).first()).toBeVisible();
 }
 
 /**
