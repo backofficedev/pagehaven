@@ -9,6 +9,9 @@
     },
     "./mime-types": {
       "default": "./src/mime-types.ts"
+    },
+    "./site-config": {
+      "default": "./src/site-config.ts"
     }
   },
   "scripts": {
@@ -22,5 +25,8 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "zod": "catalog:"
   }
 }
