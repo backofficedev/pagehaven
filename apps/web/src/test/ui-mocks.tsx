@@ -394,6 +394,7 @@ export function createSiteTestMocks(
     "@/components/ui/label": labelMock,
     "@/lib/auth-client": authClientMock,
     "lucide-react": {
+      Archive: () => <span data-testid="archive-icon" />,
       ArrowLeft: () => <span data-testid="arrow-left-icon" />,
       File: () => <span data-testid="file-icon" />,
       Loader2: () => <span data-testid="loader-icon" />,

@@ -1,7 +1,8 @@
 import { formatSize } from "@pagehaven/utils/format";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { File, Loader2, Upload } from "lucide-react";
+import JSZip from "jszip";
+import { Archive, File, Loader2, Upload } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { SitePageHeader } from "@/components/site-page-header";
@@ -28,6 +29,43 @@ type FileToUpload = {
   content: string;
   size: number;
 };
+
+/** Check if a ZIP entry should be skipped (directories, macOS metadata, hidden files) */
+function shouldSkipZipEntry(relativePath: string, isDir: boolean): boolean {
+  return (
+    isDir || relativePath.startsWith("__MACOSX") || relativePath.includes("/.")
+  );
+}
+
+/** Extract files from a ZIP archive */
+async function extractZipFiles(
+  zipFile: globalThis.File
+): Promise<FileToUpload[]> {
+  const zip = await JSZip.loadAsync(zipFile);
+  const extractedFiles: FileToUpload[] = [];
+
+  for (const [relativePath, zipEntry] of Object.entries(zip.files)) {
+    if (shouldSkipZipEntry(relativePath, zipEntry.dir)) {
+      continue;
+    }
+
+    const content = await zipEntry.async("base64");
+    // Access internal _data property for uncompressed size (not in public types)
+    const zipEntryData = zipEntry as unknown as {
+      _data?: { uncompressedSize?: number };
+    };
+    const uncompressedSize =
+      zipEntryData._data?.uncompressedSize ?? content.length;
+
+    extractedFiles.push({
+      path: relativePath,
+      content,
+      size: uncompressedSize,
+    });
+  }
+
+  return extractedFiles;
+}
 
 function DeployPage() {
   const { siteId } = Route.useParams();
@@ -72,6 +110,34 @@ function DeployPage() {
 
     const newFiles = await Promise.all(filePromises);
     setFiles((prev) => [...prev, ...newFiles]);
+  };
+
+  const handleZipSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = e.target.files;
+    if (!selectedFiles || selectedFiles.length === 0) {
+      return;
+    }
+
+    const zipFile = selectedFiles[0];
+    if (!zipFile) {
+      return;
+    }
+
+    try {
+      const extractedFiles = await extractZipFiles(zipFile);
+
+      if (extractedFiles.length === 0) {
+        toast.error("No files found in ZIP archive");
+        return;
+      }
+
+      setFiles((prev) => [...prev, ...extractedFiles]);
+      toast.success(`Extracted ${extractedFiles.length} files from ZIP`);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to extract ZIP file"
+      );
+    }
   };
 
   const readFileAsBase64 = (file: File): Promise<string> => {
@@ -184,6 +250,23 @@ function DeployPage() {
               // @ts-expect-error - webkitdirectory is a non-standard attribute
               webkitdirectory=""
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="zip">Or Upload ZIP File</Label>
+            <div className="flex items-center gap-2">
+              <Archive className="h-4 w-4 text-muted-foreground" />
+              <Input
+                accept=".zip,application/zip"
+                className="cursor-pointer"
+                id="zip"
+                onChange={handleZipSelect}
+                type="file"
+              />
+            </div>
+            <p className="text-muted-foreground text-xs">
+              Upload a ZIP file and its contents will be extracted automatically
+            </p>
           </div>
 
           <div className="space-y-2">
