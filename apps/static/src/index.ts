@@ -79,7 +79,7 @@ app.all("/*", async (c) => {
 
   if (!accessCheck.allowed) {
     // Redirect to appropriate gate page
-    const webUrl = env.WEB_URL || "http://localhost:3001";
+    const webUrl = env.WEB_URL || "";
     const redirectUrl = getGateRedirectUrl(
       accessCheck.reason,
       resolvedSite.id,
