@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Pagehaven Site Configuration",
+  "description": "Configuration file for Pagehaven static site hosting",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version for future compatibility"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Site display name"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Site description"
+    },
+    "access": {
+      "type": "object",
+      "description": "Access control settings",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["public", "password", "private", "owner_only"],
+          "default": "public",
+          "description": "Access type for the site"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 8,
+          "description": "Password for password-protected sites"
+        },
+        "invites": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "email"
+          },
+          "description": "Email addresses to invite for private sites"
+        }
+      }
+    },
+    "domain": {
+      "type": "object",
+      "description": "Custom domain configuration",
+      "properties": {
+        "custom": {
+          "type": "string",
+          "maxLength": 253,
+          "description": "Custom domain (e.g., 'example.com')"
+        }
+      }
+    },
+    "build": {
+      "type": "object",
+      "description": "Build configuration for static site generators",
+      "properties": {
+        "outputDir": {
+          "type": "string",
+          "default": "dist",
+          "description": "Directory containing the built files"
+        },
+        "ignore": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "node_modules",
+            ".git",
+            ".DS_Store",
+            "Thumbs.db",
+            "*.log"
+          ],
+          "description": "Files/directories to ignore during upload"
+        }
+      }
+    },
+    "redirects": {
+      "type": "array",
+      "description": "Redirect rules",
+      "items": {
+        "type": "object",
+        "required": ["from", "to"],
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Source path (supports wildcards)"
+          },
+          "to": {
+            "type": "string",
+            "description": "Destination path or URL"
+          },
+          "status": {
+            "type": "integer",
+            "minimum": 300,
+            "maximum": 399,
+            "default": 301,
+            "description": "HTTP status code"
+          }
+        }
+      }
+    },
+    "headers": {
+      "type": "array",
+      "description": "Custom headers",
+      "items": {
+        "type": "object",
+        "required": ["path", "headers"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path pattern to match"
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Headers to add"
+          }
+        }
+      }
+    }
+  }
+}
