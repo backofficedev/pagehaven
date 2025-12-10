@@ -10,44 +10,26 @@ format:
 
 ## Feedback Given
 
-Describe specific instances where you provided feedback:
-
 - **Ideas/Pitches**: 
-  - [Describe feedback you gave on someone's idea or pitch]
+  - During class I met with others and gave them feedback on their ideas. I mostly recommend Cloudflare to Isaac and some other friends in class.
 
 - **Status Updates**: 
-  - [How did you engage with others' progress updates?]
+  - When we met for class I reported my progress and listened to others report their progress.
 
 - **Questions Answered**: 
-  - [What questions from teammates did you help address?]
+  - I answered design questions and shared what I had done to solve that problem. Most of my advice was to use Cloudflare.
 
 - **Final Presentations**: 
-  - [Feedback provided on presentations or deliverables]
+  - I listened to people present and asked clarifying questions to better understand the product/solution/problem and shared thoughs on additional features.
 
 ## Active Listening
 
 How did you demonstrate active listening?
 
-- [Example: Asked clarifying questions during X's presentation]
-- [Example: Summarized key points to confirm understanding]
-- [Example: Followed up on concerns raised by teammates]
-
-## Knowledge Sharing
-
-What did you share with others?
-
-| What I Shared | With Whom | Outcome |
-|---------------|-----------|---------|
-| [Resource/insight] | [Person/team] | [Result] |
-| | | |
-
-## Contributions to Others' Success
-
-Specific ways you helped teammates succeed:
-
-1. **[Teammate/Project]**: [How you contributed]
-2. **[Teammate/Project]**: [How you contributed]
+- Asked clarifying questions during presentations.
+- Summarized key points to confirm understanding.
+- Addressed concerns that people brought up.
 
 ---
 
-*Summary*: [One sentence summarizing your collaborative contributions this period]
+I enjoyed collaborting with everyone on their ideas and my ideas. I learned a lot about the general problems we face when starting a new project and trying to get all the pieces working together.
