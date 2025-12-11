@@ -25,6 +25,7 @@
     "@orpc/client": "catalog:",
     "@orpc/tanstack-query": "catalog:",
     "@pagehaven/auth": "workspace:*",
+    "@pagehaven/infra": "workspace:*",
     "@pagehaven/client": "workspace:*",
     "@pagehaven/utils": "workspace:*",
     "@radix-ui/react-tabs": "^1.1.13",

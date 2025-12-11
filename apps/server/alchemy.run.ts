@@ -1,5 +1,9 @@
 import path from "node:path";
-import { buildUrl, getDomainByEnvironment } from "@pagehaven/infra/helpers";
+import {
+  buildUrl,
+  getDomainByEnvironment,
+  isDevelopmentEnvironment,
+} from "@pagehaven/infra/helpers";
 import {
   createSharedResources,
   createWorker,
@@ -14,19 +18,19 @@ const PORT = 3000;
 const app = await alchemy("server");
 
 // Global env
-const STAGE = alchemy.env.STAGE || "";
+const stage = app.stage;
 const SERVER_DOMAIN = getDomainByEnvironment(
-  STAGE,
+  stage,
   alchemy.env.SERVER_DOMAIN || ""
 );
-const WEB_DOMAIN = getDomainByEnvironment(STAGE, alchemy.env.WEB_DOMAIN || "");
-const WEB_URL = buildUrl(STAGE, WEB_DOMAIN);
+const WEB_DOMAIN = getDomainByEnvironment(stage, alchemy.env.WEB_DOMAIN || "");
+const WEB_URL = buildUrl(stage, WEB_DOMAIN);
 const CORS_ORIGIN = WEB_URL;
 const STATIC_DOMAIN = getDomainByEnvironment(
-  STAGE,
+  stage,
   alchemy.env.STATIC_DOMAIN || ""
 );
-const SERVER_URL = buildUrl(STAGE, SERVER_DOMAIN);
+const SERVER_URL = buildUrl(stage, SERVER_DOMAIN);
 const BETTER_AUTH_URL = SERVER_URL;
 
 // Local env
@@ -34,7 +38,7 @@ const BETTER_AUTH_SECRET = alchemy.secret.env.BETTER_AUTH_SECRET || "";
 const GITHUB_CLIENT_ID = alchemy.env.GITHUB_CLIENT_ID || "";
 const GITHUB_CLIENT_SECRET = alchemy.secret.env.GITHUB_CLIENT_SECRET || "";
 
-const domains = STAGE !== "dev" ? [SERVER_DOMAIN] : undefined;
+const domains = isDevelopmentEnvironment(stage) ? [SERVER_DOMAIN] : undefined;
 const envBindings = {
   CORS_ORIGIN,
   STATIC_DOMAIN,
@@ -55,6 +59,7 @@ export const serverWorker = await createWorker<typeof bindings>(
   "server",
   PORT,
   {
+    entrypoint: path.join(import.meta.dirname, "src/index.ts"),
     domains,
     bindings,
   }

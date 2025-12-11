@@ -25,6 +25,7 @@ const MIGRATIONS_DIR = path.join(WORKSPACE_ROOT, "packages/db/src/migrations");
 
 /**
  * Creates shared Cloudflare resources (D1, R2, KV) with adopt: true.
+ * The adopt: true flag ensures existing resources are reused rather than recreated.
  * Call this within your alchemy app context.
  */
 export async function createSharedResources() {
@@ -53,11 +54,12 @@ export async function createSharedResources() {
 export async function createWorker<const B extends Bindings>(
   id: string,
   port: number,
-  options: Pick<WorkerProps<B>, "domains" | "bindings">
+  options: Required<Pick<WorkerProps<B>, "entrypoint" | "bindings">> &
+    Pick<WorkerProps<B>, "domains">
 ) {
   return await Worker(id, {
-    entrypoint: path.join(import.meta.dirname, "src/index.ts"),
     compatibility: "node",
+    entrypoint: options.entrypoint,
     domains: options.domains,
     bindings: options.bindings,
     placement: {

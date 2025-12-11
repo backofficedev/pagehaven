@@ -1,5 +1,9 @@
 import path from "node:path";
-import { buildUrl, getDomainByEnvironment } from "@pagehaven/infra/helpers";
+import {
+  buildUrl,
+  getDomainByEnvironment,
+  isDevelopmentEnvironment,
+} from "@pagehaven/infra/helpers";
 import {
   createSharedResources,
   createWorker,
@@ -14,21 +18,22 @@ const PORT = 3002;
 const app = await alchemy("static");
 
 // Global env
-const STAGE = alchemy.env.STAGE || "";
-const WEB_DOMAIN = getDomainByEnvironment(STAGE, alchemy.env.WEB_DOMAIN || "");
-const WEB_URL = buildUrl(STAGE, WEB_DOMAIN);
+const stage = app.stage;
+const WEB_DOMAIN = getDomainByEnvironment(stage, alchemy.env.WEB_DOMAIN || "");
+const WEB_URL = buildUrl(stage, WEB_DOMAIN);
 const STATIC_DOMAIN = getDomainByEnvironment(
-  STAGE,
+  stage,
   alchemy.env.STATIC_DOMAIN || ""
 );
-const CORS_ORIGIN = buildUrl(STAGE, STATIC_DOMAIN);
-const BETTER_AUTH_URL = buildUrl(STAGE, STATIC_DOMAIN);
+const CORS_ORIGIN = buildUrl(stage, STATIC_DOMAIN);
+const BETTER_AUTH_URL = buildUrl(stage, STATIC_DOMAIN);
 
 // Local env
 const BETTER_AUTH_SECRET = alchemy.secret.env.BETTER_AUTH_SECRET || "";
 
-const domains =
-  STAGE !== "dev" ? [STATIC_DOMAIN, `*.${STATIC_DOMAIN}`] : undefined;
+const domains = isDevelopmentEnvironment(stage)
+  ? [STATIC_DOMAIN, `*.${STATIC_DOMAIN}`]
+  : undefined;
 const envBindings = {
   WEB_URL,
   CORS_ORIGIN,
@@ -47,6 +52,7 @@ export const staticWorker = await createWorker<typeof bindings>(
   "static",
   PORT,
   {
+    entrypoint: path.join(import.meta.dirname, "src/index.ts"),
     domains,
     bindings,
   }
