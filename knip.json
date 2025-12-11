@@ -4,7 +4,6 @@
     "cloudflare",
     "lint-staged",
     "alchemy",
-    "dotenv",
     "@pagehaven/config",
     "@cloudflare/workers-types"
   ],
