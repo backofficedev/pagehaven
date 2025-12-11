@@ -45,8 +45,7 @@ jobs:
       - name: Install dependencies
         run: bun install
       - name: Deploy
-        run: |
-          echo "WEB_DOMAIN=${{ env.WEB_DOMAIN }}" >> $GITHUB_ENV
+        run: bun run deploy
         env:
           PULL_REQUEST: ${{ github.event.number }}
           GITHUB_SHA: ${{ github.sha }}
