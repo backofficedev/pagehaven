@@ -53,8 +53,8 @@ export async function createSharedResources(stage: string) {
 export async function createApp(name: string) {
   return await alchemy(name, {
     stateStore: process.env.CI
-      ? undefined
-      : (scope) => new CloudflareStateStore(scope),
+      ? (scope) => new CloudflareStateStore(scope)
+      : undefined,
   });
 }
 
