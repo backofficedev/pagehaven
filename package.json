@@ -8,13 +8,14 @@
       "packages/*"
     ],
     "catalog": {
-      "@cloudflare/workers-types": "^4.20251210.0",
+      "@cloudflare/workers-types": "^4.20251211.0",
       "@orpc/client": "^1.12.2",
       "@orpc/openapi": "^1.12.2",
       "@orpc/server": "^1.12.2",
       "@orpc/tanstack-query": "^1.12.2",
       "@orpc/zod": "^1.12.2",
       "@types/node": "^24.10.3",
+      "@vitest/coverage-v8": "^4.0.15",
       "alchemy": "^0.81.1",
       "better-auth": "^1.4.5",
       "dotenv": "^17.2.3",
@@ -23,7 +24,7 @@
       "tsdown": "^0.17.2",
       "typescript": "^5.9.3",
       "vitest": "^4.0.15",
-      "wrangler": "^4.53.0",
+      "wrangler": "^4.54.0",
       "zod": "^4.1.13"
     }
   },
@@ -65,7 +66,7 @@
     "@cloudflare/workers-types": "catalog:",
     "@playwright/test": "^1.57.0",
     "@types/node": "catalog:",
-    "@vitest/coverage-v8": "^4.0.15",
+    "@vitest/coverage-v8": "catalog:",
     "alchemy": "catalog:",
     "dotenv-cli": "^11.0.0",
     "husky": "^9.1.7",
