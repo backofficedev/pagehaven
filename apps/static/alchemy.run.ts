@@ -32,8 +32,8 @@ const BETTER_AUTH_URL = buildUrl(stage, STATIC_DOMAIN);
 const BETTER_AUTH_SECRET = alchemy.secret.env.BETTER_AUTH_SECRET || "";
 
 const domains = isDevelopmentEnvironment(stage)
-  ? [STATIC_DOMAIN, `*.${STATIC_DOMAIN}`]
-  : undefined;
+  ? undefined
+  : [STATIC_DOMAIN, `*.${STATIC_DOMAIN}`];
 const envBindings = {
   WEB_URL,
   CORS_ORIGIN,

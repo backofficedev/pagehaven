@@ -38,7 +38,7 @@ const BETTER_AUTH_SECRET = alchemy.secret.env.BETTER_AUTH_SECRET || "";
 const GITHUB_CLIENT_ID = alchemy.env.GITHUB_CLIENT_ID || "";
 const GITHUB_CLIENT_SECRET = alchemy.secret.env.GITHUB_CLIENT_SECRET || "";
 
-const domains = isDevelopmentEnvironment(stage) ? [SERVER_DOMAIN] : undefined;
+const domains = isDevelopmentEnvironment(stage) ? undefined : [SERVER_DOMAIN];
 const envBindings = {
   CORS_ORIGIN,
   STATIC_DOMAIN,

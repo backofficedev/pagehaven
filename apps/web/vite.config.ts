@@ -16,14 +16,10 @@ const stage = process.env.STAGE || getUsername();
 const SERVER_DOMAIN = process.env.SERVER_DOMAIN || "";
 const STATIC_DOMAIN = process.env.STATIC_DOMAIN || "";
 
-const VITE_SERVER_URL = buildUrl(stage, SERVER_DOMAIN);
-const VITE_STATIC_DOMAIN = getDomainByEnvironment(stage, STATIC_DOMAIN);
+process.env.VITE_SERVER_URL = buildUrl(stage, SERVER_DOMAIN);
+process.env.VITE_STATIC_DOMAIN = getDomainByEnvironment(stage, STATIC_DOMAIN);
 
 export default defineConfig({
-  define: {
-    "import.meta.env.VITE_SERVER_URL": JSON.stringify(VITE_SERVER_URL),
-    "import.meta.env.VITE_STATIC_DOMAIN": JSON.stringify(VITE_STATIC_DOMAIN),
-  },
   plugins: [
     tailwindcss(),
     tanstackRouter({
