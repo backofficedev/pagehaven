@@ -52,6 +52,17 @@ jobs:
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
           GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STAGE: ${{ env.STAGE }}
+          ALCHEMY_PASSWORD: ${{ env.ALCHEMY_PASSWORD }}
+          ALCHEMY_STATE_TOKEN: ${{ env.ALCHEMY_STATE_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ env.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_EMAIL: ${{ env.CLOUDFLARE_EMAIL }}
+          SERVER_DOMAIN: ${{ env.SERVER_DOMAIN }}
+          STATIC_DOMAIN: ${{ env.STATIC_DOMAIN }}
+          WEB_DOMAIN: ${{ env.WEB_DOMAIN }}
+          BETTER_AUTH_SECRET: ${{ env.BETTER_AUTH_SECRET }}
+          APP_GITHUB_CLIENT_ID: ${{ env.APP_GITHUB_CLIENT_ID }}
+          APP_GITHUB_CLIENT_SECRET: ${{ env.APP_GITHUB_CLIENT_SECRET }}
   cleanup:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -76,3 +87,14 @@ jobs:
         run: bun run destroy
         env:
           PULL_REQUEST: ${{ github.event.number }}
+          STAGE: ${{ env.STAGE }}
+          ALCHEMY_PASSWORD: ${{ env.ALCHEMY_PASSWORD }}
+          ALCHEMY_STATE_TOKEN: ${{ env.ALCHEMY_STATE_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ env.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_EMAIL: ${{ env.CLOUDFLARE_EMAIL }}
+          SERVER_DOMAIN: ${{ env.SERVER_DOMAIN }}
+          STATIC_DOMAIN: ${{ env.STATIC_DOMAIN }}
+          WEB_DOMAIN: ${{ env.WEB_DOMAIN }}
+          BETTER_AUTH_SECRET: ${{ env.BETTER_AUTH_SECRET }}
+          APP_GITHUB_CLIENT_ID: ${{ env.APP_GITHUB_CLIENT_ID }}
+          APP_GITHUB_CLIENT_SECRET: ${{ env.APP_GITHUB_CLIENT_SECRET }}
