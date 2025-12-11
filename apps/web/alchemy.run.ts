@@ -11,6 +11,9 @@ export const web = await Vite("web", {
   placement: {
     mode: "smart",
   },
+  build: {
+    command: "bun run vite build",
+  },
   dev: {
     command: `bun run vite --port ${PORT}`,
   },
