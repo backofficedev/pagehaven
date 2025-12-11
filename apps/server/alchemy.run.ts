@@ -1,5 +1,5 @@
 import path from "node:path";
-import { addProtocolFromStage } from "@pagehaven/infra/helpers";
+import { buildUrl, getDomainByEnvironment } from "@pagehaven/infra/helpers";
 import {
   createSharedResources,
   createWorker,
@@ -15,10 +15,19 @@ const app = await alchemy("server");
 
 // Global env
 const STAGE = alchemy.env.STAGE || "";
-const SERVER_DOMAIN = alchemy.env.SERVER_DOMAIN || "";
-const CORS_ORIGIN = addProtocolFromStage(STAGE, alchemy.env.WEB_DOMAIN || ""); // web URL
-const STATIC_DOMAIN = alchemy.env.STATIC_DOMAIN || ""; // static domain
-const BETTER_AUTH_URL = addProtocolFromStage(STAGE, SERVER_DOMAIN); // server URL
+const SERVER_DOMAIN = getDomainByEnvironment(
+  STAGE,
+  alchemy.env.SERVER_DOMAIN || ""
+);
+const WEB_DOMAIN = getDomainByEnvironment(STAGE, alchemy.env.WEB_DOMAIN || "");
+const WEB_URL = buildUrl(STAGE, WEB_DOMAIN);
+const CORS_ORIGIN = WEB_URL;
+const STATIC_DOMAIN = getDomainByEnvironment(
+  STAGE,
+  alchemy.env.STATIC_DOMAIN || ""
+);
+const SERVER_URL = buildUrl(STAGE, SERVER_DOMAIN);
+const BETTER_AUTH_URL = SERVER_URL;
 
 // Local env
 const BETTER_AUTH_SECRET = alchemy.secret.env.BETTER_AUTH_SECRET || "";
