@@ -30,7 +30,9 @@ cleanup_and_exit() {
   
   if [ $STASH_CREATED -eq 1 ]; then
     echo "🔄 Restoring working directory state..."
-    git stash pop --quiet || true
+    if ! git stash pop --quiet 2>/dev/null; then
+      echo "⚠️  Stash pop had conflicts. Run 'git stash pop' manually to resolve."
+    fi
   fi
   
   exit $EXIT_CODE
