@@ -37,7 +37,7 @@
       "persistent": true
     },
     "deploy": {
-      "dependsOn": ["^deploy"],
+      "dependsOn": ["^deploy", "^build"],
       "cache": false
     },
     "server#destroy": {

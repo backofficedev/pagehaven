@@ -5,14 +5,17 @@
   "type": "module",
   "exports": {
     "./resources": {
-      "default": "./src/resources.ts"
+      "bun": "./src/resources.ts",
+      "default": "./dist/resources.js"
     },
     "./helpers": {
-      "default": "./src/helpers.ts"
+      "bun": "./src/helpers.ts",
+      "default": "./dist/helpers.js"
     }
   },
   "scripts": {
-    "check-types": "tsc -b"
+    "build": "tsc",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "alchemy": "catalog:"
