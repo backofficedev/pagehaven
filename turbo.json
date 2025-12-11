@@ -37,18 +37,79 @@
     },
     "deploy": {
       "dependsOn": ["^deploy"],
-      "cache": false
+      "cache": false,
+      "env": [
+        "STAGE",
+        "ALCHEMY_PASSWORD",
+        "ALCHEMY_STATE_TOKEN",
+        "CLOUDFLARE_API_TOKEN",
+        "CLOUDFLARE_EMAIL",
+        "SERVER_DOMAIN",
+        "STATIC_DOMAIN",
+        "WEB_DOMAIN",
+        "BETTER_AUTH_SECRET",
+        "APP_GITHUB_CLIENT_ID",
+        "APP_GITHUB_CLIENT_SECRET",
+        "PULL_REQUEST",
+        "GITHUB_SHA",
+        "GITHUB_REPOSITORY",
+        "GITHUB_REPOSITORY_OWNER",
+        "GITHUB_REPOSITORY_NAME",
+        "GITHUB_TOKEN"
+      ]
     },
     "server#destroy": {
       "dependsOn": ["web#destroy"],
-      "cache": false
+      "cache": false,
+      "env": [
+        "STAGE",
+        "ALCHEMY_PASSWORD",
+        "ALCHEMY_STATE_TOKEN",
+        "CLOUDFLARE_API_TOKEN",
+        "CLOUDFLARE_EMAIL",
+        "SERVER_DOMAIN",
+        "STATIC_DOMAIN",
+        "WEB_DOMAIN",
+        "BETTER_AUTH_SECRET",
+        "APP_GITHUB_CLIENT_ID",
+        "APP_GITHUB_CLIENT_SECRET",
+        "PULL_REQUEST"
+      ]
     },
     "static#destroy": {
       "dependsOn": ["web#destroy", "server#destroy"],
-      "cache": false
+      "cache": false,
+      "env": [
+        "STAGE",
+        "ALCHEMY_PASSWORD",
+        "ALCHEMY_STATE_TOKEN",
+        "CLOUDFLARE_API_TOKEN",
+        "CLOUDFLARE_EMAIL",
+        "SERVER_DOMAIN",
+        "STATIC_DOMAIN",
+        "WEB_DOMAIN",
+        "BETTER_AUTH_SECRET",
+        "APP_GITHUB_CLIENT_ID",
+        "APP_GITHUB_CLIENT_SECRET",
+        "PULL_REQUEST"
+      ]
     },
     "web#destroy": {
-      "cache": false
+      "cache": false,
+      "env": [
+        "STAGE",
+        "ALCHEMY_PASSWORD",
+        "ALCHEMY_STATE_TOKEN",
+        "CLOUDFLARE_API_TOKEN",
+        "CLOUDFLARE_EMAIL",
+        "SERVER_DOMAIN",
+        "STATIC_DOMAIN",
+        "WEB_DOMAIN",
+        "BETTER_AUTH_SECRET",
+        "APP_GITHUB_CLIENT_ID",
+        "APP_GITHUB_CLIENT_SECRET",
+        "PULL_REQUEST"
+      ]
     },
     "db:generate": {
       "cache": false,
