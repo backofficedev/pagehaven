@@ -44,7 +44,7 @@ jobs:
       - name: Install dependencies
         run: bun install
       - name: Deploy
-        run: bun deploy --stage ${{ env.STAGE }}
+        run: bun run deploy --stage ${{ env.STAGE }}
         env:
           PULL_REQUEST: ${{ github.event.number }}
           GITHUB_SHA: ${{ github.sha }}
@@ -73,6 +73,6 @@ jobs:
             exit 1
           fi
       - name: Destroy Preview Environment
-        run: bun destroy --stage ${{ env.STAGE }}
+        run: bun run destroy --stage ${{ env.STAGE }}
         env:
           PULL_REQUEST: ${{ github.event.number }}
