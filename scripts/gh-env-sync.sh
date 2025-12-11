@@ -6,12 +6,13 @@ set -e
 # Function to display help
 show_help() {
     echo "Usage: $0 --env|-e {preview|staging|production} [--github-env ENV] [--include-disabled] [--dry-run|-n]"
-    echo "Sync environment variables to GitHub secrets"
+    echo "Sync environment variables from apps/**/.env.{ENV} files to GitHub secrets"
     echo ""
     echo "Options:"
-    echo "  -e, --env ENVIRONMENT     Source environment file to sync from (preview, staging or production)"
+    echo "  -e, --env ENVIRONMENT     Source environment to sync from (preview, staging or production)"
+    echo "                            Searches for .env.{ENV} files in apps/**/."
     echo "  -g, --github-env ENV     GitHub environment to sync to (defaults to --env value)"
-    echo "  -d, --include-disabled   Include disabled environment variables from .env.${ENV}.disabled"
+    echo "  -d, --include-disabled   Include disabled environment variables from .env.{ENV}.disabled"
     echo "  -n, --dry-run            Preview what would be synced without actually doing it"
     echo "  -h, --help               Show this help message and exit"
 }
@@ -68,32 +69,54 @@ if [[ "$ENV" != "preview" && "$ENV" != "staging" && "$ENV" != "production" ]]; t
     exit 1
 fi
 
-ENV_FILE="./.env.${ENV}"
+# Find all matching env files in apps directory
 if [ "$INCLUDE_DISABLED" = true ]; then
-    ENV_FILE="./.env.${ENV}.disabled"
+    ENV_PATTERN=".env.${ENV}.disabled"
+else
+    ENV_PATTERN=".env.${ENV}"
 fi
 
-# Check if environment file exists
-if [[ ! -f "$ENV_FILE" ]]; then
-    echo "Error: Environment file $ENV_FILE not found"
+# Get script directory and project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Find all matching env files in apps/**/
+mapfile -t ENV_FILES < <(find "$PROJECT_ROOT/apps" -name "$ENV_PATTERN" -type f 2>/dev/null)
+
+if [[ ${#ENV_FILES[@]} -eq 0 ]]; then
+    echo "Error: No environment files matching $ENV_PATTERN found in apps/"
     exit 1
 fi
 
+echo "Found ${#ENV_FILES[@]} environment file(s):"
+for f in "${ENV_FILES[@]}"; do
+    echo "  - ${f#$PROJECT_ROOT/}"
+done
+echo ""
+
 if [ "$DRY_RUN" = true ]; then
-    echo "DRY RUN: Would sync the following environment variables from $ENV_FILE to GitHub environment '$GITHUB_ENV':"
+    echo "DRY RUN: Would sync the following environment variables to GitHub environment '$GITHUB_ENV':"
     echo ""
-    cat "$ENV_FILE" | grep -v '^#' | grep -v '^$' | while IFS= read -r line; do
-        if [[ "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]]; then
-            key=$(echo "$line" | cut -d'=' -f1)
-            echo "  $key"
-        fi
+    TOTAL_VARS=0
+    for ENV_FILE in "${ENV_FILES[@]}"; do
+        echo "From ${ENV_FILE#$PROJECT_ROOT/}:"
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]]; then
+                key=$(echo "$line" | cut -d'=' -f1)
+                echo "  $key"
+                ((TOTAL_VARS++)) || true
+            fi
+        done < <(grep -v '^#' "$ENV_FILE" | grep -v '^$')
+        echo ""
     done
-    echo ""
-    echo "Total variables: $(cat "$ENV_FILE" | grep -c '^[A-Za-z_][A-Za-z0-9_]*=')"
+    echo "Total variables: $TOTAL_VARS"
     echo ""
     echo "DRY RUN: No actual changes were made. Run without --dry-run to perform the sync."
 else
-    echo "Syncing environment variables from $ENV_FILE to GitHub environment '$GITHUB_ENV'..."
-    gh secret set --env "$GITHUB_ENV" --env-file "$ENV_FILE"
+    echo "Syncing environment variables to GitHub environment '$GITHUB_ENV'..."
+    for ENV_FILE in "${ENV_FILES[@]}"; do
+        echo "  Syncing ${ENV_FILE#$PROJECT_ROOT/}..."
+        gh secret set --env "$GITHUB_ENV" --env-file "$ENV_FILE"
+    done
     echo "✅ Successfully synced $ENV environment secrets to GitHub environment '$GITHUB_ENV'"
 fi
