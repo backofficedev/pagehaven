@@ -5,6 +5,7 @@ import {
   isDevelopmentEnvironment,
 } from "@pagehaven/infra/helpers";
 import {
+  createApp,
   createSharedResources,
   createWorker,
 } from "@pagehaven/infra/resources";
@@ -15,7 +16,7 @@ config({ path: path.join(import.meta.dirname, "../../.env") });
 config({ path: path.join(import.meta.dirname, ".env") });
 
 const PORT = 3002;
-const app = await alchemy("static");
+const app = await createApp("static");
 
 // Global env
 const stage = app.stage;
@@ -46,7 +47,7 @@ for (const [key, value] of Object.entries(envBindings)) {
   console.log(`${key} -> ${value}`);
 }
 
-const { db, storage, cache } = await createSharedResources();
+const { db, storage, cache } = await createSharedResources(stage);
 const bindings = { DB: db, STORAGE: storage, CACHE: cache, ...envBindings };
 export const staticWorker = await createWorker<typeof bindings>(
   "static",

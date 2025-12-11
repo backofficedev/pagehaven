@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import alchemy from "alchemy";
 import {
   type Bindings,
   D1Database,
@@ -8,6 +9,7 @@ import {
   Worker,
   type WorkerProps,
 } from "alchemy/cloudflare";
+import { CloudflareStateStore } from "alchemy/state";
 
 function findWorkspaceRoot(startDir: string): string {
   let dir = startDir;
@@ -28,20 +30,20 @@ const MIGRATIONS_DIR = path.join(WORKSPACE_ROOT, "packages/db/src/migrations");
  * The adopt: true flag ensures existing resources are reused rather than recreated.
  * Call this within your alchemy app context.
  */
-export async function createSharedResources() {
+export async function createSharedResources(stage: string) {
   const db = await D1Database("database", {
-    name: "pagehaven-database",
+    name: `${stage}-database`,
     migrationsDir: MIGRATIONS_DIR,
     adopt: true,
   });
 
   const storage = await R2Bucket("storage", {
-    name: "pagehaven-storage",
+    name: `${stage}-storage`,
     adopt: true,
   });
 
   const cache = await KVNamespace("cache", {
-    title: "pagehaven-cache",
+    title: `${stage}-cache`,
     adopt: true,
   });
 
@@ -51,6 +53,14 @@ export async function createSharedResources() {
 /**
  * Create Cloudflare worker
  */
+export async function createApp(name: string) {
+  return await alchemy(name, {
+    stateStore: process.env.CI
+      ? undefined
+      : (scope) => new CloudflareStateStore(scope),
+  });
+}
+
 export async function createWorker<const B extends Bindings>(
   id: string,
   port: number,

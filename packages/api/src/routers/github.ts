@@ -71,7 +71,7 @@ async function getGithubConnectionOrThrow(userId: string) {
 export const githubRouter = {
   // Get OAuth authorization URL
   getAuthUrl: protectedProcedure.handler(() => {
-    const clientId = env.GITHUB_CLIENT_ID;
+    const clientId = env.APP_GITHUB_CLIENT_ID;
     if (!clientId) {
       throw new Error("GitHub OAuth not configured");
     }
@@ -102,8 +102,8 @@ export const githubRouter = {
       })
     )
     .handler(async ({ input }) => {
-      const clientId = env.GITHUB_CLIENT_ID;
-      const clientSecret = env.GITHUB_CLIENT_SECRET;
+      const clientId = env.APP_GITHUB_CLIENT_ID;
+      const clientSecret = env.APP_GITHUB_CLIENT_SECRET;
 
       if (!(clientId && clientSecret)) {
         throw new Error("GitHub OAuth not configured");
