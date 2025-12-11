@@ -1,33 +1,53 @@
 import path from "node:path";
-import { createSharedResources } from "@pagehaven/infra/resources";
+import { addProtocolFromStage } from "@pagehaven/infra/helpers";
+import {
+  createSharedResources,
+  createWorker,
+} from "@pagehaven/infra/resources";
 import alchemy from "alchemy";
-import { Worker } from "alchemy/cloudflare";
 import { config } from "dotenv";
 
 config({ path: path.join(import.meta.dirname, "../../.env") });
 config({ path: path.join(import.meta.dirname, ".env") });
 
-const app = await alchemy("static");
 const PORT = 3002;
+const app = await alchemy("static");
+
+// Global env
+const STAGE = alchemy.env.STAGE || "";
+const STATIC_DOMAIN = alchemy.env.STATIC_DOMAIN || "";
+const SERVER_DOMAIN = alchemy.env.SERVER_DOMAIN || "";
+const WEB_URL = addProtocolFromStage(STAGE, alchemy.env.WEB_DOMAIN || "");
+const CORS_ORIGIN = addProtocolFromStage(STAGE, alchemy.env.WEB_DOMAIN || "");
+const BETTER_AUTH_URL = addProtocolFromStage(STAGE, SERVER_DOMAIN);
+
+// Local env
+const BETTER_AUTH_SECRET = alchemy.secret.env.BETTER_AUTH_SECRET || "";
+
+const domains =
+  STAGE !== "dev" ? [STATIC_DOMAIN, `*.${STATIC_DOMAIN}`] : undefined;
+const envBindings = {
+  WEB_URL,
+  CORS_ORIGIN,
+  BETTER_AUTH_URL,
+  BETTER_AUTH_SECRET,
+} as const;
+
+console.log(`Domains -> ${domains}`);
+for (const [key, value] of Object.entries(envBindings)) {
+  console.log(`${key} -> ${value}`);
+}
 
 const { db, storage, cache } = await createSharedResources();
-
-export const staticWorker = await Worker("static", {
-  entrypoint: path.join(import.meta.dirname, "src/index.ts"),
-  compatibility: "node",
-  bindings: {
-    DB: db,
-    STORAGE: storage,
-    CACHE: cache,
-    WEB_URL: alchemy.env.WEB_URL || "",
-    CORS_ORIGIN: alchemy.env.CORS_ORIGIN || "",
-    BETTER_AUTH_SECRET: alchemy.secret(alchemy.env.BETTER_AUTH_SECRET),
-    BETTER_AUTH_URL: alchemy.env.BETTER_AUTH_URL || "",
-  },
-  dev: {
-    port: PORT,
-  },
-});
+const bindings = { DB: db, STORAGE: storage, CACHE: cache, ...envBindings };
+export const staticWorker = await createWorker<typeof bindings>(
+  "static",
+  PORT,
+  {
+    domains,
+    bindings,
+  }
+);
 
 console.log(`Static Worker -> ${staticWorker.url}`);
 

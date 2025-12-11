@@ -2,6 +2,7 @@ import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 import { createClient, createLink } from "@pagehaven/client";
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { config } from "./config";
 
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -19,12 +20,12 @@ export const queryClient = new QueryClient({
 });
 
 export const link = createLink({
-  baseUrl: import.meta.env.VITE_SERVER_URL,
+  baseUrl: config.serverUrl,
   credentials: "include",
 });
 
 export const client = createClient({
-  baseUrl: import.meta.env.VITE_SERVER_URL,
+  baseUrl: config.serverUrl,
   credentials: "include",
 });
 

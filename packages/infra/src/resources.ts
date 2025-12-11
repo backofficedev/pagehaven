@@ -1,6 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
-import { D1Database, KVNamespace, R2Bucket } from "alchemy/cloudflare";
+import {
+  type Bindings,
+  D1Database,
+  KVNamespace,
+  R2Bucket,
+  Worker,
+  type WorkerProps,
+} from "alchemy/cloudflare";
 
 function findWorkspaceRoot(startDir: string): string {
   let dir = startDir;
@@ -38,4 +45,26 @@ export async function createSharedResources() {
   });
 
   return { db, storage, cache };
+}
+
+/**
+ * Create Cloudflare worker
+ */
+export async function createWorker<const B extends Bindings>(
+  id: string,
+  port: number,
+  options: Pick<WorkerProps<B>, "domains" | "bindings">
+) {
+  return await Worker(id, {
+    entrypoint: path.join(import.meta.dirname, "src/index.ts"),
+    compatibility: "node",
+    domains: options.domains,
+    bindings: options.bindings,
+    placement: {
+      mode: "smart",
+    },
+    dev: {
+      port,
+    },
+  });
 }

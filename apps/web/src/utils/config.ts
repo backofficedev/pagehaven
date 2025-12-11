@@ -18,7 +18,7 @@ export function getSiteUrl(subdomain: string): string {
 }
 
 /**
- * Get the display domain for a site (e.g., "mysite.pagehaven.io")
+ * Get the display domain for a site (e.g., "mysite.domain.com")
  */
 export function getSiteDisplayDomain(subdomain: string): string {
   return `${subdomain}.${config.staticDomain}`;

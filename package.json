@@ -16,7 +16,7 @@
       "@orpc/zod": "^1.12.2",
       "@types/node": "^24.10.3",
       "alchemy": "^0.81.1",
-      "better-auth": "^1.4.6",
+      "better-auth": "^1.4.5",
       "dotenv": "^17.2.3",
       "drizzle-orm": "^0.45.1",
       "hono": "^4.10.8",
@@ -58,7 +58,7 @@
     "sonar": "dotenv -- sonar-scanner -Dsonar.host.url=http://localhost:9000 -Dsonar.token=$SONAR_TOKEN"
   },
   "dependencies": {
-    "dotenv": "^17.2.3"
+    "dotenv": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.8",

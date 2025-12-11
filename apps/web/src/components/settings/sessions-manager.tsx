@@ -1,4 +1,3 @@
-import type { Session } from "better-auth/client";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import Loader from "@/components/loader";
@@ -11,6 +10,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth-client";
+
+type ListSessionsResult = Awaited<ReturnType<typeof authClient.listSessions>>;
+type Session = NonNullable<ListSessionsResult["data"]>[number];
 
 type SessionWithInfo = Session & {
   current?: boolean;

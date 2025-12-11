@@ -6,6 +6,9 @@
   "exports": {
     "./resources": {
       "default": "./src/resources.ts"
+    },
+    "./helpers": {
+      "default": "./src/helpers.ts"
     }
   },
   "scripts": {
