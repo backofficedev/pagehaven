@@ -50,9 +50,6 @@ export async function createSharedResources(stage: string) {
   return { db, storage, cache };
 }
 
-/**
- * Create Cloudflare worker
- */
 export async function createApp(name: string) {
   return await alchemy(name, {
     stateStore: process.env.CI

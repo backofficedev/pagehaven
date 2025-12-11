@@ -49,6 +49,7 @@
     "db:generate": "turbo -F @pagehaven/db db:generate",
     "db:push": "turbo -F @pagehaven/db db:push",
     "db:studio": "turbo -F @pagehaven/db db:studio",
+    "gh:env:sync": "./scripts/gh-env-sync.sh",
     "test": "turbo test",
     "test:coverage": "turbo test:coverage",
     "test:e2e": "playwright test",

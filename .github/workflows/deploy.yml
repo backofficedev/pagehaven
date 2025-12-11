@@ -13,9 +13,23 @@ concurrency:
   group: deploy-${{ github.ref }}
   cancel-in-progress: false
 env:
+  # Alchemy
   STAGE: ${{ github.event_name == 'pull_request' && format('pr-{0}',
     github.event.number) || (github.ref == 'refs/heads/main' && 'prod' ||
     github.ref_name) }}
+  ALCHEMY_PASSWORD: ${{ secrets.ALCHEMY_PASSWORD }}
+  ALCHEMY_STATE_TOKEN: ${{ secrets.ALCHEMY_STATE_TOKEN }}
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+  # Domains
+  SERVER_DOMAIN: ${{ secrets.SERVER_DOMAIN }}
+  STATIC_DOMAIN: ${{ secrets.STATIC_DOMAIN }}
+  WEB_DOMAIN: ${{ secrets.WEB_DOMAIN }}
+  # Server and Static
+  BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+  # GitHub App credentials
+  APP_GITHUB_CLIENT_ID: ${{ secrets.APP_GITHUB_CLIENT_ID }}
+  APP_GITHUB_CLIENT_SECRET: ${{ secrets.APP_GITHUB_CLIENT_SECRET }}
 jobs:
   deploy:
     if: ${{ github.event.action != 'closed' }}
@@ -32,12 +46,11 @@ jobs:
       - name: Deploy
         run: bun deploy --stage ${{ env.STAGE }}
         env:
-          ALCHEMY_PASSWORD: ${{ secrets.ALCHEMY_PASSWORD }}
-          ALCHEMY_STATE_TOKEN: ${{ secrets.ALCHEMY_STATE_TOKEN }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
           PULL_REQUEST: ${{ github.event.number }}
           GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   cleanup:
     runs-on: ubuntu-latest
@@ -62,8 +75,4 @@ jobs:
       - name: Destroy Preview Environment
         run: bun destroy --stage ${{ env.STAGE }}
         env:
-          ALCHEMY_PASSWORD: ${{ secrets.ALCHEMY_PASSWORD }}
-          ALCHEMY_STATE_TOKEN: ${{ secrets.ALCHEMY_STATE_TOKEN }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
           PULL_REQUEST: ${{ github.event.number }}
