@@ -6,11 +6,11 @@ set -e
 # Function to display help
 show_help() {
     echo "Usage: $0 --env|-e {preview|staging|production} [--github-env ENV] [--include-disabled] [--dry-run|-n]"
-    echo "Sync environment variables from apps/**/.env.{ENV} files to GitHub secrets"
+    echo "Sync environment variables from .env.{ENV} files (root and apps/**/) to GitHub secrets"
     echo ""
     echo "Options:"
     echo "  -e, --env ENVIRONMENT     Source environment to sync from (preview, staging or production)"
-    echo "                            Searches for .env.{ENV} files in apps/**/."
+    echo "                            Searches for .env.{ENV} files in root and apps/**/."
     echo "  -g, --github-env ENV     GitHub environment to sync to (defaults to --env value)"
     echo "  -d, --include-disabled   Include disabled environment variables from .env.{ENV}.disabled"
     echo "  -n, --dry-run            Preview what would be synced without actually doing it"
@@ -80,11 +80,21 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-# Find all matching env files in apps/**/
-mapfile -t ENV_FILES < <(find "$PROJECT_ROOT/apps" -name "$ENV_PATTERN" -type f 2>/dev/null)
+# Find all matching env files in root and apps/**/
+ENV_FILES=()
+
+# Check root directory first
+if [[ -f "$PROJECT_ROOT/$ENV_PATTERN" ]]; then
+    ENV_FILES+=("$PROJECT_ROOT/$ENV_PATTERN")
+fi
+
+# Find in apps/**/
+while IFS= read -r -d '' file; do
+    ENV_FILES+=("$file")
+done < <(find "$PROJECT_ROOT/apps" -name "$ENV_PATTERN" -type f -print0 2>/dev/null)
 
 if [[ ${#ENV_FILES[@]} -eq 0 ]]; then
-    echo "Error: No environment files matching $ENV_PATTERN found in apps/"
+    echo "Error: No environment files matching $ENV_PATTERN found in root or apps/"
     exit 1
 fi
 
