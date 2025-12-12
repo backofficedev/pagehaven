@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { REPO_NAME } from "@pagehaven/config/constants";
 import alchemy from "alchemy";
 import {
   type Bindings,
@@ -32,48 +33,57 @@ const MIGRATIONS_DIR = path.join(WORKSPACE_ROOT, "packages/db/src/migrations");
  */
 export async function createSharedResources(stage: string) {
   const db = await D1Database("database", {
-    name: `${stage}-database`,
+    name: `${REPO_NAME}-${stage}-database`,
     migrationsDir: MIGRATIONS_DIR,
     adopt: true,
   });
 
   const storage = await R2Bucket("storage", {
-    name: `${stage}-storage`,
+    name: `${REPO_NAME}-${stage}-storage`,
     adopt: true,
   });
 
   const cache = await KVNamespace("cache", {
-    title: `${stage}-cache`,
+    title: `${REPO_NAME}-${stage}-cache`,
     adopt: true,
   });
 
   return { db, storage, cache };
 }
 
-export async function createApp(name: string) {
-  return await alchemy(name, {
-    stateStore: process.env.CI
+function useCloudflareStateStore() {
+  // Use Cloudflare State Store in CI or production for local destroy
+  return process.env.CI || process.env.STAGE === "prod";
+}
+
+export async function createApp(appName: string) {
+  return await alchemy(appName, {
+    stateStore: useCloudflareStateStore()
       ? (scope) => new CloudflareStateStore(scope)
       : undefined,
   });
 }
 
+type CreateWorkerOptions<B extends Bindings> = {
+  name: string;
+  port: number;
+} & Required<Pick<WorkerProps<B>, "entrypoint" | "bindings">> &
+  Pick<WorkerProps<B>, "domains" | "routes">;
+
 export async function createWorker<const B extends Bindings>(
-  id: string,
-  port: number,
-  options: Required<Pick<WorkerProps<B>, "entrypoint" | "bindings">> &
-    Pick<WorkerProps<B>, "domains">
+  options: CreateWorkerOptions<B>
 ) {
-  return await Worker(id, {
+  return await Worker(REPO_NAME, {
     compatibility: "node",
     entrypoint: options.entrypoint,
     domains: options.domains,
+    routes: options.routes,
     bindings: options.bindings,
     placement: {
       mode: "smart",
     },
     dev: {
-      port,
+      port: options.port,
     },
   });
 }

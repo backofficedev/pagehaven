@@ -26,14 +26,14 @@ export const web = await Vite("web", {
     mode: "smart",
   },
   build: {
-    command: "bun run vite build",
+    command: "bun run --bun vite build",
   },
   dev: {
-    command: `bun run vite --port ${PORT}`,
+    command: `bun run --bun vite --port ${PORT}`,
   },
 });
 
-console.log(`Web -> ${web.url}`);
+console.log(`${app.appName} -> ${web.url}`);
 
 if (process.env.PULL_REQUEST) {
   // if this is a PR, add a comment to the PR with the preview URL

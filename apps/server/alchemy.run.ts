@@ -57,16 +57,14 @@ for (const [key, value] of Object.entries(envBindings)) {
 
 const { db, storage, cache } = await createSharedResources(stage);
 const bindings = { DB: db, STORAGE: storage, CACHE: cache, ...envBindings };
-export const serverWorker = await createWorker<typeof bindings>(
-  "server",
-  PORT,
-  {
-    entrypoint: path.join(import.meta.dirname, "src/index.ts"),
-    domains,
-    bindings,
-  }
-);
+export const serverWorker = await createWorker<typeof bindings>({
+  name: "server",
+  port: PORT,
+  entrypoint: path.join(import.meta.dirname, "src/index.ts"),
+  domains,
+  bindings,
+});
 
-console.log(`Server Worker -> ${serverWorker.url}`);
+console.log(`${app.appName} -> ${serverWorker.url}`);
 
 await app.finalize();

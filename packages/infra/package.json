@@ -6,10 +6,12 @@
   "exports": {
     "./resources": {
       "bun": "./src/resources.ts",
+      "types": "./src/resources.ts",
       "default": "./dist/resources.js"
     },
     "./helpers": {
       "bun": "./src/helpers.ts",
+      "types": "./src/helpers.ts",
       "default": "./dist/helpers.js"
     }
   },

@@ -1,5 +1,14 @@
 {
   "name": "@pagehaven/config",
   "version": "0.0.0",
-  "private": true
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./constants": {
+      "default": "./src/constants.ts"
+    },
+    "./tsconfig.base.json": {
+      "default": "./tsconfig.base.json"
+    }
+  }
 }

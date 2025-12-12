@@ -32,33 +32,34 @@ const BETTER_AUTH_URL = buildUrl(stage, STATIC_DOMAIN);
 // Local env
 const BETTER_AUTH_SECRET = alchemy.secret.env.BETTER_AUTH_SECRET || "";
 
-const domains = isDevelopmentEnvironment(stage)
-  ? undefined
-  : [STATIC_DOMAIN, `*.${STATIC_DOMAIN}`];
 const envBindings = {
   WEB_URL,
   CORS_ORIGIN,
   BETTER_AUTH_URL,
   BETTER_AUTH_SECRET,
 } as const;
+const domains = isDevelopmentEnvironment(stage) ? undefined : [STATIC_DOMAIN];
+const routes = isDevelopmentEnvironment(stage)
+  ? undefined
+  : [{ pattern: `*.{${STATIC_DOMAIN}/*}` }];
 
 console.log(`Domains -> ${domains}`);
+console.log(`Routes -> ${routes}`);
 for (const [key, value] of Object.entries(envBindings)) {
   console.log(`${key} -> ${value}`);
 }
 
 const { db, storage, cache } = await createSharedResources(stage);
 const bindings = { DB: db, STORAGE: storage, CACHE: cache, ...envBindings };
-export const staticWorker = await createWorker<typeof bindings>(
-  "static",
-  PORT,
-  {
-    entrypoint: path.join(import.meta.dirname, "src/index.ts"),
-    domains,
-    bindings,
-  }
-);
+export const staticWorker = await createWorker<typeof bindings>({
+  name: "static",
+  port: PORT,
+  entrypoint: path.join(import.meta.dirname, "src/index.ts"),
+  domains,
+  routes,
+  bindings,
+});
 
-console.log(`Static Worker -> ${staticWorker.url}`);
+console.log(`${app.appName} -> ${staticWorker.url}`);
 
 await app.finalize();
