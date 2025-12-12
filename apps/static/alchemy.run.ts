@@ -17,15 +17,15 @@ config({ path: path.join(import.meta.dirname, ".env") });
 
 const PORT = 3002;
 const app = await createApp("static");
+const stage = app.stage;
 
 // Global env
-const stage = app.stage;
 const WEB_DOMAIN = getDomainByEnvironment(stage, alchemy.env.WEB_DOMAIN || "");
-const WEB_URL = buildUrl(stage, WEB_DOMAIN);
 const STATIC_DOMAIN = getDomainByEnvironment(
   stage,
   alchemy.env.STATIC_DOMAIN || ""
 );
+const WEB_URL = buildUrl(stage, WEB_DOMAIN);
 const CORS_ORIGIN = buildUrl(stage, STATIC_DOMAIN);
 const BETTER_AUTH_URL = buildUrl(stage, STATIC_DOMAIN);
 

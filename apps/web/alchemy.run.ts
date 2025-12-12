@@ -1,13 +1,27 @@
 import path from "node:path";
+import {
+  getDomainByEnvironment,
+  isDevelopmentEnvironment,
+} from "@pagehaven/infra/helpers";
 import { createApp } from "@pagehaven/infra/resources";
+import alchemy from "alchemy";
 import { Vite } from "alchemy/cloudflare";
 import { GitHubComment } from "alchemy/github";
+import { config } from "dotenv";
+
+config({ path: path.join(import.meta.dirname, "../../.env") });
 
 const PORT = 3001;
 const app = await createApp("web");
+const stage = app.stage;
+
+// Global env
+const WEB_DOMAIN = getDomainByEnvironment(stage, alchemy.env.WEB_DOMAIN || "");
+const domains = isDevelopmentEnvironment(stage) ? undefined : [WEB_DOMAIN];
 
 export const web = await Vite("web", {
   assets: path.join(import.meta.dirname, "dist"),
+  domains,
   placement: {
     mode: "smart",
   },

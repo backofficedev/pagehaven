@@ -13,11 +13,17 @@ import { defineConfig } from "vite";
 config({ path: path.join(import.meta.dirname, "../../.env") });
 
 const stage = process.env.STAGE || getUsername();
-const SERVER_DOMAIN = process.env.SERVER_DOMAIN || "";
-const STATIC_DOMAIN = process.env.STATIC_DOMAIN || "";
+const SERVER_DOMAIN = getDomainByEnvironment(
+  stage,
+  process.env.SERVER_DOMAIN || ""
+);
+const STATIC_DOMAIN = getDomainByEnvironment(
+  stage,
+  process.env.STATIC_DOMAIN || ""
+);
 
 process.env.VITE_SERVER_URL = buildUrl(stage, SERVER_DOMAIN);
-process.env.VITE_STATIC_DOMAIN = getDomainByEnvironment(stage, STATIC_DOMAIN);
+process.env.VITE_STATIC_DOMAIN = STATIC_DOMAIN;
 
 export default defineConfig({
   plugins: [
