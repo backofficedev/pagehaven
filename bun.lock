@@ -43,6 +43,7 @@
       "devDependencies": {
         "@pagehaven/config": "workspace:*",
         "@types/node": "catalog:",
+        "vitest": "catalog:",
       },
       "peerDependencies": {
         "typescript": "^5",
@@ -138,6 +139,7 @@
         "tailwindcss": "^4.1.17",
         "typescript": "catalog:",
         "vite": "^7.2.7",
+        "vitest": "catalog:",
       },
     },
     "packages/api": {
@@ -154,6 +156,7 @@
       },
       "devDependencies": {
         "@pagehaven/config": "workspace:*",
+        "vitest": "catalog:",
       },
       "peerDependencies": {
         "typescript": "^5",
@@ -184,6 +187,7 @@
       "devDependencies": {
         "@cloudflare/workers-types": "catalog:",
         "@pagehaven/config": "workspace:*",
+        "vitest": "catalog:",
       },
       "peerDependencies": {
         "typescript": "^5",
@@ -199,6 +203,7 @@
         "@types/bun": "catalog:",
         "dotenv": "catalog:",
         "dotenv-expand": "catalog:",
+        "vitest": "catalog:",
       },
     },
     "packages/db": {
@@ -211,6 +216,7 @@
         "@cloudflare/workers-types": "catalog:",
         "@pagehaven/config": "workspace:*",
         "drizzle-kit": "^0.31.8",
+        "vitest": "catalog:",
       },
       "peerDependencies": {
         "typescript": "^5",
@@ -222,6 +228,7 @@
       "devDependencies": {
         "@pagehaven/config": "workspace:*",
         "alchemy": "catalog:",
+        "vitest": "catalog:",
       },
       "peerDependencies": {
         "typescript": "^5",

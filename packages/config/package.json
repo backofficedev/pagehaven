@@ -24,7 +24,6 @@
   },
   "devDependencies": {
     "@types/bun": "catalog:",
-    "@vitest/coverage-v8": "catalog:",
     "dotenv": "catalog:",
     "dotenv-expand": "catalog:",
     "vitest": "catalog:"

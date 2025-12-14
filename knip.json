@@ -5,7 +5,6 @@
     "lint-staged",
     "@pagehaven/config",
     "@cloudflare/workers-types",
-    "@vitest/coverage-v8",
     "alchemy",
     "wrangler"
   ],

@@ -39,7 +39,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@pagehaven/config": "workspace:*"
+    "@pagehaven/config": "workspace:*",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "typescript": "^5"

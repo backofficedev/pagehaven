@@ -25,7 +25,8 @@
   },
   "devDependencies": {
     "@pagehaven/config": "workspace:*",
-    "@types/node": "catalog:"
+    "@types/node": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "typescript": "^5"

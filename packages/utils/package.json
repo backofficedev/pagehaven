@@ -22,7 +22,6 @@
   },
   "devDependencies": {
     "@pagehaven/config": "workspace:*",
-    "@vitest/coverage-v8": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {

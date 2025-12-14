@@ -23,7 +23,8 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
-    "@pagehaven/config": "workspace:*"
+    "@pagehaven/config": "workspace:*",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "typescript": "^5"

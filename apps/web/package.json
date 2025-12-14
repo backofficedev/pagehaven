@@ -64,6 +64,7 @@
     "jsdom": "^27.3.0",
     "tailwindcss": "^4.1.17",
     "typescript": "catalog:",
+    "vitest": "catalog:",
     "vite": "^7.2.7"
   }
 }
