@@ -216,3 +216,91 @@ describe("missingEnvVarError", () => {
     expect(error.message).toBe("Missing environment variable: MY_VAR");
   });
 });
+
+const { getProcessEnvVar, getEnvFilePatterns, getEnv } = await import("./env");
+
+describe("getEnv", () => {
+  it("returns env object with all required keys", () => {
+    const env = getEnv();
+
+    expect(env).toHaveProperty("REPO_NAME");
+    expect(env).toHaveProperty("APP_NAME_PREFIX");
+    expect(env).toHaveProperty("SERVER_RESOURCE_NAME");
+    expect(env).toHaveProperty("STATIC_RESOURCE_NAME");
+    expect(env).toHaveProperty("WEB_RESOURCE_NAME");
+    expect(env).toHaveProperty("SERVER_APP_NAME");
+    expect(env).toHaveProperty("STATIC_APP_NAME");
+    expect(env).toHaveProperty("WEB_APP_NAME");
+  });
+
+  it("returns cached result on subsequent calls", () => {
+    const first = getEnv();
+    const second = getEnv();
+
+    expect(first).toBe(second);
+  });
+});
+
+describe("getProcessEnvVar", () => {
+  it("returns value when env var exists", () => {
+    process.env.TEST_PROCESS_VAR = "test_value";
+
+    const result = getProcessEnvVar("TEST_PROCESS_VAR");
+
+    expect(result).toBe("test_value");
+    process.env.TEST_PROCESS_VAR = undefined;
+  });
+
+  it("throws missingEnvVarError when env var is missing", () => {
+    // Use a unique key that definitely doesn't exist
+    const uniqueKey = `NONEXISTENT_VAR_${Date.now()}`;
+
+    expect(() => getProcessEnvVar(uniqueKey)).toThrow(
+      `Missing environment variable: ${uniqueKey}`
+    );
+  });
+
+  it("throws when env var is empty string", () => {
+    process.env.EMPTY_VAR = "";
+
+    expect(() => getProcessEnvVar("EMPTY_VAR")).toThrow(
+      "Missing environment variable: EMPTY_VAR"
+    );
+    process.env.EMPTY_VAR = undefined;
+  });
+});
+
+describe("getEnvFilePatterns", () => {
+  it("returns correct patterns for development mode", () => {
+    const patterns = getEnvFilePatterns("development");
+
+    expect(patterns).toEqual([
+      ".env",
+      ".env.local",
+      ".env.development",
+      ".env.development.local",
+    ]);
+  });
+
+  it("returns correct patterns for production mode", () => {
+    const patterns = getEnvFilePatterns("production");
+
+    expect(patterns).toEqual([
+      ".env",
+      ".env.local",
+      ".env.production",
+      ".env.production.local",
+    ]);
+  });
+
+  it("returns correct patterns for custom mode", () => {
+    const patterns = getEnvFilePatterns("staging");
+
+    expect(patterns).toEqual([
+      ".env",
+      ".env.local",
+      ".env.staging",
+      ".env.staging.local",
+    ]);
+  });
+});

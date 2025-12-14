@@ -17,9 +17,16 @@
       "default": "./tsconfig.base.json"
     }
   },
+  "scripts": {
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
   "devDependencies": {
     "@types/bun": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "dotenv": "catalog:",
-    "dotenv-expand": "catalog:"
+    "dotenv-expand": "catalog:",
+    "vitest": "catalog:"
   }
 }

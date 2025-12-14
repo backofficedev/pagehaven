@@ -17,10 +17,12 @@
   "scripts": {
     "check-types": "tsc -b",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest"
   },
   "devDependencies": {
     "@pagehaven/config": "workspace:*",
+    "@vitest/coverage-v8": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
