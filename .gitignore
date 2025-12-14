@@ -37,7 +37,8 @@ lerna-debug.log*
 .turbo
 
 # Better-T-Stack
-.alchemy
+.alchemy/*
+!.alchemy/gh-env-sync/
 
 # Testing
 coverage
