@@ -38,9 +38,9 @@ describe("buildInfraName", () => {
     expect(buildInfraName().SHARED_RESOURCE_PREFIX).toBe("test-repo");
   });
 
-  it("returns RESOURCE_NAME as 'service'", async () => {
+  it("returns RESOURCE_NAME as 'worker'", async () => {
     const { buildInfraName } = await import("./constants");
-    expect(buildInfraName().RESOURCE_NAME).toBe("service");
+    expect(buildInfraName().RESOURCE_NAME).toBe("worker");
   });
 });
 

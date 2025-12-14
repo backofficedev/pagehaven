@@ -49,7 +49,10 @@ function useCloudflareStateStore() {
 export async function createApp(appName: string) {
   return await alchemy(appName, {
     stateStore: useCloudflareStateStore()
-      ? (scope) => new CloudflareStateStore(scope)
+      ? (scope) =>
+          new CloudflareStateStore(scope, {
+            scriptName: `${getInfraName().SHARED_RESOURCE_PREFIX}-alchemy-state-service`,
+          })
       : undefined,
   });
 }

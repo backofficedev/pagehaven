@@ -1,6 +1,6 @@
 import { APP_NAME_KEYS, getEnv } from "@pagehaven/config/env";
 
-const resourceName = "service";
+const resourceName = "worker";
 
 type InfraName = Record<(typeof APP_NAME_KEYS)[number], string> & {
   SHARED_RESOURCE_PREFIX: string;
