@@ -29,7 +29,7 @@ export function getEnv() {
 
 export function getProcessEnvVar(key: string): string {
   const value = process.env[key];
-  if (!value) {
+  if (value === undefined) {
     throw missingEnvVarError(key);
   }
   return value;
@@ -76,5 +76,7 @@ export function loadEnv(options: LoadEnvOptions = {}) {
 }
 
 export function missingEnvVarError(key: string) {
-  return new Error(`Missing environment variable: ${key}`);
+  return new Error(
+    `Missing environment variable: ${key}, value: ${process.env[key]}`
+  );
 }

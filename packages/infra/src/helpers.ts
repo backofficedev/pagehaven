@@ -62,7 +62,7 @@ export function buildUrl(environment: Environment, domain: string): string {
 
 export function getEnvVar(key: string): string {
   const value = alchemy.env[key];
-  if (!value) {
+  if (value === undefined) {
     throw missingEnvVarError(key);
   }
   return value;
@@ -70,7 +70,7 @@ export function getEnvVar(key: string): string {
 
 export function getSecretEnvVar(key: string): Secret<string> {
   const value = alchemy.secret.env[key];
-  if (!value) {
+  if (value === undefined) {
     throw missingEnvVarError(key);
   }
   return value;

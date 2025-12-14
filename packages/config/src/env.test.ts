@@ -2,6 +2,8 @@ import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+const MISSING_ENV_VAR_PATTERN = /^Missing environment variable: MY_VAR/;
+
 // Set required env vars BEFORE importing the module to avoid top-level buildEnv() failure
 const REQUIRED_ENV_VARS = {
   REPO_NAME: "test-repo",
@@ -213,7 +215,7 @@ describe("missingEnvVarError", () => {
     const error = missingEnvVarError("MY_VAR");
 
     expect(error).toBeInstanceOf(Error);
-    expect(error.message).toBe("Missing environment variable: MY_VAR");
+    expect(error.message).toMatch(MISSING_ENV_VAR_PATTERN);
   });
 });
 
@@ -260,12 +262,12 @@ describe("getProcessEnvVar", () => {
     );
   });
 
-  it("throws when env var is empty string", () => {
+  it("returns empty string when env var is empty string", () => {
     process.env.EMPTY_VAR = "";
 
-    expect(() => getProcessEnvVar("EMPTY_VAR")).toThrow(
-      "Missing environment variable: EMPTY_VAR"
-    );
+    const result = getProcessEnvVar("EMPTY_VAR");
+
+    expect(result).toBe("");
     process.env.EMPTY_VAR = undefined;
   });
 });
