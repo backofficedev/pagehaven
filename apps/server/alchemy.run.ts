@@ -1,5 +1,5 @@
 import path from "node:path";
-import { loadEnv } from "@pagehaven/config/env";
+import { loadEnvIfNotCI } from "@pagehaven/config/env";
 import { getInfraName } from "@pagehaven/infra/constants";
 import {
   buildUrl,
@@ -14,8 +14,8 @@ import {
   createWorker,
 } from "@pagehaven/infra/resources";
 
-loadEnv({ envDir: path.join(import.meta.dirname, "../../") });
-loadEnv({ envDir: import.meta.dirname });
+loadEnvIfNotCI({ envDir: path.join(import.meta.dirname, "../../") });
+loadEnvIfNotCI({ envDir: import.meta.dirname });
 
 const PORT = 3000;
 const app = await createApp(getInfraName().SERVER_APP_NAME);

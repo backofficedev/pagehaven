@@ -1,5 +1,5 @@
 import path from "node:path";
-import { loadEnv } from "@pagehaven/config/env";
+import { loadEnvIfNotCI } from "@pagehaven/config/env";
 import {
   buildUrl,
   getDomainEnvVarFromProcess,
@@ -10,7 +10,7 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-loadEnv({ envDir: path.join(import.meta.dirname, "../../") });
+loadEnvIfNotCI({ envDir: path.join(import.meta.dirname, "../../") });
 
 const stage = process.env.STAGE || getUsername();
 const SERVER_DOMAIN = getDomainEnvVarFromProcess(stage, "SERVER_DOMAIN");

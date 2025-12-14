@@ -1,5 +1,5 @@
 import path from "node:path";
-import { loadEnv } from "@pagehaven/config/env";
+import { loadEnvIfNotCI } from "@pagehaven/config/env";
 import { getInfraName } from "@pagehaven/infra/constants";
 import {
   getDomainEnvVar,
@@ -9,7 +9,7 @@ import { createApp } from "@pagehaven/infra/resources";
 import { Vite } from "alchemy/cloudflare";
 import { GitHubComment } from "alchemy/github";
 
-loadEnv({ envDir: path.join(import.meta.dirname, "../../") });
+loadEnvIfNotCI({ envDir: path.join(import.meta.dirname, "../../") });
 
 const PORT = 3001;
 const app = await createApp(getInfraName().WEB_APP_NAME);

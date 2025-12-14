@@ -36,6 +36,7 @@ program
   )
   .option("-o, --owner <owner>", "GitHub repository owner", "backofficedev")
   .option("-r, --repo <repo>", "GitHub repository name", "pagehaven")
+  .option("-d, --debug", "Show environment variable values in output")
   .parse();
 
 const options = program.opts<{
@@ -44,6 +45,7 @@ const options = program.opts<{
   dryRun?: boolean;
   owner: string;
   repo: string;
+  debug?: boolean;
 }>();
 
 function validateEnvironment(env: string): Environment {
@@ -135,16 +137,18 @@ type SyncOptions = {
   owner: string;
   repo: string;
   dryRun: boolean;
+  debug?: boolean;
 };
 
 async function syncToGitHub(opts: SyncOptions) {
-  const { envVars, githubEnv, owner, repo, dryRun } = opts;
+  const { envVars, githubEnv, owner, repo, dryRun, debug } = opts;
   if (dryRun) {
     console.log(
       `\nDRY RUN: Would sync the following environment variables to GitHub environment '${githubEnv}':\n`
     );
-    for (const [key, { source }] of envVars) {
-      console.log(`  ${key} (from ${source})`);
+    for (const [key, { value, source }] of envVars) {
+      const debugInfo = debug ? ` = ${value}` : "";
+      console.log(`  ${key} (from ${source})${debugInfo}`);
     }
     console.log(`\nTotal variables: ${envVars.size}`);
     console.log(
@@ -186,6 +190,7 @@ async function main() {
   const env = validateEnvironment(options.env);
   const githubEnv = options.githubEnv ?? env;
   const dryRun = options.dryRun ?? false;
+  const debug = options.debug ?? false;
   const { owner, repo } = options;
 
   const scriptDir = import.meta.dirname;
@@ -227,7 +232,14 @@ async function main() {
     return;
   }
 
-  await syncToGitHub({ envVars: allEnvVars, githubEnv, owner, repo, dryRun });
+  await syncToGitHub({
+    envVars: allEnvVars,
+    githubEnv,
+    owner,
+    repo,
+    dryRun,
+    debug,
+  });
 }
 
 main().catch((error) => {

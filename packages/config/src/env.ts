@@ -75,6 +75,12 @@ export function loadEnv(options: LoadEnvOptions = {}) {
   }
 }
 
+export function loadEnvIfNotCI(options: LoadEnvOptions = {}): void {
+  if (!process.env.CI) {
+    loadEnv(options);
+  }
+}
+
 export function missingEnvVarError(key: string) {
   return new Error(
     `Missing environment variable: ${key}, value: ${process.env[key]}`

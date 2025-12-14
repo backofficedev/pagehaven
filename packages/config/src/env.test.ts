@@ -21,7 +21,7 @@ for (const [key, value] of Object.entries(REQUIRED_ENV_VARS)) {
 }
 
 // Now safe to import
-const { loadEnv, missingEnvVarError } = await import("./env");
+const { loadEnv, loadEnvIfNotCI, missingEnvVarError } = await import("./env");
 
 const TEST_DIR = path.join(import.meta.dirname, "__test_env__");
 
@@ -207,6 +207,49 @@ describe("loadEnv", () => {
     expect(process.env.TEST_A).toBe("first");
     expect(process.env.TEST_B).toBe("first_second");
     expect(process.env.TEST_C).toBe("first_second_third");
+  });
+});
+
+describe("loadEnvIfNotCI", () => {
+  let originalCI: string | undefined;
+
+  beforeEach(() => {
+    originalCI = process.env.CI;
+    process.env.TEST_CI_VAR = undefined;
+    if (existsSync(TEST_DIR)) {
+      rmSync(TEST_DIR, { recursive: true });
+    }
+    mkdirSync(TEST_DIR, { recursive: true });
+  });
+
+  afterEach(() => {
+    process.env.TEST_CI_VAR = undefined;
+    if (originalCI !== undefined) {
+      process.env.CI = originalCI;
+    } else {
+      Reflect.deleteProperty(process.env, "CI");
+    }
+    if (existsSync(TEST_DIR)) {
+      rmSync(TEST_DIR, { recursive: true });
+    }
+  });
+
+  it("loads env when CI is not set", () => {
+    Reflect.deleteProperty(process.env, "CI");
+    writeEnvFile(".env", "TEST_CI_VAR=loaded");
+
+    loadEnvIfNotCI({ envDir: TEST_DIR });
+
+    expect(process.env.TEST_CI_VAR).toBe("loaded");
+  });
+
+  it.each(["true", "1"])("skips loading env when CI=%s", (ciValue) => {
+    process.env.CI = ciValue;
+    writeEnvFile(".env", "TEST_CI_VAR=should_not_load");
+
+    loadEnvIfNotCI({ envDir: TEST_DIR });
+
+    expect(process.env.TEST_CI_VAR).not.toBe("should_not_load");
   });
 });
 
