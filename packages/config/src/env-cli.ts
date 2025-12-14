@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-import { loadEnv } from "./env";
+import { loadEnvIfNotCI } from "./env";
 import { findWorkspaceRoot } from "./path";
 
 const ENV_VAR_NAME_PATTERN = /^[A-Z][A-Z0-9_]*$/;
@@ -22,9 +22,9 @@ if (commandArgs.length === 0) {
 const rootDir = findWorkspaceRoot(process.cwd());
 const cwd = process.cwd();
 
-loadEnv({ envDir: rootDir });
+loadEnvIfNotCI({ envDir: rootDir });
 if (cwd !== rootDir) {
-  loadEnv({ envDir: cwd });
+  loadEnvIfNotCI({ envDir: cwd });
 }
 
 // Expand environment variable references in command args
