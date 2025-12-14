@@ -163,15 +163,17 @@ async function syncToGitHub(opts: SyncOptions) {
     quiet: false,
   });
 
-  for (const [key, { value }] of envVars) {
-    await GitHubSecret(`secret-${key}`, {
-      owner,
-      repository: repo,
-      name: key,
-      value: alchemy.secret(value),
-      environment: githubEnv,
-    });
-  }
+  await Promise.all(
+    Array.from(envVars.entries()).map(([key, { value }]) =>
+      GitHubSecret(`secret-${key}`, {
+        owner,
+        repository: repo,
+        name: key,
+        value: alchemy.secret(value),
+        environment: githubEnv,
+      })
+    )
+  );
 
   await app.finalize();
 
