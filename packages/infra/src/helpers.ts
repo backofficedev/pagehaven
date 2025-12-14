@@ -1,4 +1,6 @@
 import { userInfo } from "node:os";
+import { getProcessEnvVar, missingEnvVarError } from "@pagehaven/config/env";
+import alchemy, { type Secret } from "alchemy";
 
 type Environment = "dev" | "prod" | string;
 
@@ -27,7 +29,7 @@ function getProtocolByEnvironment(environment: Environment): "http" | "https" {
   return isDevelopmentEnvironment(environment) ? "http" : "https";
 }
 
-export function getDomainByEnvironment(
+function getDomainByEnvironment(
   environment: Environment,
   domain: string
 ): string {
@@ -38,8 +40,38 @@ export function getDomainByEnvironment(
   return `${environment}.${domain}`;
 }
 
+export function getDomainEnvVar(
+  environment: Environment,
+  domainKey: string
+): string {
+  return getDomainByEnvironment(environment, getEnvVar(domainKey));
+}
+
+export function getDomainEnvVarFromProcess(
+  environment: Environment,
+  domainKey: string
+): string {
+  return getDomainByEnvironment(environment, getProcessEnvVar(domainKey));
+}
+
 export function buildUrl(environment: Environment, domain: string): string {
   const protocol = getProtocolByEnvironment(environment);
   const finalDomain = getDomainByEnvironment(environment, domain);
   return `${protocol}://${finalDomain}`;
+}
+
+export function getEnvVar(key: string): string {
+  const value = alchemy.env[key];
+  if (!value) {
+    throw missingEnvVarError(key);
+  }
+  return value;
+}
+
+export function getSecretEnvVar(key: string): Secret<string> {
+  const value = alchemy.secret.env[key];
+  if (!value) {
+    throw missingEnvVarError(key);
+  }
+  return value;
 }

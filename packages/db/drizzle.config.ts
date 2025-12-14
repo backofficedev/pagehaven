@@ -1,9 +1,7 @@
-import dotenv from "dotenv";
+import { loadEnv } from "@pagehaven/config/env";
 import { defineConfig } from "drizzle-kit";
 
-dotenv.config({
-  path: "../../apps/server/.env",
-});
+loadEnv({ envDir: "../../apps/server" });
 
 export default defineConfig({
   schema: "./src/schema",

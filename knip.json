@@ -3,9 +3,10 @@
   "ignoreDependencies": [
     "cloudflare",
     "lint-staged",
-    "alchemy",
     "@pagehaven/config",
-    "@cloudflare/workers-types"
+    "@cloudflare/workers-types",
+    "alchemy",
+    "wrangler"
   ],
   "ignoreBinaries": ["tsc"],
   "ignore": ["**/routeTree.gen.ts", "e2e/**"],

@@ -1,25 +1,25 @@
 import path from "node:path";
+import { loadEnv } from "@pagehaven/config/env";
+import { getInfraName } from "@pagehaven/infra/constants";
 import {
-  getDomainByEnvironment,
+  getDomainEnvVar,
   isDevelopmentEnvironment,
 } from "@pagehaven/infra/helpers";
 import { createApp } from "@pagehaven/infra/resources";
-import alchemy from "alchemy";
 import { Vite } from "alchemy/cloudflare";
 import { GitHubComment } from "alchemy/github";
-import { config } from "dotenv";
 
-config({ path: path.join(import.meta.dirname, "../../.env") });
+loadEnv({ envDir: path.join(import.meta.dirname, "../../") });
 
 const PORT = 3001;
-const app = await createApp("web");
+const app = await createApp(getInfraName().WEB_APP_NAME);
 const stage = app.stage;
 
 // Global env
-const WEB_DOMAIN = getDomainByEnvironment(stage, alchemy.env.WEB_DOMAIN || "");
+const WEB_DOMAIN = getDomainEnvVar(stage, "WEB_DOMAIN");
 const domains = isDevelopmentEnvironment(stage) ? undefined : [WEB_DOMAIN];
 
-export const web = await Vite("web", {
+export const web = await Vite(getInfraName().RESOURCE_NAME, {
   assets: path.join(import.meta.dirname, "dist"),
   domains,
   placement: {

@@ -3,12 +3,23 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "bin": {
+    "env-cli": "./src/env-cli.ts"
+  },
   "exports": {
-    "./constants": {
-      "default": "./src/constants.ts"
+    "./env": {
+      "default": "./src/env.ts"
+    },
+    "./path": {
+      "default": "./src/path.ts"
     },
     "./tsconfig.base.json": {
       "default": "./tsconfig.base.json"
     }
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "dotenv": "catalog:",
+    "dotenv-expand": "catalog:"
   }
 }

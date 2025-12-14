@@ -9,9 +9,8 @@ build
 *.tsbuildinfo
 
 # Environment variables
-.env*
-.env.production
-!.env.example
+.env*local
+!.env*.example
 
 # IDEs and editors
 .vscode/*

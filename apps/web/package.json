@@ -17,15 +17,16 @@
     "test": "vitest run --config vitest.config.ts",
     "test:coverage": "vitest run --coverage --config vitest.config.ts",
     "test:watch": "vitest --config vitest.config.ts",
-    "dev": "alchemy dev --app web",
-    "deploy": "alchemy deploy --app web",
-    "destroy": "alchemy destroy --app web"
+    "dev": "env-cli -- alchemy dev --app WEB_APP_NAME",
+    "deploy": "env-cli -- alchemy deploy --app WEB_APP_NAME",
+    "destroy": "env-cli -- alchemy destroy --app WEB_APP_NAME"
   },
   "dependencies": {
     "@orpc/client": "catalog:",
     "@orpc/tanstack-query": "catalog:",
     "@pagehaven/auth": "workspace:*",
     "@pagehaven/infra": "workspace:*",
+    "@pagehaven/config": "workspace:*",
     "@pagehaven/client": "workspace:*",
     "@pagehaven/utils": "workspace:*",
     "@radix-ui/react-tabs": "^1.1.13",

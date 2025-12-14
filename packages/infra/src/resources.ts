@@ -1,6 +1,5 @@
-import fs from "node:fs";
 import path from "node:path";
-import { REPO_NAME } from "@pagehaven/config/constants";
+import { findWorkspaceRoot } from "@pagehaven/config/path";
 import alchemy from "alchemy";
 import {
   type Bindings,
@@ -11,17 +10,7 @@ import {
   type WorkerProps,
 } from "alchemy/cloudflare";
 import { CloudflareStateStore } from "alchemy/state";
-
-function findWorkspaceRoot(startDir: string): string {
-  let dir = startDir;
-  while (dir !== path.dirname(dir)) {
-    if (fs.existsSync(path.join(dir, "turbo.json"))) {
-      return dir;
-    }
-    dir = path.dirname(dir);
-  }
-  throw new Error("Could not find workspace root (turbo.json)");
-}
+import { getInfraName } from "./constants";
 
 const WORKSPACE_ROOT = findWorkspaceRoot(import.meta.dirname);
 const MIGRATIONS_DIR = path.join(WORKSPACE_ROOT, "packages/db/src/migrations");
@@ -32,19 +21,20 @@ const MIGRATIONS_DIR = path.join(WORKSPACE_ROOT, "packages/db/src/migrations");
  * Call this within your alchemy app context.
  */
 export async function createSharedResources(stage: string) {
+  const infraName = getInfraName();
   const db = await D1Database("database", {
-    name: `${REPO_NAME}-${stage}-database`,
+    name: `${infraName.SHARED_RESOURCE_PREFIX}-${stage}-database`,
     migrationsDir: MIGRATIONS_DIR,
     adopt: true,
   });
 
   const storage = await R2Bucket("storage", {
-    name: `${REPO_NAME}-${stage}-storage`,
+    name: `${infraName.SHARED_RESOURCE_PREFIX}-${stage}-storage`,
     adopt: true,
   });
 
   const cache = await KVNamespace("cache", {
-    title: `${REPO_NAME}-${stage}-cache`,
+    title: `${infraName.SHARED_RESOURCE_PREFIX}-${stage}-cache`,
     adopt: true,
   });
 
@@ -65,7 +55,6 @@ export async function createApp(appName: string) {
 }
 
 type CreateWorkerOptions<B extends Bindings> = {
-  name: string;
   port: number;
 } & Required<Pick<WorkerProps<B>, "entrypoint" | "bindings">> &
   Pick<WorkerProps<B>, "domains" | "routes">;
@@ -73,7 +62,7 @@ type CreateWorkerOptions<B extends Bindings> = {
 export async function createWorker<const B extends Bindings>(
   options: CreateWorkerOptions<B>
 ) {
-  return await Worker(REPO_NAME, {
+  return await Worker(getInfraName().RESOURCE_NAME, {
     compatibility: "node",
     entrypoint: options.entrypoint,
     domains: options.domains,

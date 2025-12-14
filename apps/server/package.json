@@ -15,10 +15,10 @@
     "check-types": "tsc --noEmit",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
     "start": "bun run dist/index.js",
-    "dev": "alchemy dev --app server",
+    "dev": "env-cli -- alchemy dev --app SERVER_APP_NAME",
     "dev:ready": "wait-on tcp:3000",
-    "deploy": "alchemy deploy --app server",
-    "destroy": "alchemy destroy --app server"
+    "deploy": "env-cli -- alchemy deploy --app SERVER_APP_NAME",
+    "destroy": "env-cli -- alchemy destroy --app SERVER_APP_NAME"
   },
   "dependencies": {
     "@orpc/openapi": "catalog:",
@@ -27,7 +27,6 @@
     "@pagehaven/api": "workspace:*",
     "@pagehaven/auth": "workspace:*",
     "@pagehaven/infra": "workspace:*",
-    "dotenv": "catalog:",
     "hono": "catalog:",
     "zod": "catalog:"
   },

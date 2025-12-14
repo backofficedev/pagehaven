@@ -27,7 +27,6 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "dotenv": "catalog:",
     "drizzle-orm": "catalog:"
   }
 }

@@ -17,7 +17,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["node", "@cloudflare/workers-types"],
+    "types": ["bun", "node", "@cloudflare/workers-types"],
     "strictNullChecks": true
   }
 }

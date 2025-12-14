@@ -5,25 +5,21 @@
   "type": "module",
   "exports": {
     "./resources": {
-      "bun": "./src/resources.ts",
-      "types": "./src/resources.ts",
-      "default": "./dist/resources.js"
+      "default": "./src/resources.ts"
     },
     "./helpers": {
-      "bun": "./src/helpers.ts",
-      "types": "./src/helpers.ts",
-      "default": "./dist/helpers.js"
+      "default": "./src/helpers.ts"
+    },
+    "./constants": {
+      "default": "./src/constants.ts"
     }
   },
   "scripts": {
-    "build": "tsc",
-    "check-types": "tsc --noEmit"
-  },
-  "dependencies": {
-    "alchemy": "catalog:"
+    "check-types": "tsc -b"
   },
   "devDependencies": {
-    "@pagehaven/config": "workspace:*"
+    "@pagehaven/config": "workspace:*",
+    "alchemy": "catalog:"
   },
   "peerDependencies": {
     "typescript": "^5"

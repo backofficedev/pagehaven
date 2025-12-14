@@ -13,10 +13,10 @@
   "scripts": {
     "build": "tsdown",
     "check-types": "tsc --noEmit",
-    "dev": "alchemy dev --app static",
+    "dev": "env-cli -- alchemy dev --app STATIC_APP_NAME",
     "dev:ready": "wait-on tcp:3002",
-    "deploy": "alchemy deploy --app static",
-    "destroy": "alchemy destroy --app static",
+    "deploy": "env-cli -- alchemy deploy --app STATIC_APP_NAME",
+    "destroy": "env-cli -- alchemy destroy --app STATIC_APP_NAME",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -24,7 +24,6 @@
     "@pagehaven/api": "workspace:*",
     "@pagehaven/auth": "workspace:*",
     "@pagehaven/infra": "workspace:*",
-    "dotenv": "catalog:",
     "hono": "catalog:"
   },
   "devDependencies": {

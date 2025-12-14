@@ -33,9 +33,8 @@ node_modules/
 .pnp.*
 
 # env
-.env*
-.env.production
-!.env.example
+.env*local
+!.env*.example
 .dev.vars
 
 # logs
