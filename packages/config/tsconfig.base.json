@@ -18,6 +18,10 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "types": ["bun", "node", "@cloudflare/workers-types"],
-    "strictNullChecks": true
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false
+    // "exactOptionalPropertyTypes": true
   }
 }

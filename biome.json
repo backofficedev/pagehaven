@@ -28,5 +28,27 @@
       "!**/test-results"
     ]
   },
-  "extends": ["ultracite/core", "ultracite/react"]
+  "extends": ["ultracite/core", "ultracite/react"],
+  "linter": {
+    "rules": {
+      "suspicious": {
+        "noConsole": "warn"
+      },
+      "style": {
+        "useSingleVarDeclarator": "error"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["apps/cli/**/*", "**/alchemy.run.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    }
+  ]
 }

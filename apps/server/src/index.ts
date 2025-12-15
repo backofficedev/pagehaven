@@ -109,7 +109,7 @@ app.use("/*", async (c, next) => {
     return c.newResponse(apiResult.response.body, apiResult.response);
   }
 
-  await next();
+  return next();
 });
 
 app.get("/", (c) => c.text("OK"));
