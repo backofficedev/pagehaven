@@ -44,7 +44,7 @@
         "vitest": "catalog:",
       },
       "peerDependencies": {
-        "typescript": "^5",
+        "typescript": "catalog:",
       },
     },
     "apps/server": {
@@ -157,7 +157,7 @@
         "vitest": "catalog:",
       },
       "peerDependencies": {
-        "typescript": "^5",
+        "typescript": "catalog:",
       },
     },
     "packages/auth": {
@@ -172,7 +172,7 @@
         "@pagehaven/config": "workspace:*",
       },
       "peerDependencies": {
-        "typescript": "^5",
+        "typescript": "catalog:",
       },
     },
     "packages/client": {
@@ -188,7 +188,7 @@
         "vitest": "catalog:",
       },
       "peerDependencies": {
-        "typescript": "^5",
+        "typescript": "catalog:",
       },
     },
     "packages/config": {
@@ -217,7 +217,7 @@
         "vitest": "catalog:",
       },
       "peerDependencies": {
-        "typescript": "^5",
+        "typescript": "catalog:",
       },
     },
     "packages/infra": {
@@ -229,7 +229,7 @@
         "vitest": "catalog:",
       },
       "peerDependencies": {
-        "typescript": "^5",
+        "typescript": "catalog:",
       },
     },
     "packages/scripts": {
@@ -249,7 +249,7 @@
         "yaml": "catalog:",
       },
       "peerDependencies": {
-        "typescript": "^5",
+        "typescript": "catalog:",
       },
     },
     "packages/utils": {
@@ -263,7 +263,7 @@
         "vitest": "catalog:",
       },
       "peerDependencies": {
-        "typescript": "^5",
+        "typescript": "catalog:",
       },
     },
   },
