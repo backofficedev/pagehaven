@@ -11,6 +11,7 @@ import {
   createApp,
   createSharedResources,
   createWorker,
+  createZone,
 } from "@pagehaven/infra/resources";
 
 loadEnvIfNotCI({ envDir: path.join(import.meta.dirname, "../../") });
@@ -37,9 +38,10 @@ const envBindings = {
   BETTER_AUTH_SECRET,
 } as const;
 const domains = isDevelopmentEnvironment(stage) ? undefined : [STATIC_DOMAIN];
+const zone = await createZone(STATIC_DOMAIN);
 const routes = isDevelopmentEnvironment(stage)
   ? undefined
-  : [{ pattern: `*.{${STATIC_DOMAIN}/*}` }];
+  : [{ pattern: `*.{${STATIC_DOMAIN}/*}`, zoneId: zone.id }];
 
 console.log(`Domains -> ${domains}`);
 console.log(`Routes -> ${routes}`);

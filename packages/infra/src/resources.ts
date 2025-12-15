@@ -8,6 +8,7 @@ import {
   R2Bucket,
   Worker,
   type WorkerProps,
+  Zone,
 } from "alchemy/cloudflare";
 import { CloudflareStateStore } from "alchemy/state";
 import { getInfraName } from "./constants";
@@ -54,6 +55,12 @@ export async function createApp(appName: string) {
             scriptName: `${getInfraName().SHARED_RESOURCE_PREFIX}-alchemy-state-service`,
           })
       : undefined,
+  });
+}
+
+export async function createZone(zoneName: string) {
+  return await Zone(zoneName, {
+    name: zoneName,
   });
 }
 
