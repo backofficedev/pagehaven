@@ -56,6 +56,7 @@ function validateEnvironment(env: string): Environment {
     );
     process.exit(1);
   }
+  // Type guard: after the includes check, env is guaranteed to be Environment
   return env as Environment;
 }
 

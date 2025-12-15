@@ -99,8 +99,8 @@ function DeployPage() {
       const content = await readFileAsBase64(file);
       // Use webkitRelativePath for folder uploads, fallback to name
       const path =
-        (file as File & { webkitRelativePath?: string }).webkitRelativePath ||
-        file.name;
+        (file satisfies File & { webkitRelativePath?: string })
+          .webkitRelativePath || file.name;
       return {
         path,
         content,

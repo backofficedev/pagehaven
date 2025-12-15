@@ -20,7 +20,7 @@ function decodeBase64(content: string): ArrayBuffer {
   for (let i = 0; i < binaryString.length; i++) {
     bytes[i] = binaryString.codePointAt(i) ?? 0;
   }
-  return bytes.buffer as ArrayBuffer;
+  return bytes.buffer; // Uint8Array.buffer is already an ArrayBuffer
 }
 
 /** Validate deployment is in uploadable state */

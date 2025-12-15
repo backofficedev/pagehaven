@@ -105,7 +105,19 @@ export function readProjectConfig(): ProjectConfig | null {
     const { readFileSync } = require("node:fs");
     const { parse } = require("yaml");
     const content = readFileSync(configPath, "utf-8");
-    return parse(content) as ProjectConfig;
+    const parsed = parse(content);
+
+    // Basic runtime validation for config structure
+    if (!parsed || typeof parsed !== "object") {
+      return null;
+    }
+
+    // Validate required field exists
+    if (!("outputDirectory" in parsed)) {
+      return null;
+    }
+
+    return parsed satisfies ProjectConfig;
   } catch {
     return null;
   }

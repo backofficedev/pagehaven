@@ -36,13 +36,11 @@ export function getProcessEnvVar(key: string): string {
 }
 
 function buildEnv() {
-  return envKeys.reduce(
-    (acc, key) => {
-      acc[key] = getProcessEnvVar(key);
-      return acc;
-    },
-    {} as Record<(typeof envKeys)[number], string>
-  );
+  const result: Record<string, string> = {};
+  for (const key of envKeys) {
+    result[key] = getProcessEnvVar(key);
+  }
+  return result as Record<(typeof envKeys)[number], string>;
 }
 
 type EnvMode = "development" | "production" | "test" | string;

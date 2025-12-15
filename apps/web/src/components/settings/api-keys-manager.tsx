@@ -158,7 +158,7 @@ export default function ApiKeysManager() {
     );
   }
 
-  const keys = (keysQuery.data ?? []) as ApiKey[];
+  const keys = (keysQuery.data ?? []) satisfies ApiKey[];
 
   return (
     <div className="space-y-6">

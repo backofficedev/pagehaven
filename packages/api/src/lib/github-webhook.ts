@@ -260,7 +260,16 @@ export async function processGitHubPush(
       const key = `${storagePath}${filePath}`;
       const contentType = getContentType(filePath);
 
-      await uploadFile(key, content.buffer as ArrayBuffer, contentType);
+      // Convert Buffer to ArrayBuffer safely
+      const arrayBuffer =
+        content.buffer instanceof ArrayBuffer
+          ? content.buffer
+          : content.buffer.slice(
+              content.byteOffset,
+              content.byteOffset + content.byteLength
+            );
+
+      await uploadFile(key, arrayBuffer as ArrayBuffer, contentType);
 
       totalSize += content.length;
       fileCount += 1;

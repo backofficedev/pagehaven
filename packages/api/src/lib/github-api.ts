@@ -22,5 +22,12 @@ export async function githubFetch<T>(
     throw new Error(`GitHub API error: ${response.status} - ${error}`);
   }
 
-  return response.json() as Promise<T>;
+  const data = await response.json();
+
+  // Basic runtime validation
+  if (data === null || typeof data !== "object") {
+    throw new Error("Invalid GitHub API response: expected object");
+  }
+
+  return data as T;
 }

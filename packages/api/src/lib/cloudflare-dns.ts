@@ -84,7 +84,21 @@ async function cfFetch<T>(
     },
   });
 
-  const data = (await response.json()) as CloudflareResponse<T>;
+  const responseJson = await response.json();
+
+  // Runtime validation for Cloudflare API response
+  if (
+    !responseJson ||
+    typeof responseJson !== "object" ||
+    typeof (responseJson as any).success !== "boolean" ||
+    !Array.isArray((responseJson as any).errors) ||
+    !Array.isArray((responseJson as any).messages) ||
+    !("result" in responseJson)
+  ) {
+    throw new Error("Invalid Cloudflare API response structure");
+  }
+
+  const data = responseJson as CloudflareResponse<T>;
 
   if (!(response.ok && data.success)) {
     const errorMessage =
@@ -107,7 +121,19 @@ export async function createSubdomainDnsRecord(
     console.log(
       `Skipping DNS record creation for ${subdomain} (development mode)`
     );
-    return {} as CloudflareDnsRecord;
+    return {
+      id: "dev-placeholder",
+      type: "CNAME",
+      name: subdomain,
+      content: staticDomain,
+      proxiable: true,
+      proxied: false,
+      ttl: 300,
+      zone_id: "dev",
+      zone_name: staticDomain,
+      created_on: new Date().toISOString(),
+      modified_on: new Date().toISOString(),
+    };
   }
 
   const zoneId = getZoneId();
