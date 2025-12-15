@@ -34,9 +34,11 @@ env:
   WEB_DOMAIN: ${{ secrets.WEB_DOMAIN }}
   # Server and Static
   BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-  # GitHub App credentials
+  # Server GitHub App credentials
   APP_GITHUB_CLIENT_ID: ${{ secrets.APP_GITHUB_CLIENT_ID }}
   APP_GITHUB_CLIENT_SECRET: ${{ secrets.APP_GITHUB_CLIENT_SECRET }}
+  # Static Cloudflare
+  STATIC_CLOUDFLARE_API_TOKEN: ${{ secrets.STATIC_CLOUDFLARE_API_TOKEN }}
 jobs:
   deploy:
     if: ${{ github.event.action != 'closed' }}

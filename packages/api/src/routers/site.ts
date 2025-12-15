@@ -5,6 +5,10 @@ import { z } from "zod";
 import { protectedProcedure } from "../index";
 import { invalidateSiteCache } from "../lib/cache";
 import { requireSitePermissionFromContext } from "../lib/check-site-permission";
+import {
+  createSubdomainDnsRecord,
+  deleteSubdomainDnsRecord,
+} from "../lib/cloudflare-dns";
 import { hasPermission } from "../lib/permissions";
 import { updateSiteSchema } from "../schemas/upload";
 
@@ -99,6 +103,16 @@ export const siteRouter = {
         throw new Error("Subdomain is already taken");
       }
 
+      // Create DNS record for the subdomain
+      try {
+        await createSubdomainDnsRecord(input.subdomain);
+      } catch (error) {
+        console.error("Failed to create DNS record:", error);
+        throw new Error(
+          `Failed to create DNS record for subdomain: ${error instanceof Error ? error.message : "Unknown error"}`
+        );
+      }
+
       // Create site, access config, and owner membership in transaction
       await db.batch([
         db.insert(site).values({
@@ -190,12 +204,22 @@ export const siteRouter = {
         "Only owners can delete sites"
       );
 
-      // Get site data for cache invalidation before deleting
+      // Get site data for cache invalidation and DNS cleanup before deleting
       const siteData = await db
         .select({ subdomain: site.subdomain, customDomain: site.customDomain })
         .from(site)
         .where(eq(site.id, input.siteId))
         .get();
+
+      // Delete DNS record for the subdomain
+      if (siteData?.subdomain) {
+        try {
+          await deleteSubdomainDnsRecord(siteData.subdomain);
+        } catch (error) {
+          console.error("Failed to delete DNS record:", error);
+          // Continue with site deletion even if DNS cleanup fails
+        }
+      }
 
       // Cascade delete handles members, access, invites, deployments
       await db.delete(site).where(eq(site.id, input.siteId));
