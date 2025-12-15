@@ -5,6 +5,7 @@ import alchemy from "alchemy";
 import { GitHubSecret } from "alchemy/github";
 import { Command } from "commander";
 import { parse } from "dotenv";
+import YAML from "yaml";
 import {
   getEnvFilePatterns,
   getProcessEnvVar,
@@ -140,6 +141,56 @@ type SyncOptions = {
   debug?: boolean;
 };
 
+type DeployYmlValidation = {
+  valid: boolean;
+  missingVars: string[];
+  deployYmlVars: string[];
+};
+
+function parseDeployYml(projectRoot: string): string[] {
+  const deployYmlPath = path.join(
+    projectRoot,
+    ".github",
+    "workflows",
+    "deploy.yml"
+  );
+
+  if (!existsSync(deployYmlPath)) {
+    throw new Error(`deploy.yml not found at ${deployYmlPath}`);
+  }
+
+  const content = readFileSync(deployYmlPath, "utf-8");
+  const parsed = YAML.parse(content);
+
+  const envVars: string[] = [];
+
+  if (parsed.env && typeof parsed.env === "object") {
+    for (const key of Object.keys(parsed.env)) {
+      if (key !== "STAGE") {
+        envVars.push(key);
+      }
+    }
+  }
+
+  return envVars;
+}
+
+function validateEnvVarsInDeployYml(
+  envVars: Map<string, { value: string; source: string }>,
+  projectRoot: string
+): DeployYmlValidation {
+  const deployYmlVars = parseDeployYml(projectRoot);
+  const envVarKeys = Array.from(envVars.keys());
+
+  const missingVars = envVarKeys.filter((key) => !deployYmlVars.includes(key));
+
+  return {
+    valid: missingVars.length === 0,
+    missingVars,
+    deployYmlVars,
+  };
+}
+
 async function syncToGitHub(opts: SyncOptions) {
   const { envVars, githubEnv, owner, repo, dryRun, debug } = opts;
   if (dryRun) {
@@ -230,6 +281,35 @@ async function main() {
   if (allEnvVars.size === 0) {
     console.log("\nNo environment variables found to sync.");
     return;
+  }
+
+  const validation = validateEnvVarsInDeployYml(allEnvVars, projectRoot);
+
+  if (validation.valid) {
+    console.log(
+      "\n✅ deploy.yml validation passed - all env vars are defined."
+    );
+  } else {
+    console.log("\n⚠️  deploy.yml validation failed!");
+    console.log(
+      "The following environment variables are not defined in .github/workflows/deploy.yml:"
+    );
+    for (const varName of validation.missingVars) {
+      console.log(`  - ${varName}`);
+    }
+    console.log(
+      "\nPlease add these variables to the 'env' section of deploy.yml before syncing."
+    );
+
+    if (!dryRun) {
+      console.log(
+        "\n❌ Sync aborted. Use --dry-run flag to preview and proceed despite validation failure."
+      );
+      process.exit(1);
+    }
+    console.log(
+      "\n⚠️  Dry run mode enabled - proceeding with sync despite validation failure."
+    );
   }
 
   await syncToGitHub({

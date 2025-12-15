@@ -14,6 +14,15 @@ concurrency:
   cancel-in-progress: false
 env:
   STAGE: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || (github.ref == 'refs/heads/main' && 'prod' || github.ref_name) }}
+  # Infrastructure naming
+  REPO_NAME: ${{ secrets.REPO_NAME }}
+  APP_NAME_PREFIX: ${{ secrets.APP_NAME_PREFIX }}
+  SERVER_RESOURCE_NAME: ${{ secrets.SERVER_RESOURCE_NAME }}
+  STATIC_RESOURCE_NAME: ${{ secrets.STATIC_RESOURCE_NAME }}
+  WEB_RESOURCE_NAME: ${{ secrets.WEB_RESOURCE_NAME }}
+  SERVER_APP_NAME: ${{ secrets.SERVER_APP_NAME }}
+  STATIC_APP_NAME: ${{ secrets.STATIC_APP_NAME }}
+  WEB_APP_NAME: ${{ secrets.WEB_APP_NAME }}
   # Alchemy
   ALCHEMY_PASSWORD: ${{ secrets.ALCHEMY_PASSWORD }}
   ALCHEMY_STATE_TOKEN: ${{ secrets.ALCHEMY_STATE_TOKEN }}
