@@ -18,6 +18,7 @@
     "alchemy": "catalog:",
     "commander": "catalog:",
     "dotenv": "catalog:",
+    "typescript": "catalog:",
     "yaml": "catalog:"
   },
   "peerDependencies": {

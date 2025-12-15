@@ -26,6 +26,6 @@
     "@types/bun": "catalog:",
     "dotenv": "catalog:",
     "dotenv-expand": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:testing"
   }
 }

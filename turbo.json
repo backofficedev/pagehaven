@@ -73,17 +73,18 @@
       "inputs": ["$TURBO_DEFAULT$", "**/*.test.ts", "**/*.spec.ts"],
       "outputs": ["coverage/**"]
     },
-    "//#test:e2e": {
+    "@pagehaven/test#test:e2e": {
       "dependsOn": ["^build"],
       "inputs": [
         "e2e/**/*.ts",
         "playwright.config.ts",
-        "apps/**/src/**",
-        "packages/**/src/**"
+        "../../apps/**/src/**",
+        "../../packages/**/src/**"
       ],
-      "outputs": ["playwright-report/**", "test-results/**"]
+      "outputs": ["playwright-report/**", "test-results/**"],
+      "cache": false
     },
-    "//#test:e2e:ui": {
+    "@pagehaven/test#test:e2e:ui": {
       "dependsOn": ["^build"],
       "cache": false,
       "persistent": true

@@ -23,7 +23,7 @@
   "devDependencies": {
     "@pagehaven/config": "workspace:*",
     "alchemy": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:testing"
   },
   "peerDependencies": {
     "typescript": "catalog:"

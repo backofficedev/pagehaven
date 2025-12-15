@@ -21,8 +21,8 @@
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
     "@pagehaven/config": "workspace:*",
-    "drizzle-kit": "^0.31.8",
-    "vitest": "catalog:"
+    "drizzle-kit": "catalog:",
+    "vitest": "catalog:testing"
   },
   "peerDependencies": {
     "typescript": "catalog:"

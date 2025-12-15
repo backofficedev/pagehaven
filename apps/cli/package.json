@@ -17,16 +17,16 @@
   "dependencies": {
     "@pagehaven/client": "workspace:*",
     "@pagehaven/utils": "workspace:*",
-    "chalk": "^5.6.2",
+    "chalk": "catalog:",
     "commander": "catalog:",
-    "glob": "^13.0.0",
-    "ora": "^9.0.0",
+    "glob": "catalog:",
+    "ora": "catalog:",
     "yaml": "catalog:"
   },
   "devDependencies": {
     "@pagehaven/config": "workspace:*",
     "@types/node": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:testing"
   },
   "peerDependencies": {
     "typescript": "catalog:"

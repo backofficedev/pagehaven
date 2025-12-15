@@ -33,7 +33,7 @@
     "alchemy": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:",
+    "vitest": "catalog:testing",
     "wrangler": "catalog:"
   }
 }

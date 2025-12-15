@@ -1,0 +1,8 @@
+{
+  "extends": "@pagehaven/config/tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "."
+  },
+  "include": ["e2e/**/*.ts", "playwright.config.ts"]
+}

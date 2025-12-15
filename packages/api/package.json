@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@pagehaven/config": "workspace:*",
-    "vitest": "catalog:"
+    "vitest": "catalog:testing"
   },
   "peerDependencies": {
     "typescript": "catalog:"
