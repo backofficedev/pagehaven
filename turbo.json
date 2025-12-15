@@ -76,17 +76,18 @@
     "@pagehaven/test#test:e2e": {
       "dependsOn": ["^build"],
       "inputs": [
+        "$TURBO_DEFAULT$",
         "e2e/**/*.ts",
         "playwright.config.ts",
-        "../../apps/**/src/**",
-        "../../packages/**/src/**"
+        ".env*",
+        "../../apps/**/src/**/*.{ts,tsx}",
+        "../../packages/**/src/**/*.{ts,tsx}",
+        "../../.env*"
       ],
-      "outputs": ["playwright-report/**", "test-results/**"],
-      "cache": false
+      "outputs": ["playwright-report/**", "test-results/**"]
     },
     "@pagehaven/test#test:e2e:ui": {
       "dependsOn": ["^build"],
-      "cache": false,
       "persistent": true
     },
     "//#cpd": {
