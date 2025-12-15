@@ -38,7 +38,7 @@ env:
   APP_GITHUB_CLIENT_ID: ${{ secrets.APP_GITHUB_CLIENT_ID }}
   APP_GITHUB_CLIENT_SECRET: ${{ secrets.APP_GITHUB_CLIENT_SECRET }}
   # Static Cloudflare
-  STATIC_CLOUDFLARE_API_TOKEN: ${{ secrets.STATIC_CLOUDFLARE_API_TOKEN }}
+  SERVER_CLOUDFLARE_API_TOKEN: ${{ secrets.SERVER_CLOUDFLARE_API_TOKEN }}
 jobs:
   deploy:
     if: ${{ github.event.action != 'closed' }}
