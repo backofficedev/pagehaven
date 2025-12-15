@@ -12,8 +12,6 @@
         "@types/node": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "alchemy": "catalog:",
-        "commander": "catalog:",
-        "dotenv": "catalog:",
         "dotenv-cli": "^11.0.0",
         "husky": "^9.1.7",
         "jscpd": "^4.0.5",
@@ -23,7 +21,6 @@
         "ultracite": "6.3.8",
         "vitest": "catalog:",
         "wait-on": "^9.0.3",
-        "yaml": "catalog:",
       },
     },
     "apps/cli": {
@@ -230,6 +227,26 @@
         "@pagehaven/config": "workspace:*",
         "alchemy": "catalog:",
         "vitest": "catalog:",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
+    "packages/scripts": {
+      "name": "@pagehaven/scripts",
+      "version": "0.0.0",
+      "bin": {
+        "gh-env-sync": "./src/gh-env-sync.ts",
+      },
+      "dependencies": {
+        "@pagehaven/config": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "catalog:",
+        "alchemy": "catalog:",
+        "commander": "catalog:",
+        "dotenv": "catalog:",
+        "yaml": "catalog:",
       },
       "peerDependencies": {
         "typescript": "^5",
@@ -704,6 +721,8 @@
     "@pagehaven/db": ["@pagehaven/db@workspace:packages/db"],
 
     "@pagehaven/infra": ["@pagehaven/infra@workspace:packages/infra"],
+
+    "@pagehaven/scripts": ["@pagehaven/scripts@workspace:packages/scripts"],
 
     "@pagehaven/utils": ["@pagehaven/utils@workspace:packages/utils"],
 

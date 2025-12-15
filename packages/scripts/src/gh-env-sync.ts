@@ -1,16 +1,16 @@
 #!/usr/bin/env bun
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
+import {
+  getEnvFilePatterns,
+  getProcessEnvVar,
+  loadEnv,
+} from "@pagehaven/config/env";
 import alchemy from "alchemy";
 import { GitHubSecret } from "alchemy/github";
 import { Command } from "commander";
 import { parse } from "dotenv";
 import YAML from "yaml";
-import {
-  getEnvFilePatterns,
-  getProcessEnvVar,
-  loadEnv,
-} from "../packages/config/src/env";
 
 type Environment = "preview" | "staging" | "production";
 
@@ -237,6 +237,12 @@ async function syncToGitHub(opts: SyncOptions) {
   );
 }
 
+function getProjectRoot(): string {
+  // Navigate up from packages/scripts/src to project root
+  const scriptDir = import.meta.dirname;
+  return path.resolve(scriptDir, "../../..");
+}
+
 async function main() {
   const env = validateEnvironment(options.env);
   const githubEnv = options.githubEnv ?? env;
@@ -244,8 +250,7 @@ async function main() {
   const debug = options.debug ?? false;
   const { owner, repo } = options;
 
-  const scriptDir = import.meta.dirname;
-  const projectRoot = path.dirname(scriptDir);
+  const projectRoot = getProjectRoot();
 
   // Determine env file pattern
   const envFilePatterns = getEnvFilePatterns(env);

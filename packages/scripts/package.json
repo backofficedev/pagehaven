@@ -1,0 +1,26 @@
+{
+  "name": "@pagehaven/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "gh-env-sync": "./src/gh-env-sync.ts"
+  },
+  "scripts": {
+    "gh-env-sync": "bun run src/gh-env-sync.ts",
+    "check-types": "bunx tsc --noEmit"
+  },
+  "dependencies": {
+    "@pagehaven/config": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "alchemy": "catalog:",
+    "commander": "catalog:",
+    "dotenv": "catalog:",
+    "yaml": "catalog:"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

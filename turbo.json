@@ -96,6 +96,10 @@
       "inputs": ["apps/**", "packages/**", "sonar-project.properties"],
       "outputs": [],
       "cache": false
+    },
+    "@pagehaven/scripts#gh-env-sync": {
+      "cache": false,
+      "persistent": false
     }
   }
 }
