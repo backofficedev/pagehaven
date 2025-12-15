@@ -30,19 +30,14 @@ const BETTER_AUTH_URL = buildUrl(stage, STATIC_DOMAIN);
 
 // Local env
 const BETTER_AUTH_SECRET = getSecretEnvVar("BETTER_AUTH_SECRET");
-const STATIC_CLOUDFLARE_API_TOKEN = getSecretEnvVar(
-  "STATIC_CLOUDFLARE_API_TOKEN"
-);
-const CLOUDFLARE_API_TOKEN = STATIC_CLOUDFLARE_API_TOKEN;
 
 const zone = await createZone(STATIC_DOMAIN);
 const envBindings = {
   WEB_URL,
+  STATIC_DOMAIN,
   CORS_ORIGIN,
   BETTER_AUTH_URL,
   BETTER_AUTH_SECRET,
-  CLOUDFLARE_API_TOKEN,
-  ZONE_ID: zone.id,
 } as const;
 const routes = isDevelopmentEnvironment(stage)
   ? undefined

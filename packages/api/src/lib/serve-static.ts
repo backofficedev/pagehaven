@@ -66,7 +66,7 @@ export async function resolveSite(
 ): Promise<SiteResolution | null> {
   // Extract subdomain for cache key
   const subdomain = hostname.split(".")[0] ?? "";
-  const staticDomain = (env as { STATIC_DOMAIN?: string }).STATIC_DOMAIN || "";
+  const staticDomain = env.STATIC_DOMAIN;
   const isCustomDomain =
     hostname.includes(".") && !hostname.endsWith(`.${staticDomain}`);
 

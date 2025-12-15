@@ -46,7 +46,7 @@ type CloudflareResponse<T> = {
 };
 
 function getApiToken(): string {
-  const token = (env as { CLOUDFLARE_API_TOKEN?: string }).CLOUDFLARE_API_TOKEN;
+  const token = env.CLOUDFLARE_API_TOKEN;
   if (!token) {
     throw new Error("CLOUDFLARE_API_TOKEN is not configured");
   }
@@ -54,15 +54,15 @@ function getApiToken(): string {
 }
 
 function getZoneId(): string {
-  const zoneId = (env as { ZONE_ID?: string }).ZONE_ID;
+  const zoneId = env.STATIC_DOMAIN_ZONE_ID;
   if (!zoneId) {
-    throw new Error("ZONE_ID is not configured");
+    throw new Error("STATIC_DOMAIN_ZONE_ID is not configured");
   }
   return zoneId;
 }
 
 function getStaticDomain(): string {
-  const domain = (env as { STATIC_DOMAIN?: string }).STATIC_DOMAIN;
+  const domain = env.STATIC_DOMAIN;
   // Extract base domain from STATIC_DOMAIN (e.g., "pagehaven.io")
   // In development this might be "localhost:3002" so we handle that
   if (!domain || domain.includes("localhost")) {

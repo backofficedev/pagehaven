@@ -12,6 +12,7 @@ import {
   createApp,
   createSharedResources,
   createWorker,
+  createZone,
 } from "@pagehaven/infra/resources";
 
 loadEnvIfNotCI({ envDir: path.join(import.meta.dirname, "../../") });
@@ -34,7 +35,11 @@ const BETTER_AUTH_URL = SERVER_URL;
 const BETTER_AUTH_SECRET = getSecretEnvVar("BETTER_AUTH_SECRET");
 const APP_GITHUB_CLIENT_ID = getEnvVar("APP_GITHUB_CLIENT_ID");
 const APP_GITHUB_CLIENT_SECRET = getSecretEnvVar("APP_GITHUB_CLIENT_SECRET");
+const SERVER_CLOUDFLARE_API_TOKEN = getSecretEnvVar(
+  "SERVER_CLOUDFLARE_API_TOKEN"
+);
 
+const zone = await createZone(STATIC_DOMAIN);
 const domains = isDevelopmentEnvironment(stage) ? undefined : [SERVER_DOMAIN];
 const envBindings = {
   CORS_ORIGIN,
@@ -43,6 +48,8 @@ const envBindings = {
   BETTER_AUTH_SECRET,
   APP_GITHUB_CLIENT_ID,
   APP_GITHUB_CLIENT_SECRET,
+  CLOUDFLARE_API_TOKEN: SERVER_CLOUDFLARE_API_TOKEN,
+  STATIC_DOMAIN_ZONE_ID: zone.id,
 } as const;
 
 console.log(`Domains -> ${domains}`);
