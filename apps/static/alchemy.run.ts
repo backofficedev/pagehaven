@@ -32,6 +32,7 @@ const BETTER_AUTH_URL = buildUrl(stage, STATIC_DOMAIN);
 const BETTER_AUTH_SECRET = getSecretEnvVar("BETTER_AUTH_SECRET");
 
 const zone = await createZone(STATIC_DOMAIN);
+const domains = isDevelopmentEnvironment(stage) ? undefined : [STATIC_DOMAIN];
 const envBindings = {
   WEB_URL,
   STATIC_DOMAIN,
@@ -43,6 +44,7 @@ const routes = isDevelopmentEnvironment(stage)
   ? undefined
   : [{ pattern: `*${STATIC_DOMAIN}/*`, zoneId: zone.id }];
 
+console.log(`Domains -> ${domains}`);
 console.log(`Routes -> ${routes}`);
 for (const [key, value] of Object.entries(envBindings)) {
   console.log(`${key} -> ${value}`);
@@ -53,6 +55,7 @@ const bindings = { DB: db, STORAGE: storage, CACHE: cache, ...envBindings };
 export const staticWorker = await createWorker<typeof bindings>({
   port: PORT,
   entrypoint: path.join(import.meta.dirname, "src/index.ts"),
+  domains,
   routes,
   bindings,
 });
