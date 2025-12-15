@@ -40,7 +40,7 @@ function buildEnv() {
   for (const key of envKeys) {
     result[key] = getProcessEnvVar(key);
   }
-  return result as Record<(typeof envKeys)[number], string>;
+  return result;
 }
 
 type EnvMode = "development" | "production" | "test" | string;

@@ -9,6 +9,31 @@ import { eq } from "drizzle-orm";
 import { githubFetch } from "./github-api";
 import { uploadFile } from "./storage";
 
+/**
+ * Safely convert a Buffer or ArrayBufferLike to a proper ArrayBuffer
+ * This handles both Node.js Buffer and browser ArrayBuffer scenarios
+ */
+function convertBufferToArrayBuffer(buffer: ArrayBufferLike): ArrayBuffer {
+  // Create a Uint8Array view of the buffer to handle all types uniformly
+  const uint8Array = new Uint8Array(buffer);
+
+  // Extract the actual ArrayBuffer portion, ensuring we get a regular ArrayBuffer
+  const sourceBuffer = uint8Array.buffer;
+
+  // If it's already a regular ArrayBuffer, slice the relevant portion
+  if (!(sourceBuffer instanceof SharedArrayBuffer)) {
+    return sourceBuffer.slice(
+      uint8Array.byteOffset,
+      uint8Array.byteOffset + uint8Array.byteLength
+    );
+  }
+
+  // For SharedArrayBuffer, create a new ArrayBuffer with the data
+  const tempArray = new Uint8Array(uint8Array.byteLength);
+  tempArray.set(uint8Array);
+  return tempArray.buffer;
+}
+
 // GitHub webhook event types
 type GitHubPushEvent = {
   ref: string;
@@ -261,15 +286,9 @@ export async function processGitHubPush(
       const contentType = getContentType(filePath);
 
       // Convert Buffer to ArrayBuffer safely
-      const arrayBuffer =
-        content.buffer instanceof ArrayBuffer
-          ? content.buffer
-          : content.buffer.slice(
-              content.byteOffset,
-              content.byteOffset + content.byteLength
-            );
+      const arrayBuffer = convertBufferToArrayBuffer(content.buffer);
 
-      await uploadFile(key, arrayBuffer as ArrayBuffer, contentType);
+      await uploadFile(key, arrayBuffer, contentType);
 
       totalSize += content.length;
       fileCount += 1;

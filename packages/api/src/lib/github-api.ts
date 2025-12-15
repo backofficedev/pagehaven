@@ -1,6 +1,16 @@
 /**
  * Shared GitHub API utilities
  */
+import { z } from "zod";
+
+// Zod schema for GitHub API response validation
+const GitHubResponseSchema = z.object({
+  id: z.number().optional(),
+  name: z.string().optional(),
+  full_name: z.string().optional(),
+  private: z.boolean().optional(),
+  // Add more fields as needed for specific endpoints
+});
 
 /**
  * GitHub API helper with access token
@@ -24,10 +34,8 @@ export async function githubFetch<T>(
 
   const data = await response.json();
 
-  // Basic runtime validation
-  if (data === null || typeof data !== "object") {
-    throw new Error("Invalid GitHub API response: expected object");
-  }
+  // Validate response structure with Zod
+  const parsed = GitHubResponseSchema.parse(data);
 
-  return data as T;
+  return parsed as T;
 }

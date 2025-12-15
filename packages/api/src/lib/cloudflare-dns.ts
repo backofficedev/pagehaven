@@ -1,6 +1,20 @@
 import { env } from "cloudflare:workers";
+import { z } from "zod";
 
 const CLOUDFLARE_API_BASE = "https://api.cloudflare.com/client/v4";
+
+// Zod schema for Cloudflare API response validation
+const CloudflareResponseSchema = z.object({
+  success: z.boolean(),
+  errors: z.array(
+    z.object({
+      code: z.number(),
+      message: z.string(),
+    })
+  ),
+  messages: z.array(z.string()),
+  result: z.unknown(),
+});
 
 type DnsRecordType =
   | "A"
@@ -86,19 +100,10 @@ async function cfFetch<T>(
 
   const responseJson = await response.json();
 
-  // Runtime validation for Cloudflare API response
-  if (
-    !responseJson ||
-    typeof responseJson !== "object" ||
-    typeof (responseJson as any).success !== "boolean" ||
-    !Array.isArray((responseJson as any).errors) ||
-    !Array.isArray((responseJson as any).messages) ||
-    !("result" in responseJson)
-  ) {
-    throw new Error("Invalid Cloudflare API response structure");
-  }
+  // Validate response structure with Zod
+  const parsed = CloudflareResponseSchema.parse(responseJson);
 
-  const data = responseJson as CloudflareResponse<T>;
+  const data = parsed as CloudflareResponse<T>;
 
   if (!(response.ok && data.success)) {
     const errorMessage =
