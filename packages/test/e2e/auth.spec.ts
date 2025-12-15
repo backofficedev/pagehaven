@@ -1,12 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { generateTestUser, signIn, signUp } from "./fixtures";
+import { generateTestUser, signIn, signOut, signUp } from "./fixtures";
 
 // Regex patterns at module level for performance
 const CREATE_ACCOUNT_REGEX = /create account/i;
 const WELCOME_BACK_REGEX = /welcome back/i;
 const DASHBOARD_REGEX = /dashboard/;
 const LOGIN_REGEX = /login/;
-const SIGN_OUT_REGEX = /sign out/i;
 const SIGN_UP_REGEX = /sign up/i;
 const SIGN_IN_REGEX = /sign in/i;
 const ALREADY_HAVE_ACCOUNT_REGEX = /already have an account/i;
@@ -85,15 +84,9 @@ test.describe("Authentication", () => {
       // First sign up
       await signUp(page, user, expect);
 
-      // Sign out (if there's a sign out button)
-      const signOutButton = page.getByRole("button", { name: SIGN_OUT_REGEX });
-      if (await signOutButton.isVisible()) {
-        await signOutButton.click();
-        await page.waitForURL(LOGIN_REGEX);
-      } else {
-        // Navigate to login manually
-        await page.goto("/login");
-      }
+      // Sign out and navigate to login
+      await signOut(page);
+      await page.goto("/login");
 
       // Now sign in
       await signIn(page, user, expect);

@@ -9,6 +9,6 @@
     "wrangler"
   ],
   "ignoreBinaries": ["tsc"],
-  "ignore": ["**/routeTree.gen.ts", "packages/test/**"],
+  "ignore": ["**/routeTree.gen.ts"],
   "ignoreExportsUsedInFile": true
 }

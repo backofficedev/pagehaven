@@ -1,4 +1,4 @@
-import { test as base, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 // Regex patterns at module level for performance
 const CREATE_ACCOUNT_REGEX = /create account/i;
@@ -201,19 +201,6 @@ export async function createSiteAndNavigateToDeploy(
 }
 
 /**
- * Helper to upload files to the deploy page
- */
-export async function uploadFiles(
-  page: Page,
-  files: Array<{ name: string; mimeType: string; buffer: Buffer }>,
-  expect: typeof import("@playwright/test").expect
-) {
-  const fileInput = page.locator('input[type="file"]');
-  await expect(fileInput).toBeAttached();
-  await fileInput.setInputFiles(files);
-}
-
-/**
  * Test file data for common file types
  */
 export const testFiles = {
@@ -273,22 +260,3 @@ export async function uploadMultipleFiles(
 export function getDeployButton(page: Page) {
   return page.getByRole("button", { name: DEPLOY_EXACT_REGEX });
 }
-
-/**
- * Extended test fixture with authenticated user
- */
-export const test = base.extend<{
-  authenticatedPage: Page;
-  testUser: { name: string; email: string; password: string };
-}>({
-  // biome-ignore lint/correctness/noEmptyPattern: Playwright fixture API requires this pattern
-  testUser: async ({}, use) => {
-    const user = generateTestUser();
-    await use(user);
-  },
-  authenticatedPage: async ({ page, testUser }, use) => {
-    const { expect } = await import("@playwright/test");
-    await signUp(page, testUser, expect);
-    await use(page);
-  },
-});
